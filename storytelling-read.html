@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Read Others' Stories | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --cream-dark: #ece5d8; --sage: #7d9e75;
+      --sage-muted: #c8d9c2; --olive: #4a6640; --olive-dark: #374f31;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680; --white: #ffffff;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245,240,232,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; letter-spacing: 3px; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 9px; }
+    .nav-back { font-size: 14px; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+    .leaf { position: fixed; pointer-events: none; opacity: 0.18; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 220px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 190px; transform: rotate(158deg); }
+    .page {
+      min-height: 100vh; padding: 110px 24px 80px;
+      background: radial-gradient(ellipse 800px 600px at 10% 10%, rgba(125,158,117,0.22) 0%, transparent 65%), radial-gradient(ellipse 600px 500px at 90% 85%, rgba(157,180,150,0.18) 0%, transparent 65%), var(--cream);
+    }
+    .wrap { max-width: 680px; margin: 0 auto; position: relative; z-index: 1; }
+    .alone-strip { background: rgba(200,217,194,0.45); border-radius: 20px; padding: 28px 32px; margin-bottom: 40px; text-align: center; border: 1px solid rgba(125,158,117,0.2); }
+    .alone-strip h2 { font-family: 'Playfair Display', serif; font-size: clamp(20px, 3.5vw, 28px); font-weight: 600; color: var(--text); margin-bottom: 16px; }
+    .alone-strip h2 em { font-style: italic; color: var(--olive); }
+    .alone-pills { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .alone-pill { background: rgba(255,255,255,0.6); border: 1px solid rgba(125,158,117,0.28); border-radius: 100px; padding: 7px 16px; font-size: 13px; color: var(--text-mid); font-style: italic; }
+    .header { margin-bottom: 32px; }
+    .header-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 10px; }
+    .header-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 5vw, 46px); font-weight: 600; color: var(--text); line-height: 1.15; margin-bottom: 10px; }
+    .header-title em { font-style: italic; color: var(--olive); }
+    .header-sub { font-size: 14px; color: var(--text-mid); line-height: 1.7; }
+    .stories-feed { display: flex; flex-direction: column; gap: 16px; }
+    .story-card { background: rgba(245,240,232,0.7); border: 1px solid rgba(125,158,117,0.18); border-radius: 18px; padding: 24px 26px; transition: transform 0.2s, box-shadow 0.2s; }
+    .story-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.06); }
+    .story-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .story-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(125,158,117,0.25); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--olive); font-weight: 600; flex-shrink: 0; }
+    .story-author-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .story-author-tag { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 100px; background: rgba(125,158,117,0.18); color: var(--olive); font-weight: 500; margin-left: 6px; }
+    .story-author-anon { font-size: 12px; color: var(--text-light); font-style: italic; }
+    .story-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+    .story-body { font-size: 14px; color: var(--text-mid); line-height: 1.75; margin-bottom: 18px; }
+    .story-reactions { display: flex; gap: 10px; }
+    .reaction-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; border: 1.5px solid rgba(125,158,117,0.25); background: rgba(255,255,255,0.5); font-family: 'Inter', sans-serif; font-size: 12.5px; color: var(--text-mid); cursor: pointer; transition: all 0.2s; }
+    .reaction-btn:hover { border-color: var(--sage); color: var(--olive); background: rgba(125,158,117,0.1); }
+    .reaction-btn.reacted { background: rgba(125,158,117,0.15); border-color: var(--sage); color: var(--olive-dark); }
+    .reaction-count { font-weight: 600; }
+    /* Admin */
+    .admin-bar { display:none; position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(42,39,34,0.96); backdrop-filter:blur(10px); padding:10px 24px; align-items:center; justify-content:space-between; gap:12px; }
+    .admin-bar.visible { display:flex; }
+    .admin-bar span { font-size:12px; color:rgba(255,255,255,0.55); letter-spacing:1px; text-transform:uppercase; }
+    .admin-bar-label { font-size:13px; font-weight:600; color:#f5f0e8; display:flex; align-items:center; gap:7px; }
+    .admin-exit { background:none; border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.6); font-family:'Inter',sans-serif; font-size:12px; padding:6px 14px; border-radius:100px; cursor:pointer; transition:all 0.2s; }
+    .admin-exit:hover { border-color:rgba(255,255,255,0.5); color:#fff; }
+    .admin-controls { display:none; align-items:center; gap:8px; margin-left:auto; }
+    body.admin-mode .admin-controls { display:flex; }
+    body.admin-mode .story-card { position:relative; }
+    .admin-btn-delete { position:absolute; top:14px; right:14px; background:#c0392b; border:none; color:#fff; font-size:12px; font-weight:600; padding:5px 12px; border-radius:100px; cursor:pointer; opacity:0; transition:opacity 0.2s; font-family:'Inter',sans-serif; }
+    .admin-btn-edit   { position:absolute; top:14px; right:90px; background:var(--olive); border:none; color:#fff; font-size:12px; font-weight:600; padding:5px 12px; border-radius:100px; cursor:pointer; opacity:0; transition:opacity 0.2s; font-family:'Inter',sans-serif; }
+    body.admin-mode .story-card:hover .admin-btn-delete,
+    body.admin-mode .story-card:hover .admin-btn-edit { opacity:1; }
+    .edit-area { width:100%; font-family:'Inter',sans-serif; font-size:14px; color:var(--text); background:rgba(245,240,232,0.9); border:1.5px solid var(--sage); border-radius:10px; padding:12px 14px; outline:none; resize:vertical; line-height:1.75; margin-bottom:8px; }
+    .edit-save { background:var(--olive); color:#fff; border:none; font-family:'Inter',sans-serif; font-size:13px; font-weight:500; padding:7px 18px; border-radius:100px; cursor:pointer; margin-right:8px; }
+    .edit-cancel { background:none; border:1px solid rgba(125,158,117,0.4); color:var(--text-mid); font-family:'Inter',sans-serif; font-size:13px; padding:7px 18px; border-radius:100px; cursor:pointer; }
+    @media (max-width: 600px) { nav { padding: 18px 24px; } }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <a class="nav-back" href="storytelling.html">← Storytelling</a>
+    <button id="owner-btn" onclick="promptOwner()" style="background:none;border:none;cursor:pointer;font-size:11px;color:transparent;padding:4px 8px;user-select:none;" title="">·</button>
+  </nav>
+
+  <div class="admin-bar" id="admin-bar">
+    <div class="admin-bar-label">🛡 Owner mode</div>
+    <span>Hover any story to edit or remove it</span>
+    <button class="admin-exit" onclick="exitAdmin()">Exit</button>
+  </div>
+
+  <div class="page">
+    <div class="wrap">
+
+      <div class="alone-strip">
+        <h2>You are <em>not</em> the only one feeling this way.</h2>
+        <div class="alone-pills">
+          <span class="alone-pill">Healing isn't linear.</span>
+          <span class="alone-pill">It's okay to not be okay.</span>
+          <span class="alone-pill">Your pace is enough.</span>
+          <span class="alone-pill">You belong here.</span>
+        </div>
+      </div>
+
+      <div class="header">
+        <p class="header-label">📖 Community Stories</p>
+        <h1 class="header-title">Real stories,<br><em>real healing.</em></h1>
+        <p class="header-sub">Real, human, unfiltered. You are not reading alone.</p>
+      </div>
+
+      <div class="stories-feed">
+
+        <div class="story-card" data-id="s1">
+          <div class="story-meta">
+            <div class="story-avatar">🤍</div>
+            <div>
+              <span class="story-author-anon">Anonymous</span>
+              <span class="story-author-tag">healing</span>
+            </div>
+          </div>
+          <p class="story-title">Still trying</p>
+          <p class="story-body">I feel like I'm falling behind, but I'm trying to remind myself that everyone has their own timing. Some days I believe it. Other days I don't. But I keep showing up anyway.</p>
+          <div class="story-reactions">
+            <button class="reaction-btn" data-reaction="relate" onclick="react(this)"><span>🤍</span> <span class="reaction-count">3</span> I relate</button>
+            <button class="reaction-btn" data-reaction="thanks" onclick="react(this)"><span>🌿</span> <span class="reaction-count">2</span> Thank you for sharing</button>
+          </div>
+        </div>
+
+        <div class="story-card" data-id="s2">
+          <div class="story-meta">
+            <div class="story-avatar">L</div>
+            <div>
+              <span class="story-author-name">Lara</span>
+              <span class="story-author-tag">grateful</span>
+            </div>
+          </div>
+          <p class="story-title">A letter to my past self</p>
+          <p class="story-body">You survived every single bad day you thought you wouldn't. You're still here, and that means everything. I wish I could go back and hold your hand. But you made it. You're reading this now.</p>
+          <div class="story-reactions">
+            <button class="reaction-btn" data-reaction="relate" onclick="react(this)"><span>🤍</span> <span class="reaction-count">5</span> I relate</button>
+            <button class="reaction-btn" data-reaction="thanks" onclick="react(this)"><span>🌿</span> <span class="reaction-count">4</span> Thank you for sharing</button>
+          </div>
+        </div>
+
+        <div class="story-card" data-id="s3">
+          <div class="story-meta">
+            <div class="story-avatar">🤍</div>
+            <div>
+              <span class="story-author-anon">Anonymous</span>
+              <span class="story-author-tag">reflective</span>
+            </div>
+          </div>
+          <p class="story-title">Something I wish someone told me</p>
+          <p class="story-body">Asking for help is not weakness. I spent three years convincing myself I could handle everything alone. I couldn't. And the moment I finally reached out, I felt lighter than I had in years.</p>
+          <div class="story-reactions">
+            <button class="reaction-btn" data-reaction="relate" onclick="react(this)"><span>🤍</span> <span class="reaction-count">6</span> I relate</button>
+            <button class="reaction-btn" data-reaction="thanks" onclick="react(this)"><span>🌿</span> <span class="reaction-count">4</span> Thank you for sharing</button>
+          </div>
+        </div>
+
+        <div class="story-card" data-id="s4">
+          <div class="story-meta">
+            <div class="story-avatar">K</div>
+            <div>
+              <span class="story-author-name">Karim</span>
+              <span class="story-author-tag">hopeful</span>
+            </div>
+          </div>
+          <p class="story-title">Small poem</p>
+          <p class="story-body" style="font-style:italic; font-family:'Playfair Display',serif; line-height:2;">Some days I water myself<br>like a plant no one is watching.<br>Quietly.<br>Just enough to stay alive.<br>Turns out that's enough.</p>
+          <div class="story-reactions">
+            <button class="reaction-btn" data-reaction="relate" onclick="react(this)"><span>🤍</span> <span class="reaction-count">7</span> I relate</button>
+            <button class="reaction-btn" data-reaction="thanks" onclick="react(this)"><span>🌿</span> <span class="reaction-count">5</span> Thank you for sharing</button>
+          </div>
+        </div>
+
+        <div class="story-card" data-id="s5">
+          <div class="story-meta">
+            <div class="story-avatar">🤍</div>
+            <div>
+              <span class="story-author-anon">Anonymous</span>
+              <span class="story-author-tag">lost</span>
+            </div>
+          </div>
+          <p class="story-title">I don't know where I'm going</p>
+          <p class="story-body">And for the first time I'm trying to be okay with that. Everyone around me seems to have a plan. I don't. But I'm learning that not having a plan doesn't mean I'm lost forever   maybe I'm just still finding my way.</p>
+          <div class="story-reactions">
+            <button class="reaction-btn" data-reaction="relate" onclick="react(this)"><span>🤍</span> <span class="reaction-count">4</span> I relate</button>
+            <button class="reaction-btn" data-reaction="thanks" onclick="react(this)"><span>🌿</span> <span class="reaction-count">3</span> Thank you for sharing</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const OWNER_PASS = 'salama-owner';
+
+    const reactions = JSON.parse(localStorage.getItem('salama_reactions') || '{}');
+    const reacted   = JSON.parse(localStorage.getItem('salama_reacted')   || '{}');
+    const hiddenIds = JSON.parse(localStorage.getItem('salama_hidden')    || '[]');
+
+    function saveReactions() {
+      localStorage.setItem('salama_reactions', JSON.stringify(reactions));
+      localStorage.setItem('salama_reacted',   JSON.stringify(reacted));
+    }
+
+    function react(btn) {
+      const card = btn.closest('[data-id]');
+      const storyId = card.dataset.id;
+      const type = btn.dataset.reaction;
+      const key = storyId + '_' + type;
+      const countEl = btn.querySelector('.reaction-count');
+      const base = parseInt(countEl.dataset.base || countEl.textContent);
+      countEl.dataset.base = base;
+      if (reacted[key]) {
+        reacted[key] = false;
+        reactions[key] = (reactions[key] || 1) - 1;
+        btn.classList.remove('reacted');
+      } else {
+        reacted[key] = true;
+        reactions[key] = (reactions[key] || 0) + 1;
+        btn.classList.add('reacted');
+        btn.animate([{transform:'scale(1)'},{transform:'scale(1.15)'},{transform:'scale(1)'}], {duration:250,easing:'ease-out'});
+      }
+      countEl.textContent = base + (reactions[key] || 0);
+      saveReactions();
+    }
+
+    function applyReactions(card) {
+      const storyId = card.dataset.id;
+      card.querySelectorAll('.reaction-btn').forEach(btn => {
+        const type = btn.dataset.reaction;
+        const key = storyId + '_' + type;
+        const countEl = btn.querySelector('.reaction-count');
+        const base = parseInt(countEl.textContent);
+        countEl.dataset.base = base;
+        countEl.textContent = base + (reactions[key] || 0);
+        if (reacted[key]) btn.classList.add('reacted');
+      });
+    }
+
+    function addAdminButtons(card) {
+      const del = document.createElement('button');
+      del.className = 'admin-btn-delete';
+      del.textContent = 'Remove';
+      del.onclick = () => adminDelete(card);
+
+      const edit = document.createElement('button');
+      edit.className = 'admin-btn-edit';
+      edit.textContent = 'Edit';
+      edit.onclick = () => adminEdit(card);
+
+      card.appendChild(del);
+      card.appendChild(edit);
+    }
+
+    function adminDelete(card) {
+      const id = card.dataset.id;
+      if (!confirm('Remove this story?')) return;
+      // hide hardcoded story
+      if (id.startsWith('s')) {
+        hiddenIds.push(id);
+        localStorage.setItem('salama_hidden', JSON.stringify(hiddenIds));
+        card.remove();
+      } else {
+        // remove user-submitted story
+        const rawId = parseInt(id.replace('u', ''));
+        let stories = JSON.parse(localStorage.getItem('salama_stories') || '[]');
+        stories = stories.filter(s => s.id !== rawId);
+        localStorage.setItem('salama_stories', JSON.stringify(stories));
+        card.remove();
+      }
+    }
+
+    function adminEdit(card) {
+      const bodyEl = card.querySelector('.story-body');
+      const titleEl = card.querySelector('.story-title');
+      if (card.querySelector('.edit-area')) return; // already editing
+
+      const originalBody = bodyEl.innerText;
+      const originalTitle = titleEl ? titleEl.innerText : null;
+
+      if (titleEl) {
+        const titleInput = document.createElement('input');
+        titleInput.className = 'edit-area';
+        titleInput.style.minHeight = 'unset';
+        titleInput.style.marginBottom = '8px';
+        titleInput.value = originalTitle;
+        titleInput.dataset.for = 'title';
+        titleEl.replaceWith(titleInput);
+      }
+
+      const textarea = document.createElement('textarea');
+      textarea.className = 'edit-area';
+      textarea.value = originalBody;
+      bodyEl.replaceWith(textarea);
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'edit-save';
+      saveBtn.textContent = 'Save';
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'edit-cancel';
+      cancelBtn.textContent = 'Cancel';
+
+      const bar = document.createElement('div');
+      bar.style.marginBottom = '12px';
+      bar.appendChild(saveBtn);
+      bar.appendChild(cancelBtn);
+      textarea.after(bar);
+
+      saveBtn.onclick = () => {
+        const newBody = textarea.value.trim();
+        const p = document.createElement('p');
+        p.className = 'story-body';
+        p.textContent = newBody;
+        textarea.replaceWith(p);
+
+        const titleInput = card.querySelector('[data-for="title"]');
+        if (titleInput) {
+          const h = document.createElement('p');
+          h.className = 'story-title';
+          h.textContent = titleInput.value.trim();
+          titleInput.replaceWith(h);
+        }
+
+        bar.remove();
+
+        // persist for user stories
+        const id = card.dataset.id;
+        if (!id.startsWith('s')) {
+          const rawId = parseInt(id.replace('u', ''));
+          let stories = JSON.parse(localStorage.getItem('salama_stories') || '[]');
+          const s = stories.find(s => s.id === rawId);
+          if (s) { s.body = newBody; localStorage.setItem('salama_stories', JSON.stringify(stories)); }
+        }
+      };
+
+      cancelBtn.onclick = () => {
+        const p = document.createElement('p');
+        p.className = 'story-body';
+        p.textContent = originalBody;
+        textarea.replaceWith(p);
+
+        const titleInput = card.querySelector('[data-for="title"]');
+        if (titleInput && originalTitle !== null) {
+          const h = document.createElement('p');
+          h.className = 'story-title';
+          h.textContent = originalTitle;
+          titleInput.replaceWith(h);
+        }
+        bar.remove();
+      };
+    }
+
+    function enterAdmin() {
+      document.body.classList.add('admin-mode');
+      document.getElementById('admin-bar').classList.add('visible');
+      document.querySelectorAll('.story-card[data-id]').forEach(addAdminButtons);
+    }
+
+    function exitAdmin() {
+      document.body.classList.remove('admin-mode');
+      document.getElementById('admin-bar').classList.remove('visible');
+      document.querySelectorAll('.admin-btn-delete, .admin-btn-edit').forEach(b => b.remove());
+    }
+
+    function promptOwner() {
+      const pass = prompt('Enter owner password:');
+      if (pass === OWNER_PASS) {
+        enterAdmin();
+      } else if (pass !== null) {
+        alert('Incorrect password.');
+      }
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function formatDate(iso) {
+      return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function renderStory(s, feed) {
+      const isAnon = s.is_anonymous || !s.author_name;
+      const avatarContent = isAnon ? '🤍' : s.author_name[0].toUpperCase();
+      const authorHtml = isAnon
+        ? `<span class="story-author-anon">Anonymous</span>`
+        : `<span class="story-author-name">${escHtml(s.author_name)}</span>`;
+      const tagHtml = s.mood ? `<span class="story-author-tag">${escHtml(s.mood)}</span>` : '';
+      const titleHtml = s.title ? `<p class="story-title">${escHtml(s.title)}</p>` : '';
+
+      const card = document.createElement('div');
+      card.className = 'story-card';
+      card.dataset.id = 'u' + s.id;
+      card.innerHTML = `
+        <div class="story-meta">
+          <div class="story-avatar">${avatarContent}</div>
+          <div>${authorHtml}${tagHtml}<br><span style="font-size:11px;color:var(--text-light);">${formatDate(s.created_at)}</span></div>
+        </div>
+        ${titleHtml}
+        <p class="story-body">${escHtml(s.body)}</p>
+        <div class="story-reactions">
+          <button class="reaction-btn" data-reaction="relate" onclick="react(this)"><span>🤍</span> <span class="reaction-count">0</span> I relate</button>
+          <button class="reaction-btn" data-reaction="thanks" onclick="react(this)"><span>🌿</span> <span class="reaction-count">0</span> Thank you for sharing</button>
+        </div>`;
+      feed.insertBefore(card, feed.firstChild);
+      applyReactions(card);
+    }
+
+    function loadStories() {
+      // hide removed hardcoded cards
+      hiddenIds.forEach(id => {
+        const el = document.querySelector(`[data-id="${id}"]`);
+        if (el) el.remove();
+      });
+
+      // apply reactions to remaining hardcoded cards
+      document.querySelectorAll('.story-card[data-id]').forEach(applyReactions);
+
+      const stories = JSON.parse(localStorage.getItem('salama_stories') || '[]');
+      if (!stories.length) return;
+      const feed = document.querySelector('.stories-feed');
+      [...stories].reverse().forEach(s => renderStory(s, feed));
+    }
+
+    loadStories();
+  </script>
+</body>
+</html>

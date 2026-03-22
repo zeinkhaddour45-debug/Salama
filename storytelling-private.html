@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Diary | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --cream-dark: #ece5d8; --sage: #7d9e75;
+      --sage-muted: #c8d9c2; --olive: #4a6640; --olive-dark: #374f31;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680; --white: #ffffff;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between; padding: 20px 60px;
+      background: rgba(245,240,232,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; letter-spacing: 3px; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 9px; }
+    .nav-back { font-size: 14px; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+    .leaf { position: fixed; pointer-events: none; opacity: 0.18; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 220px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 190px; transform: rotate(158deg); }
+    .page {
+      min-height: 100vh; padding: 110px 24px 80px;
+      background: radial-gradient(ellipse 800px 600px at 10% 10%, rgba(125,158,117,0.22) 0%, transparent 65%), radial-gradient(ellipse 600px 500px at 90% 85%, rgba(157,180,150,0.18) 0%, transparent 65%), var(--cream);
+    }
+    .wrap { max-width: 680px; margin: 0 auto; position: relative; z-index: 1; }
+    .header { margin-bottom: 40px; text-align: center; }
+    .header-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 10px; }
+    .header-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 5vw, 46px); font-weight: 600; color: var(--text); line-height: 1.15; margin-bottom: 12px; }
+    .header-title em { font-style: italic; color: var(--olive); }
+    .header-sub { font-size: 14px; color: var(--text-mid); line-height: 1.75; max-width: 440px; margin: 0 auto; }
+    .lock-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(125,158,117,0.14); border: 1px solid rgba(125,158,117,0.28);
+      border-radius: 100px; padding: 8px 18px; font-size: 13px; color: var(--olive-dark);
+      font-weight: 500; margin-bottom: 32px;
+    }
+    .journal-card {
+      background: rgba(200,217,194,0.28); border: 1px dashed rgba(125,158,117,0.4);
+      border-radius: 24px; padding: 36px; margin-bottom: 24px;
+    }
+    .journal-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+    .journal-icon { width: 48px; height: 48px; background: rgba(125,158,117,0.18); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .journal-header-text h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .journal-header-text p { font-size: 13px; color: var(--text-light); }
+    .form-textarea {
+      width: 100%; font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text);
+      background: rgba(255,255,255,0.6); border: 1.5px solid rgba(125,158,117,0.25);
+      border-radius: 14px; padding: 18px 20px; outline: none; resize: none;
+      transition: border-color 0.2s, box-shadow 0.2s; min-height: 300px; line-height: 1.85;
+    }
+    .form-textarea:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(125,158,117,0.12); }
+    .form-textarea::placeholder { color: var(--text-light); font-style: italic; }
+    .char-count { font-size: 12px; color: var(--text-light); text-align: right; margin-top: 8px; }
+    .journal-actions { display: flex; gap: 12px; margin-top: 20px; }
+    .btn-clear { flex: 1; background: none; border: 1.5px solid rgba(125,158,117,0.3); color: var(--text-mid); font-family: 'Inter', sans-serif; font-size: 14px; padding: 13px; border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+    .btn-clear:hover { border-color: var(--sage); color: var(--olive); }
+    .btn-save { flex: 2; background: var(--olive); border: none; color: var(--white); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; padding: 13px; border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+    .btn-save:hover { background: var(--olive-dark); transform: translateY(-1px); }
+    .member-gate {
+      background: rgba(200,217,194,0.35); border: 1.5px dashed rgba(125,158,117,0.5);
+      border-radius: 16px; padding: 20px 24px; margin-top: 16px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    }
+    .member-gate p { font-size: 13.5px; color: var(--olive-dark); line-height: 1.55; }
+    .member-gate a { display: inline-block; background: var(--olive); color: var(--white); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; padding: 10px 20px; border-radius: 100px; text-decoration: none; white-space: nowrap; transition: background 0.2s; }
+    .member-gate a:hover { background: var(--olive-dark); }
+    .entries-section { margin-top: 36px; }
+    .entries-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 16px; }
+    .entry-card { background: rgba(245,240,232,0.7); border: 1px solid rgba(125,158,117,0.18); border-radius: 16px; padding: 20px 22px; margin-bottom: 12px; }
+    .entry-date { font-size: 11px; color: var(--text-light); letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase; }
+    .entry-body { font-size: 14px; color: var(--text-mid); line-height: 1.75; white-space: pre-wrap; }
+    .entry-delete { float: right; background: none; border: none; color: var(--text-light); font-size: 13px; cursor: pointer; padding: 2px 6px; border-radius: 6px; transition: color 0.2s; }
+    .entry-delete:hover { color: #c0392b; }
+    .reminder-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .reminder-cards { grid-template-columns: 1fr; } }
+    .reminder-card { background: rgba(245,240,232,0.7); border: 1px solid rgba(125,158,117,0.15); border-radius: 16px; padding: 20px 22px; }
+    .reminder-card p { font-family: 'Playfair Display', serif; font-style: italic; font-size: 15px; color: var(--text-mid); line-height: 1.6; }
+    @media (max-width: 600px) { nav { padding: 18px 24px; } .journal-card { padding: 22px 18px; } }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <a class="nav-back" href="storytelling.html">← Storytelling</a>
+  </nav>
+
+  <div class="page">
+    <div class="wrap">
+
+      <div class="header">
+        <p class="header-label">💌 Members Exclusive</p>
+        <h1 class="header-title">Personal<br><em>Diary.</em></h1>
+        <p class="header-sub">Not everything needs to be shared. This space is entirely yours   nothing is saved, nothing is sent.</p>
+      </div>
+
+      <div style="text-align:center; margin-bottom:36px;">
+        <span class="lock-badge" id="lock-badge">🔒 Nothing here is saved or visible to anyone</span>
+      </div>
+
+      <div class="journal-card">
+        <div class="journal-header">
+          <div class="journal-icon">💌</div>
+          <div class="journal-header-text">
+            <h3>Your private space</h3>
+            <p>Write whatever you need to. Let it out.</p>
+          </div>
+        </div>
+        <textarea class="form-textarea" id="private-text" placeholder="Start writing… there are no rules here." oninput="updateCount()"></textarea>
+        <p class="char-count" id="char-count">0 words</p>
+        <div class="journal-actions">
+          <button class="btn-clear" onclick="clearAll()">Clear</button>
+          <button class="btn-save" id="btn-save" onclick="saveEntry()">Save to my entries</button>
+        </div>
+        <div class="member-gate" id="member-gate" style="display:none;">
+          <p>🔐 <strong>Members only.</strong> Sign in to save and revisit your journal entries.</p>
+          <a href="login.html?redirect=storytelling-private.html">Sign in / Join free</a>
+        </div>
+      </div>
+
+      <div class="entries-section" id="entries-section" style="display:none;">
+        <p class="entries-title">Your entries</p>
+        <div id="entries-list"></div>
+      </div>
+
+      <div class="reminder-cards">
+        <div class="reminder-card"><p>"Healing isn't linear. And that's okay."</p></div>
+        <div class="reminder-card"><p>"You're not the only one feeling this way."</p></div>
+        <div class="reminder-card"><p>"Your feelings are valid, always."</p></div>
+        <div class="reminder-card"><p>"Writing is its own form of healing."</p></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://yrbcozgtjjzexrqoynax.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_XMbgbPt2RZD_yeCEbc94oQ_7m2PQs5g';
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+
+    (async function init() {
+      const { data: { session } } = await db.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        document.getElementById('lock-badge').textContent = '🔒 Only you can see your entries';
+        document.getElementById('member-gate').style.display = 'none';
+        document.getElementById('btn-save').style.display = '';
+        loadEntries();
+      } else {
+        document.getElementById('btn-save').style.display = 'none';
+        document.getElementById('member-gate').style.display = 'flex';
+      }
+    })();
+
+    function storageKey() {
+      return 'journal_' + currentUser.id;
+    }
+
+    function loadEntries() {
+      const entries = JSON.parse(localStorage.getItem(storageKey()) || '[]');
+      renderEntries(entries);
+    }
+
+    function renderEntries(entries) {
+      const section = document.getElementById('entries-section');
+      const list = document.getElementById('entries-list');
+      if (!entries.length) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+      list.innerHTML = '';
+      entries.forEach((e, i) => {
+        const card = document.createElement('div');
+        card.className = 'entry-card';
+        const date = new Date(e.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        card.innerHTML = `<button class="entry-delete" onclick="deleteEntry(${i})" title="Delete">✕</button><p class="entry-date">${date}</p><p class="entry-body">${escHtml(e.body)}</p>`;
+        list.appendChild(card);
+      });
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function saveEntry() {
+      if (!currentUser) {
+        document.getElementById('member-gate').style.display = 'flex';
+        return;
+      }
+      const body = document.getElementById('private-text').value.trim();
+      if (!body) return;
+      const entries = JSON.parse(localStorage.getItem(storageKey()) || '[]');
+      entries.unshift({ body, date: new Date().toISOString() });
+      localStorage.setItem(storageKey(), JSON.stringify(entries));
+      document.getElementById('private-text').value = '';
+      updateCount();
+      renderEntries(entries);
+      showToast('Entry saved 🌿');
+    }
+
+    function deleteEntry(index) {
+      const entries = JSON.parse(localStorage.getItem(storageKey()) || '[]');
+      entries.splice(index, 1);
+      localStorage.setItem(storageKey(), JSON.stringify(entries));
+      renderEntries(entries);
+    }
+
+    function updateCount() {
+      const text = document.getElementById('private-text').value.trim();
+      const words = text ? text.split(/\s+/).length : 0;
+      document.getElementById('char-count').textContent = words + (words === 1 ? ' word' : ' words');
+    }
+
+    function clearAll() {
+      if (!document.getElementById('private-text').value.trim()) return;
+      document.getElementById('private-text').value = '';
+      updateCount();
+    }
+
+    function showToast(msg) {
+      let t = document.getElementById('toast');
+      if (!t) { t = document.createElement('div'); t.id = 'toast'; t.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:#374f31;color:#fff;padding:14px 28px;border-radius:100px;font-size:14px;font-weight:500;z-index:9000;opacity:0;transition:opacity 0.3s,transform 0.3s;pointer-events:none;white-space:nowrap;'; document.body.appendChild(t); }
+      t.textContent = msg;
+      t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+      setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(20px)'; }, 2500);
+    }
+
+    window.addEventListener('beforeunload', e => {
+      if (document.getElementById('private-text').value.trim()) {
+        e.preventDefault(); e.returnValue = '';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>24h Emergency Services | MIND Clinics | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --sage: #7d9e75; --sage-muted: #c8d9c2;
+      --olive: #4a6640; --olive-dark: #374f31;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 22px 48px; background: rgba(245,240,232,0.88); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,0.06); }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--olive-dark); text-decoration: none; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 9px; }
+    .nav-back { font-size: 13px; color: var(--text-mid); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+    .hero { padding: 148px 48px 40px; max-width: 900px; margin: 0 auto; }
+    .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 20px; }
+    .hero-eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sage); }
+    .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4.5vw, 46px); font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 18px; }
+    .hero-title em { font-style: italic; color: var(--olive); }
+    .hero-sub { font-size: 16px; color: var(--text-mid); line-height: 1.8; max-width: 660px; }
+    .page-body { max-width: 900px; margin: 0 auto; padding: 32px 48px 120px; display: flex; flex-direction: column; gap: 20px; }
+    .section-heading { padding: 8px 0 4px; }
+    .section-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 6px; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 600; color: var(--text); }
+    .section-divider { width: 48px; height: 2px; background: var(--sage-muted); border-radius: 2px; margin: 4px 0 0; }
+    .hours-banner { background: var(--olive); border-radius: 20px; padding: 28px 32px; display: flex; align-items: center; gap: 20px; }
+    .hours-number { font-family: 'Playfair Display', serif; font-size: clamp(40px, 7vw, 64px); font-weight: 700; color: #fff; line-height: 1; letter-spacing: -1px; }
+    .hours-label { color: rgba(255,255,255,0.82); font-size: 15px; line-height: 1.6; }
+    .hours-label strong { display: block; color: #fff; font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .info-card { background: rgba(255,255,255,0.72); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.75); border-radius: 20px; padding: 28px 32px; font-size: 15px; color: var(--text-mid); line-height: 1.85; }
+    .contact-info-card {
+      background: rgba(255,255,255,0.72); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.75); border-radius: 20px; padding: 26px 30px;
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .location-block { padding: 14px 0; display: flex; gap: 12px; align-items: flex-start; }
+    .location-block + .location-block { border-top: 1px solid rgba(0,0,0,0.06); }
+    .contact-icon {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(125,158,117,0.15); display: flex; align-items: center; justify-content: center; margin-top: 2px;
+    }
+    .location-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .location-phones { display: flex; flex-direction: column; gap: 2px; }
+    .location-phones a { font-size: 13px; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+    .location-phones a:hover { color: var(--olive); }
+    .note-card { background: rgba(200,217,194,0.18); border: 1px solid rgba(125,158,117,0.2); border-radius: 20px; padding: 22px 28px; font-size: 14px; color: var(--text-mid); line-height: 1.75; }
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: none; }
+    .fade-in-delay-1 { transition-delay: 0.06s; } .fade-in-delay-2 { transition-delay: 0.12s; }
+    .fade-in-delay-3 { transition-delay: 0.18s; } .fade-in-delay-4 { transition-delay: 0.24s; }
+    .page-footer { text-align: center; padding: 0 48px 60px; font-size: 13px; color: var(--text-light); line-height: 1.8; }
+    .page-footer a { color: var(--olive); text-decoration: none; }
+    .page-footer a:hover { text-decoration: underline; }
+    @media (max-width: 700px) {
+      nav { padding: 18px 24px; } .hero { padding: 120px 24px 32px; }
+      .page-body { padding: 24px 24px 100px; }
+      .hours-banner { flex-direction: column; align-items: flex-start; gap: 10px; padding: 22px 20px; }
+      .contact-info-card, .info-card { padding: 20px 18px; }
+      .page-footer { padding: 0 24px 48px; }
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="14" height="20" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,21 L8,4" stroke="#4a6640" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="#4a6640"/>
+    </svg>
+    SALAMA
+  </a>
+  <a class="nav-back" href="#" onclick="history.back(); return false;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+    </svg>
+    Back
+  </a>
+</nav>
+
+<div class="hero fade-in">
+  <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>MIND Clinics · Emergency</div>
+  <h1 class="hero-title"><em>24h</em> Emergency Services</h1>
+  <p class="hero-sub">Round-the-clock psychiatric emergency care and a 24/7 hotline, because mental health emergencies can occur at any time.</p>
+</div>
+
+<div class="page-body">
+
+  <div class="hours-banner fade-in fade-in-delay-1">
+    <div class="hours-number">24/7</div>
+    <div class="hours-label">
+      <strong>Emergency Hotline Available</strong>
+      Around the clock, every day of the year
+    </div>
+  </div>
+
+  <div class="info-card fade-in fade-in-delay-2">
+    At MIND, mental health emergencies can occur at any time. That is why MIND provides a 24/7 hotline for emergency calls and requests, ensuring that help is always just a phone call away. Each unit has a dedicated hotline where patients can reach out to MIND's professionals for immediate assistance, and the multidisciplinary team is ready to respond to emergency needs.<br><br>
+    In addition to hotline services, MIND offers emergency medical care and psychiatric services at the emergency department and inpatient facility located at St. Georges Hospital University Medical Center. Resident doctors are available around the clock to provide prompt and comprehensive care for those in need.
+  </div>
+
+  <div class="section-heading fade-in fade-in-delay-3">
+    <p class="section-label">Contact</p>
+    <h2 class="section-title">Emergency Hotline</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="contact-info-card fade-in fade-in-delay-3">
+    <div class="location-block">
+      <div class="contact-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4a6640" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.6 1.23h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.94-.94a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="location-name">St. Georges Hospital University Medical Center</p>
+        <div class="location-phones">
+          <a href="tel:+9613730475">+961 3 730475</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-card fade-in fade-in-delay-4">
+    If you require immediate attention or assistance, do not hesitate to contact the emergency hotline at <strong><a href="tel:+9613730475" style="color: var(--olive); text-decoration: none;">+961 3 730475</a></strong>. For more information, visit <a href="https://www.mindclinics.org/services" target="_blank" rel="noopener" style="color: var(--olive);">mindclinics.org</a>.
+  </div>
+
+</div>
+
+<p class="page-footer">
+  This page is part of the Salama resource directory. Information is provided for awareness purposes only.<br>
+  For the most up-to-date details, visit <a href="https://www.mindclinics.org/services" target="_blank" rel="noopener">mindclinics.org</a>.
+</p>
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

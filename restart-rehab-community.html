@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Community-Based Services | Restart Center | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --sage: #7d9e75; --sage-muted: #c8d9c2;
+      --olive: #4a6640; --olive-dark: #374f31;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 22px 48px; background: rgba(245,240,232,0.88); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,0.06); }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--olive-dark); text-decoration: none; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 9px; }
+    .nav-back { font-size: 13px; color: var(--text-mid); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+    .hero { padding: 148px 48px 40px; max-width: 900px; margin: 0 auto; }
+    .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 20px; }
+    .hero-eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sage); }
+    .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4.5vw, 46px); font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 18px; }
+    .hero-title em { font-style: italic; color: var(--olive); }
+    .hero-sub { font-size: 16px; color: var(--text-mid); line-height: 1.8; max-width: 660px; }
+    .page-body { max-width: 900px; margin: 0 auto; padding: 32px 48px 120px; display: flex; flex-direction: column; gap: 16px; }
+    .section-heading { padding: 10px 0 4px; }
+    .section-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 6px; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 600; color: var(--text); }
+    .section-divider { width: 48px; height: 2px; background: var(--sage-muted); border-radius: 2px; margin: 4px 0 0; }
+    .content-card { background: rgba(255,255,255,0.72); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.75); border-radius: 20px; padding: 26px 30px; display: flex; flex-direction: column; gap: 10px; }
+    .content-card-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: var(--text); }
+    .content-card p { font-size: 14px; color: var(--text-mid); line-height: 1.8; }
+    .content-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .content-list li { font-size: 14px; color: var(--text-mid); line-height: 1.65; padding-left: 16px; position: relative; }
+    .content-list li::before { content: ''; position: absolute; left: 0; top: 9px; width: 5px; height: 5px; border-radius: 50%; background: var(--sage-muted); }
+    .phase-card { background: rgba(255,255,255,0.72); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.75); border-radius: 20px; padding: 22px 28px; display: flex; gap: 18px; align-items: flex-start; }
+    .phase-number { flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; background: rgba(125,158,117,0.15); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: var(--olive); }
+    .phase-content { display: flex; flex-direction: column; gap: 5px; }
+    .phase-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; color: var(--text); }
+    .phase-desc { font-size: 14px; color: var(--text-mid); line-height: 1.75; }
+    .phase-list { list-style: none; display: flex; flex-direction: column; gap: 5px; padding-top: 2px; }
+    .phase-list li { font-size: 13px; color: var(--text-mid); line-height: 1.6; padding-left: 14px; position: relative; }
+    .phase-list li::before { content: ''; position: absolute; left: 0; top: 8px; width: 4px; height: 4px; border-radius: 50%; background: var(--sage-muted); }
+    .map-section { background: rgba(255,255,255,0.72); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.75); border-radius: 20px; overflow: hidden; }
+    .map-locations { display: grid; grid-template-columns: 1fr 1fr; }
+    .map-location { padding: 22px 24px 16px; }
+    .map-location + .map-location { border-left: 1px solid rgba(0,0,0,0.06); }
+    .map-location-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 6px; }
+    .map-location-address { font-size: 14px; color: var(--text); font-weight: 500; line-height: 1.6; }
+    .map-location-address span { display: block; font-size: 12px; color: var(--text-light); font-weight: 400; }
+    .map-embeds { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid rgba(0,0,0,0.06); }
+    .map-embeds iframe { width: 100%; height: 240px; border: none; display: block; }
+    .map-embeds iframe + iframe { border-left: 1px solid rgba(0,0,0,0.06); }
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: none; }
+    .fade-in-delay-1 { transition-delay: 0.05s; } .fade-in-delay-2 { transition-delay: 0.10s; }
+    .fade-in-delay-3 { transition-delay: 0.15s; } .fade-in-delay-4 { transition-delay: 0.20s; }
+    .fade-in-delay-5 { transition-delay: 0.25s; }
+    .page-footer { text-align: center; padding: 0 48px 60px; font-size: 13px; color: var(--text-light); line-height: 1.8; }
+    .page-footer a { color: var(--olive); text-decoration: none; }
+    .page-footer a:hover { text-decoration: underline; }
+    @media (max-width: 700px) {
+      nav { padding: 18px 24px; } .hero { padding: 120px 24px 32px; }
+      .page-body { padding: 24px 24px 100px; }
+      .content-card, .phase-card { padding: 18px 16px; }
+      .map-locations, .map-embeds { grid-template-columns: 1fr; }
+      .map-location + .map-location { border-left: none; border-top: 1px solid rgba(0,0,0,0.06); }
+      .map-embeds iframe + iframe { border-left: none; border-top: 1px solid rgba(0,0,0,0.06); }
+      .page-footer { padding: 0 24px 48px; }
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="14" height="20" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,21 L8,4" stroke="#4a6640" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="#4a6640"/>
+    </svg>
+    SALAMA
+  </a>
+  <a class="nav-back" href="#" onclick="history.back(); return false;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+    </svg>
+    Back
+  </a>
+</nav>
+
+<div class="hero fade-in">
+  <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Rehabilitation · Outreach</div>
+  <h1 class="hero-title"><em>Community-Based</em> Services</h1>
+  <p class="hero-sub">Grounded in the belief that communities have the capacity for recovery and resilience, Restart Center's community-based programs mobilize local resources and empower individuals to support one another.</p>
+</div>
+
+<div class="page-body">
+
+  <div class="section-heading fade-in fade-in-delay-1">
+    <p class="section-label">IASC Intervention Pyramid</p>
+    <h2 class="section-title">Level of Intervention</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="content-card fade-in fade-in-delay-1">
+    <h3 class="content-card-title">Focused, Non-Specialized Supports</h3>
+    <ul class="content-list">
+      <li>Community-based psychosocial support, co-facilitated by trained and supervised (refugee) outreach volunteers.</li>
+      <li>Psychological First Aid (Beirut Blast Program).</li>
+      <li>Basic mental health care provided by primary health care workers.</li>
+    </ul>
+  </div>
+
+  <div class="content-card fade-in fade-in-delay-1">
+    <h3 class="content-card-title">Foundation</h3>
+    <p>The foundation of all community-based psychosocial work is the belief in the affected community's capacity for recovery and resilience. All communities and individuals have resources and strategies for dealing with difficulties, illness, and distress.</p>
+  </div>
+
+  <div class="section-heading fade-in fade-in-delay-2">
+    <p class="section-label">Approach</p>
+    <h2 class="section-title">Key Points &amp; Approach</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="content-card fade-in fade-in-delay-2">
+    <h3 class="content-card-title">Key Points</h3>
+    <ul class="content-list">
+      <li>Community-based psychosocial support builds on individual and community resources, capacities, and resilience.</li>
+      <li>Mobilization of community support networks is an essential element of a sustainable psychosocial response.</li>
+    </ul>
+  </div>
+
+  <div class="content-card fade-in fade-in-delay-2">
+    <h3 class="content-card-title">Approach</h3>
+    <ul class="content-list">
+      <li>Mapping and building on local resources, including community networks, practices, processes, and mechanisms.</li>
+      <li>Mobilizing and training community-level volunteers linked to existing networks and a referral system, and promoting peer support.</li>
+      <li>Meaningful participation of local actors and community members at all stages of engagement.</li>
+      <li>Use of existing entry points such as community centers, social development centers, and other community-based platforms.</li>
+    </ul>
+  </div>
+
+  <div class="content-card fade-in fade-in-delay-2">
+    <h3 class="content-card-title">Specific Objectives</h3>
+    <ul class="content-list">
+      <li>To prevent the onset of mental disorders among people with psychosocial and other mental health problems from refugee populations and host communities.</li>
+      <li>To build the capacity of (refugee) outreach volunteers to design, implement, and evaluate psychosocial support programs in their communities or country of origin in case of safe return.</li>
+    </ul>
+  </div>
+
+  <div class="section-heading fade-in fade-in-delay-3">
+    <p class="section-label">Process</p>
+    <h2 class="section-title">CB-PSS Three-Month Cycle</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="phase-card fade-in fade-in-delay-3">
+    <div class="phase-number">I</div>
+    <div class="phase-content"><p class="phase-title">Identification of Outreach Volunteers</p><p class="phase-desc">Identifying outreach volunteers with health, education, or other relevant backgrounds.</p></div>
+  </div>
+  <div class="phase-card fade-in fade-in-delay-3">
+    <div class="phase-number">II</div>
+    <div class="phase-content"><p class="phase-title">Capacity Building for Outreach Volunteers</p><ul class="phase-list"><li>Screening and referrals of people with mental health and psychosocial problems.</li><li>Designing, facilitating, and evaluating CB-PSS sessions.</li><li>Codes of conduct and ethical guidelines.</li></ul></div>
+  </div>
+  <div class="phase-card fade-in fade-in-delay-3">
+    <div class="phase-number">III</div>
+    <div class="phase-content"><p class="phase-title">Identification of People in Need</p><p class="phase-desc">Trained outreach volunteers identify people in need within targeted communities.</p></div>
+  </div>
+  <div class="phase-card fade-in fade-in-delay-3">
+    <div class="phase-number">IV</div>
+    <div class="phase-content"><p class="phase-title">Group Participatory Assessment Sessions</p><p class="phase-desc">Group sessions targeting identified affected persons to understand their needs, resources, and gaps, and to develop the main objectives for the CB-PSS program.</p></div>
+  </div>
+  <div class="phase-card fade-in fade-in-delay-4">
+    <div class="phase-number">V</div>
+    <div class="phase-content"><p class="phase-title">Needs Assessments &amp; Registration</p><p class="phase-desc">Individual needs assessments and registration of affected persons.</p></div>
+  </div>
+  <div class="phase-card fade-in fade-in-delay-4">
+    <div class="phase-number">VI</div>
+    <div class="phase-content"><p class="phase-title">Formation of CB-PSS Groups</p><p class="phase-desc">Groups of 10 to 15 participants formed based on age, gender, vulnerabilities, culture, geographical area, and needs.</p></div>
+  </div>
+  <div class="phase-card fade-in fade-in-delay-4">
+    <div class="phase-number">VII</div>
+    <div class="phase-content"><p class="phase-title">Development of Tailored Programs</p><p class="phase-desc">A tailored CB-PSS program developed for each group based on participatory assessment findings and individual needs.</p></div>
+  </div>
+  <div class="phase-card fade-in fade-in-delay-4">
+    <div class="phase-number">VIII</div>
+    <div class="phase-content"><p class="phase-title">Implementation</p><p class="phase-desc">Around 10 to 15 remote or face-to-face sessions per group, facilitated by Restart Center specialists and co-facilitated by trained outreach volunteers.</p></div>
+  </div>
+  <div class="phase-card fade-in fade-in-delay-4">
+    <div class="phase-number">IX</div>
+    <div class="phase-content"><p class="phase-title">Program Evaluation</p><p class="phase-desc">Structured evaluation of the CB-PSS program's effectiveness and outcomes.</p></div>
+  </div>
+
+  <div class="section-heading fade-in fade-in-delay-4">
+    <p class="section-label">Program Types</p>
+    <h2 class="section-title">Types of CBS Programs</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="content-card fade-in fade-in-delay-4">
+    <ul class="content-list">
+      <li>Psychosocial support</li>
+      <li>Peace-building education</li>
+      <li>Awareness-raising</li>
+      <li>Parental guidance targeting parents of children with special needs</li>
+      <li>Physiotherapy</li>
+      <li>Recreational activities including cultural and artistic performances</li>
+    </ul>
+  </div>
+
+  <div class="content-card fade-in fade-in-delay-4">
+    <h3 class="content-card-title">Aim of PSS Activities</h3>
+    <ul class="content-list">
+      <li>Foster social connections and interactions through existing community networks of children, youth, and women.</li>
+      <li>Normalize daily life.</li>
+      <li>Promote a sense of competence and restoration of control over one's life.</li>
+      <li>Build on and encourage individual and community resilience to crisis.</li>
+      <li>Provide for identifying, referring, and treating individuals with severe mental disorders.</li>
+      <li>Strengthen social cohesion between host communities and refugee populations.</li>
+    </ul>
+  </div>
+
+  <div class="section-heading fade-in fade-in-delay-5">
+    <p class="section-label">Who They Serve</p>
+    <h2 class="section-title">Target Groups</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="content-card fade-in fade-in-delay-5">
+    <ul class="content-list">
+      <li>Survivors of torture, violence, and trauma</li>
+      <li>Survivors of gender-based violence</li>
+      <li>Persons deprived of their liberty in places of detention</li>
+      <li>Refugees</li>
+      <li>Children with special needs and their parents/caregivers</li>
+      <li>Persons with mental illness</li>
+      <li>Women and children</li>
+      <li>Women heads of households</li>
+      <li>Vulnerable individuals from the LGBT community</li>
+      <li>Children with emotional or behavioral problems (including in public schools and orphanages)</li>
+    </ul>
+  </div>
+
+  <div class="section-heading fade-in fade-in-delay-5">
+    <p class="section-label">Where to Find Us</p>
+    <h2 class="section-title">Locations</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="map-section fade-in fade-in-delay-5">
+    <div class="map-locations">
+      <div class="map-location">
+        <p class="map-location-title">North Lebanon</p>
+        <p class="map-location-address">Sabalbal &amp; Weli Bldg., Residence 5<span>2nd Floor, Dam &amp; Farez Street, Tripoli</span></p>
+      </div>
+      <div class="map-location">
+        <p class="map-location-title">Beirut &amp; Mount Lebanon</p>
+        <p class="map-location-address">Bou Chedid Center, Main Street<span>4th Floor, Furn El-Chebbak</span></p>
+      </div>
+    </div>
+    <div class="map-embeds">
+      <iframe src="https://maps.google.com/maps?q=Dam+and+Farez+Street,+Tripoli,+Lebanon&output=embed&z=15" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Restart Center North Lebanon"></iframe>
+      <iframe src="https://maps.google.com/maps?q=Furn+El+Chebbak,+Beirut,+Lebanon&output=embed&z=15" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Restart Center Beirut Mount Lebanon"></iframe>
+    </div>
+  </div>
+
+</div>
+
+<p class="page-footer">
+  This page is part of the Salama resource directory. Information is provided for awareness purposes only.<br>
+  For the most up-to-date details, visit <a href="https://www.restart-lb.org" target="_blank" rel="noopener">restart-lb.org</a>.
+</p>
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

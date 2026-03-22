@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Department of Psychiatry | AUB | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --cream-dark: #ece5d8; --sage: #7d9e75; --sage-light: #adc4a6;
+      --sage-muted: #c8d9c2; --olive: #4a6640; --olive-dark: #374f31;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680; --white: #ffffff;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+
+    /* Nav */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 48px; background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700;
+      color: var(--olive-dark); text-decoration: none; letter-spacing: 0.04em;
+      display: inline-flex; align-items: center; gap: 9px;
+    }
+    .nav-back {
+      font-size: 13px; color: var(--text-mid); text-decoration: none;
+      display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+
+    /* Hero */
+    .hero {
+      padding: 148px 48px 24px;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 20px;
+    }
+    .hero-eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sage); }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 18px;
+    }
+    .hero-title em { font-style: italic; color: var(--olive); }
+    .hero-tag {
+      display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+      text-transform: uppercase; padding: 4px 11px; border-radius: 100px;
+      background: rgba(90,86,80,0.1); color: var(--text-mid); margin-bottom: 20px;
+    }
+    .hero-sub {
+      font-size: 17px; color: var(--text-mid); line-height: 1.75; max-width: 600px;
+    }
+
+    /* Page body */
+    .page-body {
+      max-width: 820px; margin: 0 auto; padding: 48px 48px 120px;
+      display: flex; flex-direction: column; gap: 40px;
+    }
+
+    /* Section */
+    .section-label {
+      font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 6px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif; font-size: 24px;
+      font-weight: 600; color: var(--text); margin-bottom: 16px;
+    }
+    .section-divider {
+      width: 40px; height: 2px; background: var(--sage-muted);
+      border-radius: 2px; margin-bottom: 20px;
+    }
+
+    /* Info card */
+    .info-card {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.75);
+      border-radius: 20px; padding: 32px;
+    }
+    .info-body {
+      font-size: 15px; color: var(--text-mid); line-height: 1.8;
+    }
+    .info-body p + p { margin-top: 14px; }
+
+    /* Service list */
+    .service-list {
+      list-style: none; display: flex; flex-direction: column; gap: 0;
+    }
+    .service-category {
+      font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--sage); font-weight: 700; padding: 14px 0 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .service-link {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.06);
+      font-size: 14px; color: var(--text-mid); text-decoration: none;
+      transition: color 0.2s; gap: 12px;
+    }
+    .service-link:hover { color: var(--olive); }
+    .service-link svg { flex-shrink: 0; opacity: 0.35; transition: opacity 0.2s, transform 0.2s; }
+    .service-link:hover svg { opacity: 0.7; transform: translateX(3px); }
+    .service-link.sub { padding-left: 18px; font-size: 13.5px; color: var(--text-light); }
+    .service-link.sub:hover { color: var(--olive); }
+    /* Book button */
+    .book-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--olive); color: #fff; text-decoration: none;
+      font-size: 15px; font-weight: 600; padding: 16px 32px;
+      border-radius: 100px; transition: background 0.2s, transform 0.2s;
+      align-self: flex-start;
+    }
+    .book-btn:hover { background: var(--olive-dark); transform: translateY(-2px); }
+    .book-cta { display: flex; flex-direction: column; gap: 10px; }
+    .book-cta-label { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--sage); font-weight: 600; }
+
+    /* Detail chips */
+    .detail-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;
+    }
+    .detail-chip {
+      background: rgba(200,217,194,0.18); border-radius: 14px; padding: 16px 18px;
+      border: 1px solid rgba(200,217,194,0.35);
+    }
+    .detail-chip-label {
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 5px;
+    }
+    .detail-chip-value {
+      font-size: 14px; color: var(--text); font-weight: 500; line-height: 1.5;
+    }
+
+    /* Map */
+    .map-wrap {
+      border-radius: 16px; overflow: hidden;
+      border: 1px solid rgba(200,217,194,0.4); height: 280px;
+    }
+    .map-wrap iframe { width: 100%; height: 100%; border: none; display: block; }
+    .map-caption {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--text-light); margin-top: 10px;
+    }
+
+    /* Note box */
+    .note-box {
+      font-size: 13px; color: var(--text-light); line-height: 1.7;
+      padding: 14px 18px; background: rgba(200,217,194,0.18);
+      border-left: 3px solid var(--sage-muted); border-radius: 0 10px 10px 0;
+    }
+
+    /* Fade in */
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: none; }
+    .fade-in-delay-1 { transition-delay: 0.08s; }
+    .fade-in-delay-2 { transition-delay: 0.16s; }
+    .fade-in-delay-3 { transition-delay: 0.24s; }
+
+    /* Footer */
+    .page-footer {
+      text-align: center; padding: 0 48px 60px;
+      font-size: 13px; color: var(--text-light); line-height: 1.8;
+    }
+    .page-footer a { color: var(--olive); text-decoration: none; }
+    .page-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 700px) {
+      nav { padding: 18px 24px; }
+      .hero { padding: 120px 24px 24px; }
+      .page-body { padding: 32px 24px 100px; }
+      .page-footer { padding: 0 24px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="14" height="20" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,21 L8,4" stroke="#4a6640" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="#4a6640"/>
+    </svg>
+    SALAMA
+  </a>
+  <a class="nav-back" href="#" onclick="history.back(); return false;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+    </svg>
+    Back
+  </a>
+</nav>
+
+<!-- Hero -->
+<div class="hero fade-in">
+  <div class="hero-eyebrow">
+    <span class="hero-eyebrow-dot"></span>
+    AUB · Psychiatry
+  </div>
+  <div style="display: flex; align-items: center; gap: 22px; margin-bottom: 18px;">
+    <!-- AUBMC Seal -->
+    <svg width="72" height="72" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0; opacity: 0.82;">
+      <!-- Outer ring -->
+      <circle cx="100" cy="100" r="96" stroke="#4a6640" stroke-width="2.5" fill="none"/>
+      <!-- Inner ring -->
+      <circle cx="100" cy="100" r="82" stroke="#4a6640" stroke-width="1.2" fill="none"/>
+      <!-- Circular text path -->
+      <defs>
+        <path id="topArc" d="M 100,100 m -74,0 a 74,74 0 1,1 148,0"/>
+        <path id="botArc" d="M 100,100 m -74,0 a 74,74 0 0,0 148,0"/>
+      </defs>
+      <text font-family="'Playfair Display', Georgia, serif" font-size="10.5" font-weight="600" letter-spacing="4" fill="#4a6640" text-anchor="middle">
+        <textPath href="#topArc" startOffset="25%">UT VITAM HABEANT ABUNDANTIUS HABEANT</textPath>
+      </text>
+      <!-- Cedar tree (simplified) -->
+      <g transform="translate(100,100)">
+        <!-- trunk -->
+        <rect x="-2" y="22" width="4" height="20" rx="1" fill="#4a6640"/>
+        <!-- lower boughs -->
+        <polygon points="-28,22 28,22 0,-5" fill="#4a6640" opacity="0.9"/>
+        <!-- mid boughs -->
+        <polygon points="-20,10 20,10 0,-18" fill="#4a6640" opacity="0.9"/>
+        <!-- upper boughs -->
+        <polygon points="-13,-2 13,-2 0,-26" fill="#4a6640"/>
+        <!-- top tip -->
+        <polygon points="-6,-18 6,-18 0,-36" fill="#4a6640"/>
+      </g>
+      <!-- Caduceus / Rod of Asclepius (simplified) -->
+      <g transform="translate(100,84)">
+        <!-- staff -->
+        <line x1="0" y1="-18" x2="0" y2="18" stroke="#7d9e75" stroke-width="2" stroke-linecap="round"/>
+        <!-- snake curve -->
+        <path d="M4,-12 C8,-6 -4,0 4,6 C8,10 2,16 0,18" stroke="#7d9e75" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <path d="M-4,-12 C-8,-6 4,0 -4,6 C-8,10 -2,16 0,18" stroke="#7d9e75" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <!-- top wings -->
+        <path d="M0,-18 C-6,-22 -10,-18 -6,-14" stroke="#7d9e75" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        <path d="M0,-18 C6,-22 10,-18 6,-14" stroke="#7d9e75" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      </g>
+      <!-- Year -->
+      <text x="100" y="168" font-family="'Playfair Display', Georgia, serif" font-size="11" font-weight="600" letter-spacing="2" fill="#4a6640" text-anchor="middle">1902</text>
+      <!-- Year dashes -->
+      <line x1="72" y1="167" x2="82" y2="167" stroke="#4a6640" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="118" y1="167" x2="128" y2="167" stroke="#4a6640" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    <h1 class="hero-title" style="margin-bottom: 0;">AUB Medical Center <em>Psychiatry</em></h1>
+  </div>
+  <span class="hero-tag">Students · Faculty · Staff</span>
+  <p class="hero-sub">Specialist psychiatric and psychological care at AUBMC, available by referral through UHS or by direct contact for those not enrolled in HIP.</p>
+</div>
+
+<!-- Content -->
+<div class="page-body">
+
+  <!-- About -->
+  <div class="fade-in fade-in-delay-1">
+    <p class="section-label">About</p>
+    <h2 class="section-title">What the Department Offers</h2>
+    <div class="section-divider"></div>
+    <div class="info-card">
+      <div class="info-body">
+        <p>The Department of Psychiatry at AUBMC provides specialist psychological and psychiatric support for AUB students, faculty, and staff. Those enrolled in AUB's Health Insurance Plan (HIP) are typically referred through UHS, while individuals not covered by HIP may contact the department directly.</p>
+        <p>The department offers a full continuum of psychiatric care, from routine outpatient visits through to emergency and inpatient services when required.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Services -->
+  <div class="fade-in fade-in-delay-2">
+    <p class="section-label">Services</p>
+    <h2 class="section-title">What's Available</h2>
+    <div class="section-divider"></div>
+    <div class="info-card">
+      <ul class="service-list">
+        <li><p class="service-category">Adult Psychiatry &amp; Psychology Outpatient</p></li>
+        <li><a class="service-link" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">Forensic Mental Health Services <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+        <li><a class="service-link sub" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">Addiction Program <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+        <li><a class="service-link sub" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">DBT Program <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+        <li><a class="service-link sub" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">Eating Disorder Program <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+        <li><a class="service-link sub" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">Psychosis Recovery Outreach Program <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+        <li><a class="service-link sub" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">Psycho-Oncology Program <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+        <li><a class="service-link sub" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">Intensive Outpatient Program <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+        <li><a class="service-link" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">Division of Child and Adolescent Psychiatry <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+        <li><a class="service-link" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">Geriatric Psychiatry <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+        <li><a class="service-link" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">GEMS Program <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+        <li><a class="service-link" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">Psychiatry Inpatient Unit <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+        <li><a class="service-link" href="https://aubmc.org.lb/clinical/psychiatry/Pages/index.aspx" target="_blank" rel="noopener">Specialized Procedures <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Access -->
+  <div class="fade-in fade-in-delay-3">
+    <p class="section-label">Access</p>
+    <h2 class="section-title">Who Can Use This Service</h2>
+    <div class="section-divider"></div>
+    <div class="detail-grid">
+      <div class="detail-chip">
+        <p class="detail-chip-label">Eligibility</p>
+        <p class="detail-chip-value">AUB students, faculty, and staff</p>
+      </div>
+      <div class="detail-chip">
+        <p class="detail-chip-label">HIP Members</p>
+        <p class="detail-chip-value">Referral through UHS required</p>
+      </div>
+      <div class="detail-chip">
+        <p class="detail-chip-label">Non-HIP Members</p>
+        <p class="detail-chip-value">May contact the department directly</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <div class="fade-in">
+    <p class="section-label">Contact</p>
+    <h2 class="section-title">Get in Touch</h2>
+    <div class="section-divider"></div>
+    <div class="detail-grid">
+      <div class="detail-chip">
+        <p class="detail-chip-label">Phone</p>
+        <p class="detail-chip-value">01-759620</p>
+      </div>
+      <div class="detail-chip">
+        <p class="detail-chip-label">Email</p>
+        <a href="mailto:psybackupoffice@aub.edu.lb" style="font-size: 14px; color: var(--olive); font-weight: 500; text-decoration: none;">psybackupoffice@aub.edu.lb</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Location -->
+  <div class="fade-in">
+    <p class="section-label">Location</p>
+    <h2 class="section-title">Where to Find Us</h2>
+    <div class="section-divider"></div>
+    <div class="map-wrap">
+      <iframe
+        src="https://www.openstreetmap.org/export/embed.html?bbox=35.48300%2C33.88700%2C35.49400%2C33.89400&amp;layer=mapnik&amp;marker=33.89060%2C35.48840"
+        allowfullscreen
+        loading="lazy"
+        title="AUBMC, ACC Building map">
+      </iframe>
+    </div>
+    <p class="map-caption">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+      </svg>
+      AUBMC · ACC Building, 4th Floor
+    </p>
+  </div>
+
+  <!-- Book appointment -->
+  <div class="fade-in">
+    <p class="section-label">Appointments</p>
+    <h2 class="section-title">Book an Appointment</h2>
+    <div class="section-divider"></div>
+    <div style="margin-top: 20px;">
+      <a class="book-btn" href="https://myaubhealth.aubmc.org.lb/" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Book via MyAUBHealth
+      </a>
+    </div>
+  </div>
+
+  <!-- Note -->
+  <p class="note-box fade-in">
+    Coverage and service details may change. For the most current information, visit the AUBMC Psychiatry page on <a href="https://www.aub.edu.lb" target="_blank" rel="noopener" style="color: var(--olive);">aub.edu.lb</a> or contact the department directly.
+  </p>
+
+</div>
+
+<!-- Footer -->
+<p class="page-footer">
+  This page is part of the Salama resource directory. Information is provided for awareness purposes only.
+</p>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

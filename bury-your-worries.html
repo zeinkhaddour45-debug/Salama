@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bury Your Worries | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-top:     #f8f4ec;
+      --bg-bottom:  #eef2ea;
+      --card:       rgba(255, 253, 248, 0.9);
+      --text:       #312c28;
+      --muted:      #6e665f;
+      --sage:       #8ea189;
+      --olive:      #7d8d6f;
+      --leaf-1:     #c9d5bf;
+      --leaf-2:     #aab99d;
+      --leaf-3:     #dbe5d3;
+      --leaf-4:     #93a482;
+      --earth:      #d8c7b4;
+      --earth-dark: #c7b29c;
+      --border:     #e7ddd2;
+      --shadow:     0 12px 32px rgba(60, 50, 40, 0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 48px;
+      background: rgba(248, 244, 236, 0.88);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700;
+      color: #374f31; text-decoration: none; letter-spacing: 0.04em;
+      display: inline-flex; align-items: center; gap: 9px;
+    }
+    .nav-logo svg { flex-shrink: 0; }
+    .nav-back {
+      font-size: 13px; color: var(--muted); text-decoration: none;
+      display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+
+    /* ── Page ── */
+    .page { min-height: 100vh; padding: 120px 20px 80px; }
+
+    .container {
+      position: relative; z-index: 10;
+      width: min(680px, 100%); margin: 0 auto; text-align: center;
+    }
+
+    .section-label {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 500; letter-spacing: -0.03em; margin-bottom: 14px;
+    }
+    h1 em { font-style: italic; color: var(--olive); }
+
+    .intro {
+      max-width: 540px; margin: 0 auto 36px;
+      font-size: 1rem; line-height: 1.75; color: var(--muted);
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 28px; padding: 28px;
+      box-shadow: var(--shadow); backdrop-filter: blur(6px);
+    }
+
+    label {
+      display: block; text-align: left; margin-bottom: 10px;
+      font-size: 13px; font-weight: 500; color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    textarea {
+      width: 100%; min-height: 140px; resize: vertical;
+      background: rgba(245, 240, 232, 0.6);
+      border: 1.5px solid var(--border); border-radius: 16px;
+      padding: 16px 18px;
+      font-family: Georgia, serif; font-size: 15px; color: var(--text);
+      line-height: 1.85; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    textarea::placeholder { color: #bbb3aa; font-style: italic; }
+    textarea:focus {
+      border-color: var(--sage);
+      box-shadow: 0 0 0 3px rgba(142, 161, 137, 0.14);
+    }
+
+    .bury-btn {
+      margin-top: 18px; width: 100%; padding: 16px 24px;
+      background: linear-gradient(135deg, #7d8d6f, #5a6b52);
+      color: #fff; border: none; border-radius: 14px;
+      font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500;
+      letter-spacing: 0.04em; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 24px rgba(93, 107, 82, 0.3);
+    }
+    .bury-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(93, 107, 82, 0.4); }
+    .bury-btn:active { transform: translateY(0); }
+
+    .hint { margin-top: 12px; font-size: 12px; color: #b0a89e; line-height: 1.6; }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    /* ── After card ── */
+    #after-section { display: none; }
+    .after-card { text-align: center; }
+    .after-card h2 {
+      font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 500; margin-bottom: 12px; font-style: italic;
+    }
+    .after-card p { font-size: 15px; color: var(--muted); line-height: 1.75; margin-bottom: 28px; }
+    .again-btn {
+      display: inline-block; padding: 13px 28px;
+      border: 1.5px solid var(--sage); border-radius: 999px;
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+      color: var(--olive); background: transparent; cursor: pointer;
+      transition: background 0.2s, transform 0.18s;
+    }
+    .again-btn:hover { background: rgba(142,161,137,0.1); transform: translateY(-1px); }
+
+    /* ── Overlay ── */
+    #bury-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      opacity: 0; transition: opacity 0.8s ease;
+      overflow: hidden;
+      background: linear-gradient(180deg, #1a2228 0%, #2a2018 55%, #3a2a18 100%);
+    }
+    #bury-overlay.visible { opacity: 1; }
+
+    /* Ground */
+    .overlay-ground {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 44%;
+      background: linear-gradient(180deg, #4a3520 0%, #3a2818 60%, #2e2012 100%);
+    }
+
+    /* Trees */
+    .overlay-trees {
+      position: absolute; bottom: 44%; left: 0; right: 0; height: 280px;
+      z-index: 5; pointer-events: none;
+    }
+    .overlay-tree {
+      position: absolute; bottom: 0;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .overlay-tree svg { display: block; }
+
+    /* Leaf bed */
+    .overlay-leaf-bed {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 44%;
+      z-index: 6; pointer-events: none; overflow: hidden;
+    }
+    .leaf-piece {
+      position: absolute; border-radius: 60% 20% 60% 20%;
+    }
+
+    /* Cover leaves (spawned after each drop) */
+    .cover-leaf {
+      position: absolute; border-radius: 60% 20% 60% 20%;
+      animation: coverSettle 0.9s ease forwards;
+      z-index: 8;
+    }
+    @keyframes coverSettle {
+      0%   { transform: rotate(var(--rot)) translateY(-14px) scale(0); opacity: 0; }
+      60%  { opacity: 1; }
+      100% { transform: rotate(var(--rot)) translateY(0)     scale(1); opacity: 0.92; }
+    }
+
+    /* Worry text items */
+    .worry-item {
+      position: absolute;
+      font-family: 'Playfair Display', serif; font-style: italic;
+      font-size: clamp(15px, 2.2vw, 20px);
+      color: rgba(255, 248, 235, 0.92);
+      text-align: center; white-space: nowrap;
+      transform: translateX(-50%);
+      text-shadow: 0 2px 18px rgba(0,0,0,0.4);
+      opacity: 0; transition: opacity 0.7s ease;
+      z-index: 10; pointer-events: none;
+      max-width: 300px; white-space: normal; line-height: 1.4;
+    }
+    .worry-item.show { opacity: 1; }
+    .worry-item.drop {
+      animation: dropToLeaves 3.8s cubic-bezier(.2,.84,.2,1) forwards;
+    }
+
+    @keyframes dropToLeaves {
+      0%   {
+        transform: translateX(-50%) translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      35%  {
+        transform: translateX(calc(-50% + var(--drift-x, 0px))) translateY(calc(var(--drop-y) * 0.30)) rotate(var(--tilt, 0deg));
+        opacity: 1;
+      }
+      70%  {
+        transform: translateX(calc(-50% + var(--drift-x2, 0px))) translateY(calc(var(--drop-y) * 0.75)) rotate(calc(var(--tilt, 0deg) * 1.25));
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(calc(-50% + var(--drift-x3, 0px))) translateY(var(--drop-y)) rotate(calc(var(--tilt, 0deg) * 1.4)) scale(0.95);
+        opacity: 0;
+      }
+    }
+
+    /* Settled message */
+    .overlay-msg {
+      position: absolute; top: 22%; left: 50%; transform: translateX(-50%);
+      text-align: center; width: min(460px, 88%);
+      color: rgba(255,248,235,0.0); transition: color 1.8s ease;
+      font-family: 'Playfair Display', serif; font-style: italic;
+      pointer-events: none; z-index: 12;
+    }
+    .overlay-msg h2 {
+      font-size: clamp(22px, 4vw, 36px); font-weight: 400; margin-bottom: 10px;
+    }
+    .overlay-msg p {
+      font-family: 'Inter', sans-serif; font-style: normal;
+      font-size: 14px; line-height: 1.75;
+      color: rgba(255,248,235,0.0); transition: color 1.8s ease 0.3s;
+    }
+    .overlay-msg.visible h2 { color: rgba(255,248,235,0.9); }
+    .overlay-msg.visible p  { color: rgba(255,248,235,0.62); }
+
+    @media (max-width: 600px) {
+      nav { padding: 18px 20px; }
+      .page { padding: 110px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+      <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+      <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+    </svg>
+    SALAMA
+  </a>
+  <a class="nav-back" href="#" onclick="history.back(); return false;">← Back</a>
+</nav>
+
+<div class="page">
+  <div class="container">
+
+    <!-- Input -->
+    <div id="input-section">
+      <p class="section-label">Bury Your Worries</p>
+      <h1>What's weighing on <em>you?</em></h1>
+      <p class="intro">Write down what's sitting heavy, one thought per line. Then let the ground hold it for you.</p>
+      <div class="card">
+        <label for="worry-text">Your worries</label>
+        <textarea id="worry-text" rows="6" placeholder="I'm worried about…&#10;I keep thinking about…&#10;It won't leave my mind…"></textarea>
+        <button class="bury-btn" id="bury-btn">Bury Them</button>
+        <p class="hint">Each line gets its own moment. Take your time.</p>
+      </div>
+    </div>
+
+    <!-- After -->
+    <div id="after-section">
+      <div class="card after-card">
+        <p class="section-label">Rest here</p>
+        <h2>They're buried now.</h2>
+        <p>You don't have to carry those with you anymore. The ground has them. Take a breath and notice how you feel.</p>
+        <button class="again-btn" id="again-btn">Bury more worries</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  document.getElementById('bury-btn').addEventListener('click', buryWorries);
+  document.getElementById('again-btn').addEventListener('click', () => {
+    document.getElementById('after-section').style.display = 'none';
+    document.getElementById('input-section').style.display = 'block';
+    document.getElementById('worry-text').value = '';
+    document.getElementById('worry-text').focus();
+  });
+
+  function buryWorries() {
+    const raw = document.getElementById('worry-text').value.trim();
+    if (!raw) {
+      const ta = document.getElementById('worry-text');
+      ta.style.animation = 'shake 0.4s ease';
+      ta.addEventListener('animationend', () => ta.style.animation = '', { once: true });
+      return;
+    }
+
+    const worries = raw.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 7);
+
+    // Build overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'bury-overlay';
+
+    // Ground
+    const ground = document.createElement('div');
+    ground.className = 'overlay-ground';
+    overlay.appendChild(ground);
+
+    // Trees (behind leaf bed)
+    const treeLayer = document.createElement('div');
+    treeLayer.className = 'overlay-trees';
+    overlay.appendChild(treeLayer);
+    buildTrees(treeLayer);
+
+    // Leaf bed (on top of ground + trees)
+    const leafBed = document.createElement('div');
+    leafBed.className = 'overlay-leaf-bed';
+    overlay.appendChild(leafBed);
+    buildLeafBed(leafBed);
+
+    // Settled message
+    const msgEl = document.createElement('div');
+    msgEl.className = 'overlay-msg';
+    msgEl.innerHTML = `<h2>Buried and at rest.</h2><p>Whatever you wrote down no longer needs to live inside you. Let the ground hold it.</p>`;
+    overlay.appendChild(msgEl);
+
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add('visible')));
+
+    // Place worry elements
+    const groundTopY = window.innerHeight * 0.56;
+
+    worries.forEach((text, index) => {
+      const el = document.createElement('div');
+      el.className = 'worry-item';
+      el.textContent = text;
+
+      // Spread horizontally, stagger vertically
+      const xPct = worries.length === 1
+        ? 50
+        : 18 + (index / (worries.length - 1)) * 64;
+      const yVh  = 12 + (index % 3) * 7;
+
+      el.style.left = xPct + '%';
+      el.style.top  = yVh + 'vh';
+
+      const worryTopPx = window.innerHeight * (yVh / 100);
+      const dropY      = groundTopY - worryTopPx + 30;
+
+      el.style.setProperty('--drop-y',   dropY + 'px');
+      el.style.setProperty('--drift-x',  rnd(-40, 40) + 'px');
+      el.style.setProperty('--drift-x2', rnd(-55, 55) + 'px');
+      el.style.setProperty('--drift-x3', rnd(-30, 30) + 'px');
+      el.style.setProperty('--tilt',     rnd(-22, 22) + 'deg');
+
+      overlay.appendChild(el);
+
+      // Fade in
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+
+      // Drop
+      const dropAt = 1000 + index * 2800;
+      setTimeout(() => el.classList.add('drop'), dropAt);
+
+      // Spawn cover leaves at the burial spot
+      const buryX = window.innerWidth * (xPct / 100);
+      setTimeout(() => spawnCoverLeaves(buryX, groundTopY, overlay), dropAt + 3800);
+    });
+
+    const lastDrop = 1000 + (worries.length - 1) * 2800;
+
+    // Settled message
+    setTimeout(() => msgEl.classList.add('visible'), lastDrop + 4200);
+
+    // Fade out and return
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.remove();
+        document.getElementById('input-section').style.display = 'none';
+        document.getElementById('after-section').style.display = 'block';
+      }, 900);
+    }, lastDrop + 4200 + 5500);
+  }
+
+  /* ── Leaf bed ── */
+  function buildLeafBed(container) {
+    const total = window.innerWidth < 768 ? 1400 : 2200;
+    const bedH  = Math.round(window.innerHeight * 0.44);
+    const colors = ['#c9d5bf','#aab99d','#dbe5d3','#93a482','#b8c8a8','#d4dfc8','#8a9e78','#c0ceae'];
+
+    for (let i = 0; i < total; i++) {
+      const leaf = document.createElement('div');
+      leaf.className = 'leaf-piece';
+      const w = rand(22, 52);
+      const h = Math.round(w * (0.45 + Math.random() * 0.25));
+      leaf.style.cssText = [
+        `width:${w}px`, `height:${h}px`,
+        `left:${(Math.random() * 104 - 2).toFixed(1)}%`,
+        `bottom:${Math.round(Math.random() * bedH)}px`,
+        `background:${colors[Math.floor(Math.random() * colors.length)]}`,
+        `opacity:${(0.55 + Math.random() * 0.45).toFixed(2)}`,
+        `transform:rotate(${rnd(-180,180)}deg)`,
+      ].join(';');
+      container.appendChild(leaf);
+    }
+  }
+
+  /* ── Trees ── */
+  function buildTrees(container) {
+    const lefts  = Array.from({ length: 5 }, () => rand(2, 22));
+    const rights = Array.from({ length: 5 }, () => rand(78, 98));
+    const all    = [...lefts, ...rights];
+    const colors = ['#4a5e3a','#3e5232','#566645','#627554','#4e6040','#3a4e2e'];
+
+    // Sort by height so smaller (farther) trees draw first
+    const heights = all.map(() => rand(90, 240));
+    const sorted  = all.map((x, i) => ({ x, h: heights[i] })).sort((a, b) => a.h - b.h);
+
+    sorted.forEach(({ x, h }) => {
+      const type  = Math.floor(Math.random() * 3);
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const wrap  = document.createElement('div');
+      wrap.className = 'overlay-tree';
+      wrap.style.left = x + '%';
+      wrap.appendChild(createTreeSVG(h, type, color));
+      container.appendChild(wrap);
+    });
+  }
+
+  function createTreeSVG(height, type, color) {
+    const ns  = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    const w   = Math.round(height * 0.7);
+    svg.setAttribute('width',  w);
+    svg.setAttribute('height', height);
+    svg.setAttribute('viewBox', `0 0 ${w} ${height}`);
+
+    const cx     = w / 2;
+    const trunkW = Math.max(4, Math.round(w * 0.1));
+    const trunkH = Math.round(height * 0.3);
+    const trunkY = height - trunkH;
+    const darker = shadeColor(color, -20);
+
+    if (type === 0) {
+      // Round canopy, 3 overlapping ellipses
+      const r1 = [w * 0.38, height * 0.30];
+      const r2 = [w * 0.32, height * 0.28];
+      const r3 = [w * 0.28, height * 0.22];
+      [
+        { cx: cx - w*0.08, cy: height*0.38, rx: r1[0], ry: r1[1] },
+        { cx: cx + w*0.08, cy: height*0.35, rx: r2[0], ry: r2[1] },
+        { cx: cx,          cy: height*0.25, rx: r3[0], ry: r3[1] },
+      ].forEach(({ cx: ex, cy, rx, ry }) => {
+        const e = document.createElementNS(ns, 'ellipse');
+        e.setAttribute('cx', ex); e.setAttribute('cy', cy);
+        e.setAttribute('rx', rx); e.setAttribute('ry', ry);
+        e.setAttribute('fill', color); e.setAttribute('opacity', '0.88');
+        svg.appendChild(e);
+      });
+    } else if (type === 1) {
+      // Tall narrow
+      const e = document.createElementNS(ns, 'ellipse');
+      e.setAttribute('cx', cx); e.setAttribute('cy', height * 0.38);
+      e.setAttribute('rx', w * 0.28); e.setAttribute('ry', height * 0.42);
+      e.setAttribute('fill', color); e.setAttribute('opacity', '0.9');
+      svg.appendChild(e);
+    } else {
+      // Bare branching
+      const path = document.createElementNS(ns, 'path');
+      path.setAttribute('d', [
+        `M${cx},${height} L${cx},${height*0.5}`,
+        `M${cx},${height*0.5} L${cx - w*0.3},${height*0.28}`,
+        `M${cx},${height*0.5} L${cx + w*0.3},${height*0.28}`,
+        `M${cx},${height*0.62} L${cx - w*0.22},${height*0.44}`,
+        `M${cx},${height*0.62} L${cx + w*0.22},${height*0.44}`,
+        `M${cx - w*0.3},${height*0.28} L${cx - w*0.38},${height*0.12}`,
+        `M${cx + w*0.3},${height*0.28} L${cx + w*0.38},${height*0.12}`,
+      ].join(' '));
+      path.setAttribute('stroke', color); path.setAttribute('stroke-width', Math.max(2, trunkW*0.6));
+      path.setAttribute('fill', 'none'); path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('opacity', '0.82');
+      svg.appendChild(path);
+      return svg; // no trunk rect for bare type
+    }
+
+    // Trunk
+    const rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('x', cx - trunkW/2); rect.setAttribute('y', trunkY);
+    rect.setAttribute('width', trunkW); rect.setAttribute('height', trunkH);
+    rect.setAttribute('rx', trunkW/2); rect.setAttribute('fill', darker);
+    rect.setAttribute('opacity', '0.9');
+    svg.appendChild(rect);
+
+    return svg;
+  }
+
+  /* ── Cover leaves spawned after each word drops ── */
+  function spawnCoverLeaves(x, groundY, overlay) {
+    const colors = ['#c9d5bf','#aab99d','#dbe5d3','#93a482','#b8c8a8','#8a9e78'];
+    const count  = rand(18, 28);
+    for (let i = 0; i < count; i++) {
+      const leaf = document.createElement('div');
+      leaf.className = 'cover-leaf';
+      const w = rand(18, 44);
+      const h = Math.round(w * (0.45 + Math.random() * 0.3));
+      const lx = x - w / 2 + rnd(-55, 55);
+      const ly = groundY - h / 2 + rnd(-12, 20);
+      const rot = rnd(-180, 180);
+      leaf.style.cssText = [
+        `width:${w}px`, `height:${h}px`,
+        `left:${lx}px`, `top:${ly}px`,
+        `background:${colors[Math.floor(Math.random() * colors.length)]}`,
+        `--rot:${rot}deg`,
+        `animation-delay:${(Math.random() * 0.3).toFixed(2)}s`,
+      ].join(';');
+      overlay.appendChild(leaf);
+    }
+  }
+
+  function shadeColor(hex, pct) {
+    const n = parseInt(hex.slice(1), 16);
+    const r = Math.min(255, Math.max(0, (n >> 16) + pct));
+    const g = Math.min(255, Math.max(0, ((n >> 8) & 0xff) + pct));
+    const b = Math.min(255, Math.max(0, (n & 0xff) + pct));
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2,'0')).join('');
+  }
+
+  function rand(min, max) { return Math.floor(min + Math.random() * (max - min)); }
+  function rnd(min, max)  { return Math.round(min + Math.random() * (max - min)); }
+</script>
+</body>
+</html>

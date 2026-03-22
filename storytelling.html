@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Storytelling & Expression | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:       #f5f0e8;
+      --cream-dark:  #ece5d8;
+      --sage:        #7d9e75;
+      --sage-light:  #adc4a6;
+      --olive:       #4a6640;
+      --olive-dark:  #374f31;
+      --text:        #2a2722;
+      --text-mid:    #5a5650;
+      --text-light:  #8a8680;
+      --white:       #ffffff;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Film grain */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    /* Nav */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245, 240, 232, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .nav-logo svg { flex-shrink: 0; }
+    .nav-back {
+      font-size: 14px;
+      color: var(--text-mid);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+
+    /* Hero */
+    .hero {
+      padding: 148px 60px 60px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .hero-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 600;
+      line-height: 1.12;
+      color: var(--text);
+      margin-bottom: 18px;
+    }
+    .hero-title em { font-style: italic; color: var(--olive); }
+    .hero-sub {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 1.75;
+      max-width: 480px;
+    }
+
+    /* Cards section */
+    .cards-section {
+      padding: 20px 60px 100px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .cards-grid { grid-template-columns: 1fr; }
+      .cards-section { padding: 20px 24px 80px; }
+      .hero { padding: 130px 24px 40px; }
+      nav { padding: 18px 24px; }
+    }
+
+    /* Card */
+    .exp-card {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      padding: 32px 40px;
+      background: #ffffff;
+      border: 2px solid rgba(74,102,64,0.35);
+      border-radius: 16px;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s, background 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .exp-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.11);
+      border-color: var(--olive);
+      background: #fdfcf9;
+    }
+    .exp-card:hover .card-link {
+      gap: 8px;
+    }
+    .card-icon {
+      width: 60px;
+      height: 60px;
+      background: rgba(74,102,64,0.08);
+      border: 1.5px solid rgba(74,102,64,0.18);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 26px;
+    }
+    .card-body { flex: 1; }
+    .card-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .card-desc {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+    .card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--olive);
+      letter-spacing: 0.02em;
+      transition: gap 0.2s;
+    }
+    .card-arrow {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    /* Fade-in */
+    .fade-in { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* Leaves */
+    .leaf { position: fixed; pointer-events: none; opacity: 0.18; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 220px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 190px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 130px; transform: rotate(38deg); }
+  </style>
+</head>
+<body>
+
+  <!-- Leaf decorations -->
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 155 C80 145 44 156 24 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 155 C120 145 156 156 176 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 275 C100 275 28 205 28 130 C28 62 64 16 100 16 C136 16 172 62 172 130 C172 205 100 275 100 275Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.32)"/>
+    <path d="M100 275 L100 16" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 85 C82 75 56 83 40 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 85 C118 75 144 83 160 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <a class="nav-back" href="index.html">← Back to Home</a>
+  </nav>
+
+  <div class="hero fade-in">
+    <p class="hero-label">Storytelling & Expression</p>
+    <h1 class="hero-title">Your story deserves<br>to be <em>heard.</em></h1>
+    <p class="hero-sub">Share, read, reflect. This is a safe space for your words   however you choose to use them.</p>
+  </div>
+
+  <section class="cards-section">
+    <div class="cards-grid">
+
+      <a class="exp-card fade-in" href="storytelling-share.html">
+        <div class="card-icon">✍️</div>
+        <div class="card-body">
+          <p class="card-name">Share Your Story</p>
+          <p class="card-desc">Write and share your personal story, poem, or reflection with the Salama community. Post anonymously or with your name.</p>
+          <span class="card-link">Start writing <span class="card-arrow">→</span></span>
+        </div>
+      </a>
+
+      <a class="exp-card fade-in" href="storytelling-read.html">
+        <div class="card-icon">📖</div>
+        <div class="card-body">
+          <p class="card-name">Read Others' Stories</p>
+          <p class="card-desc">Real, human, unfiltered. Read what others in the community have shared and know you are not alone in what you feel.</p>
+          <span class="card-link">Read stories <span class="card-arrow">→</span></span>
+        </div>
+      </a>
+
+      <a class="exp-card fade-in" href="storytelling-private.html">
+        <div class="card-icon">💌</div>
+        <div class="card-body">
+          <p class="card-name">Personal Diary</p>
+          <p class="card-desc">Not everything needs to be shared. Open your private journal - nothing is saved or sent. Just you and your words.</p>
+          <span class="card-link">Open journal <span class="card-arrow">→</span></span>
+        </div>
+      </a>
+
+      <a class="exp-card fade-in" href="storytelling-paint.html">
+        <div class="card-icon">🎨</div>
+        <div class="card-body">
+          <p class="card-name">Paint Your Calm Space</p>
+          <p class="card-desc">No words needed. Choose a colour and fill in a peaceful scene - a small, quiet act to ease your mind.</p>
+          <span class="card-link">Start colouring <span class="card-arrow">→</span></span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <script>
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

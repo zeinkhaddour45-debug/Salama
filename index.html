@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Salama — Because your mind deserves care, too.</title>
+  <title>Salama | Because your mind deserves care, too.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -72,7 +73,11 @@
       letter-spacing: 3px;
       color: var(--text);
       text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
     }
+    .nav-logo svg { flex-shrink: 0; }
     .nav-links {
       display: flex;
       gap: 36px;
@@ -96,6 +101,100 @@
       transition: background 0.2s !important;
     }
     .nav-cta:hover { background: var(--olive-dark) !important; color: var(--white) !important; }
+
+    .nav-member {
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-member.visible { display: flex; }
+    .nav-member-dot {
+      width: 8px; height: 8px;
+      background: var(--sage);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .nav-member-text {
+      font-size: 13px;
+      color: var(--text-mid);
+      font-weight: 400;
+    }
+    .nav-member-email {
+      font-weight: 500;
+      color: var(--olive);
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .nav-member-signout {
+      background: none;
+      border: 1px solid var(--cream-dark);
+      color: var(--text-light);
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      padding: 5px 12px;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .nav-member-signout:hover { color: var(--text-mid); border-color: var(--sage-muted); }
+
+    /* ALREADY MEMBER POPUP */
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(42,39,34,0.45);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .popup-overlay.visible { opacity: 1; pointer-events: all; }
+    .popup-card {
+      background: var(--cream);
+      border-radius: 28px;
+      padding: 48px 44px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+      transform: translateY(16px);
+      transition: transform 0.25s ease;
+    }
+    .popup-overlay.visible .popup-card { transform: translateY(0); }
+    .popup-icon { font-size: 40px; margin-bottom: 18px; }
+    .popup-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .popup-body {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+    .popup-body strong { color: var(--olive); }
+    .popup-close {
+      background: var(--olive);
+      color: white;
+      border: none;
+      padding: 12px 36px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .popup-close:hover { background: var(--olive-dark); }
 
     /* ─── HERO ────────────────────────────────────────── */
     #hero {
@@ -288,14 +387,14 @@
       padding: 80px 40px;
     }
     .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      max-width: 860px;
+      display: flex;
+      justify-content: center;
+      max-width: 600px;
       margin: 0 auto;
     }
     .stat-item {
       text-align: center;
-      padding: 40px 30px;
+      padding: 40px 60px;
       border-right: 1px solid var(--cream-dark);
     }
     .stat-item:last-child { border-right: none; }
@@ -334,13 +433,17 @@
       border-radius: 24px;
       padding: 40px 32px;
       text-align: left;
-      transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
-      cursor: default;
+      transition: transform 0.3s, box-shadow 0.3s, background 0.3s, border-color 0.3s;
+      cursor: pointer;
+      display: block;
+      text-decoration: none;
+      color: inherit;
     }
     .service-card:hover {
       transform: translateY(-8px);
       box-shadow: 0 24px 56px rgba(0,0,0,0.09);
       background: rgba(255,255,255,0.82);
+      border-color: rgba(125,158,117,0.35);
     }
     .service-icon {
       width: 52px;
@@ -476,6 +579,29 @@
     .fade-in-delay-5 { transition-delay: 0.5s; }
 
     /* ─── RESPONSIVE ──────────────────────────────────── */
+    /* ─── INTERACTIVE BANNER ─────────────────────────────── */
+    .interactive-banner {
+      display: block;
+      max-width: 1020px;
+      margin: 20px auto 0;
+      padding: 40px 32px;
+      background: rgba(245,240,232,0.72);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.62);
+      border-radius: 24px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.3s, box-shadow 0.3s, background 0.3s, border-color 0.3s;
+    }
+    .interactive-banner:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 24px 56px rgba(0,0,0,0.09);
+      background: rgba(255,255,255,0.82);
+      border-color: rgba(125,158,117,0.35);
+    }
+
+
     @media (max-width: 900px) {
       nav { padding: 18px 30px; }
       .nav-links { gap: 24px; }
@@ -501,13 +627,18 @@
 
 <!-- ─── NAV ──────────────────────────────────────────── -->
 <nav id="navbar">
-  <a class="nav-logo" href="#">SALAMA</a>
+  <a class="nav-logo" href="#" id="nav-logo-typed"></a>
   <ul class="nav-links">
     <li><a href="#mission">Mission</a></li>
     <li><a href="#services">Services</a></li>
     <li><a href="#stories">Stories</a></li>
     <li><a href="#join" class="nav-cta">Join Us</a></li>
   </ul>
+  <div class="nav-member" id="nav-member">
+    <span class="nav-member-dot"></span>
+    <span class="nav-member-text">Signed in as <span class="nav-member-email" id="nav-member-email"></span></span>
+    <button class="nav-member-signout" onclick="signOutMain()">Sign Out</button>
+  </div>
 </nav>
 
 
@@ -552,7 +683,7 @@
     A safe digital space for Lebanese students and the wider community to learn, share, and find support on their mental health journey.
   </p>
   <div class="hero-actions fade-in fade-in-delay-2">
-    <a href="#join" class="btn-primary">Join the Community</a>
+    <a href="login.html?tab=signup" class="btn-primary" onclick="handleJoinClick(event)">Join the Community</a>
     <a href="#mission" class="btn-secondary">Learn More</a>
   </div>
   <div class="scroll-hint">
@@ -576,7 +707,7 @@
   <div class="mission-body fade-in">
     <p>At Salama, our mission is to make mental health <strong style="color:rgba(255,255,255,0.96)">accessible, relatable, and stigma-free</strong> for students and the wider Lebanese community.</p>
     <p>We aim to create a safe digital space where anyone can learn, share, and seek support through educational content, personal stories, and trusted resources.</p>
-    <p>Built by university students, Salama bridges the gap between awareness and action — helping every individual feel seen, understood, and empowered to care for their mental well-being.</p>
+    <p>Built by university students, Salama bridges the gap between awareness and action, helping every individual feel seen, understood, and empowered to care for their mental well-being.</p>
     <p>We believe that mental health should be spoken about openly, without shame or judgment. Through community, education, and compassion, Salama strives to normalize conversations around mental well-being and create a culture where seeking help is a sign of strength, not weakness.</p>
   </div>
   <a href="#services" class="btn-outline-light fade-in">Learn More</a>
@@ -594,10 +725,6 @@
 <section id="stats">
   <div class="stats-grid">
     <div class="stat-item fade-in">
-      <div class="stat-number">500+</div>
-      <div class="stat-label">Community Members</div>
-    </div>
-    <div class="stat-item fade-in fade-in-delay-1">
       <div class="stat-number">6</div>
       <div class="stat-label">Core Services</div>
     </div>
@@ -622,69 +749,72 @@
   <h2 class="section-title fade-in">Explore Our <em>Services</em></h2>
   <div class="services-grid">
 
-    <div class="service-card fade-in">
+    <a class="service-card fade-in" href="checkin.html">
       <div class="service-icon">
         <svg viewBox="0 0 24 24"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
       </div>
       <h3 class="service-name">Emotional Support & Guidance</h3>
       <p class="service-desc">Check in on your emotions and find supportive exercises tailored to how you're feeling today.</p>
-      <a href="#" class="service-link">Learn More →</a>
-    </div>
+      <span class="service-link">Learn More →</span>
+    </a>
 
-    <div class="service-card fade-in fade-in-delay-1">
+    <a class="service-card fade-in fade-in-delay-1" href="storytelling.html">
       <div class="service-icon">
         <svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
       </div>
       <h3 class="service-name">Storytelling & Expression</h3>
       <p class="service-desc">Share your personal story or creative work with the Salama community and find connection through vulnerability.</p>
-      <a href="#" class="service-link">Learn More →</a>
-    </div>
+      <span class="service-link">Learn More →</span>
+    </a>
 
-    <div class="service-card fade-in fade-in-delay-2">
+    <a class="service-card fade-in fade-in-delay-2" href="journaling.html">
       <div class="service-icon">
         <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
       </div>
       <h3 class="service-name">Educational Resources</h3>
       <p class="service-desc">Read about mental health topics and well-being tips curated by professionals and peer advocates.</p>
-      <a href="#" class="service-link">Learn More →</a>
-    </div>
+      <span class="service-link">Learn More →</span>
+    </a>
 
-    <div class="service-card fade-in fade-in-delay-3">
+    <a class="service-card fade-in fade-in-delay-3" href="checkin.html">
       <div class="service-icon">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       </div>
       <h3 class="service-name">Daily Emotional Check-In</h3>
-      <p class="service-desc">Pause and reflect on how you feel each day with our guided check-in — a small act of self-awareness that adds up.</p>
-      <a href="#" class="service-link">Learn More →</a>
-    </div>
+      <p class="service-desc">Pause and reflect on how you feel each day with our guided check-in, a small act of self-awareness that adds up.</p>
+      <span class="service-link">Start Check-In →</span>
+    </a>
 
-    <div class="service-card fade-in fade-in-delay-4">
+    <a class="service-card fade-in fade-in-delay-4" href="interactive.html">
       <div class="service-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor"/><path d="M9 12l2 2 4-4" stroke="currentColor"/></svg>
       </div>
-      <h3 class="service-name">Self-Care Tools</h3>
-      <p class="service-desc">Explore simple practices that help nurture your mental well-being — breathing exercises, grounding techniques, and more.</p>
-      <a href="#" class="service-link">Learn More →</a>
-    </div>
+      <h3 class="service-name">Interactive Section</h3>
+      <p class="service-desc">Small, intentional experiences to help you process, reflect, and feel a little lighter.</p>
+      <span class="service-link">Try it now →</span>
+    </a>
 
-    <div class="service-card fade-in fade-in-delay-5">
+    <a class="service-card fade-in fade-in-delay-5" href="support.html">
       <div class="service-icon">
         <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       </div>
       <h3 class="service-name">Find Support Near You</h3>
       <p class="service-desc">Discover organizations and professionals in Lebanon that can support you when you need help beyond our community.</p>
-      <a href="#" class="service-link">Learn More →</a>
-    </div>
+      <span class="service-link">Learn More →</span>
+    </a>
 
   </div>
+
+
 </section>
 
-<!-- Wave: services → stories -->
+<!-- Wave: services → finder -->
 <div class="wave-divider" style="background: var(--cream-dark);">
   <svg viewBox="0 0 1440 64" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M0,16 C300,52 600,4 900,42 C1100,66 1300,10 1440,26 L1440,64 L0,64 Z" fill="#f5f0e8"/>
   </svg>
 </div>
+
 
 
 <!-- ─── STORIES ────────────────────────────────────────── -->
@@ -693,19 +823,19 @@
     <div class="stories-text">
       <p class="section-label fade-in">Community Voices</p>
       <h2 class="section-title fade-in">Real stories,<br><em>real healing.</em></h2>
-      <p class="fade-in">Every person who finds Salama brings their own story. We create the space for those stories to be heard — without judgment, without stigma.</p>
-      <a href="#" class="btn-primary fade-in">Share Your Story</a>
+      <p class="fade-in">Every person who finds Salama brings their own story. We create the space for those stories to be heard, without judgment, without stigma.</p>
+      <a href="storytelling-share.html" class="btn-primary fade-in">Share Your Story</a>
     </div>
     <div class="stories-cards">
       <div class="story-card fade-in">
         <span class="quote-mark">"</span>
         <p class="story-quote">Salama made me realize I wasn't alone in what I was going through. Reading other people's stories gave me the courage to talk about my own.</p>
-        <p class="story-author">— AUB Student, Beirut</p>
+        <p class="story-author">AUB Student, Beirut</p>
       </div>
       <div class="story-card fade-in fade-in-delay-1">
         <span class="quote-mark">"</span>
         <p class="story-quote">The daily check-ins helped me build a habit of checking in with myself. It's such a small thing, but it changed how I relate to my emotions.</p>
-        <p class="story-author">— Community Member</p>
+        <p class="story-author">Community Member</p>
       </div>
     </div>
   </div>
@@ -723,8 +853,8 @@
 <section id="join">
   <p class="section-label fade-in">Be Part of Something</p>
   <h2 class="section-title fade-in">Your mind deserves<br><em style="color:var(--sage-light)">a community.</em></h2>
-  <p class="fade-in">Whether you're struggling, curious, or simply want to support others — Salama welcomes you. No judgment. No shame. Just care.</p>
-  <a href="#" class="btn-cream fade-in">Join Salama Today</a>
+  <p class="fade-in">Whether you're struggling, curious, or simply want to support others, Salama welcomes you. No judgment. No shame. Just care.</p>
+  <a href="login.html?tab=signup" class="btn-cream fade-in" onclick="handleJoinClick(event)">Join Salama Today</a>
 </section>
 
 
@@ -733,7 +863,15 @@
   <div class="footer-inner">
     <div class="footer-top">
       <div class="footer-brand">
-        <a class="nav-logo" href="#">SALAMA</a>
+        <a class="nav-logo" href="#">
+          <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8,21 L8,4" stroke="rgba(255,255,255,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+            <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(255,255,255,0.7)"/>
+            <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(255,255,255,0.7)"/>
+            <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(255,255,255,0.8)"/>
+          </svg>
+          SALAMA
+        </a>
         <p class="footer-tagline">Because your mind deserves care, too.</p>
       </div>
       <div class="footer-links-group">
@@ -750,7 +888,7 @@
           <li><a href="#">Emotional Support</a></li>
           <li><a href="#">Storytelling</a></li>
           <li><a href="#">Resources</a></li>
-          <li><a href="#">Self-Care Tools</a></li>
+          <li><a href="interactive.html">Interactive</a></li>
         </ul>
       </div>
       <div class="footer-links-group">
@@ -773,11 +911,67 @@
   </div>
 </footer>
 
+<!-- Already a member popup -->
+<div class="popup-overlay" id="member-popup" onclick="closeMemberPopup(event)">
+  <div class="popup-card">
+    <div class="popup-icon">🌿</div>
+    <h2 class="popup-title">You're already a member!</h2>
+    <p class="popup-body">You're signed in as <strong id="popup-email"></strong>.<br>You're already part of the Salama community.</p>
+    <button class="popup-close" onclick="document.getElementById('member-popup').classList.remove('visible')">Got it</button>
+  </div>
+</div>
+
 <script>
+  // Auth, show member badge if signed in
+  const { createClient } = supabase;
+  const db = createClient(
+    'https://yrbcozgtjjzexrqoynax.supabase.co',
+    'sb_publishable_XMbgbPt2RZD_yeCEbc94oQ_7m2PQs5g'
+  );
+
+  (async function() {
+    const { data: { session } } = await db.auth.getSession();
+    if (session) {
+      document.getElementById('nav-member-email').textContent = session.user.email;
+      document.getElementById('nav-member').classList.add('visible');
+    }
+  })();
+
+  async function handleJoinClick(e) {
+    e.preventDefault();
+    const { data: { session } } = await db.auth.getSession();
+    if (session) {
+      document.getElementById('popup-email').textContent = session.user.email;
+      document.getElementById('member-popup').classList.add('visible');
+    } else {
+      window.location.href = 'login.html?tab=signup';
+    }
+  }
+
+  function closeMemberPopup(e) {
+    if (e.target === document.getElementById('member-popup')) {
+      document.getElementById('member-popup').classList.remove('visible');
+    }
+  }
+
+  async function signOutMain() {
+    await db.auth.signOut();
+    document.getElementById('nav-member').classList.remove('visible');
+  }
+
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
     navbar.classList.toggle('scrolled', window.scrollY > 40);
   });
+
+  document.getElementById('nav-logo-typed').innerHTML = `
+    <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+      <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+      <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+    </svg>
+    SALAMA`;
 
   // ─── Pixel Trail ──────────────────────────────────────
   (function () {
@@ -839,6 +1033,7 @@
     });
   })();
 
+
   const fadeEls = document.querySelectorAll('.fade-in');
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
@@ -850,5 +1045,6 @@
   }, { threshold: 0.12 });
   fadeEls.forEach(el => observer.observe(el));
 </script>
+<script src="chat-widget.js"></script>
 </body>
 </html>

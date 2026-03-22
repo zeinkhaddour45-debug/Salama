@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grounding Exercise | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream:      #f5f0e8;
+      --cream-dark: #ece5d8;
+      --sage:       #7d9e75;
+      --sage-dark:  #4a6640;
+      --olive:      #374f31;
+      --text:       #2a2722;
+      --text-mid:   #5a5650;
+      --text-light: #8a8680;
+      --border:     #e4dace;
+      --card:       rgba(255,252,247,0.94);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(160deg, var(--cream) 0%, var(--cream-dark) 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 48px;
+      background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 700;
+      color: var(--olive); text-decoration: none; letter-spacing: 0.04em;
+      display: inline-flex; align-items: center; gap: 9px;
+    }
+    .nav-logo svg { flex-shrink: 0; }
+    .nav-back {
+      font-size: 13px; color: var(--text-mid);
+      text-decoration: none; display: flex; align-items: center; gap: 6px;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--sage-dark); }
+
+    .page-wrap {
+      min-height: 100vh;
+      display: grid; place-items: center;
+      padding: 100px 24px 48px;
+    }
+
+    /* ── Card ── */
+    .card {
+      width: min(560px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      box-shadow: 0 16px 48px rgba(50,40,30,0.09);
+    }
+
+    /* ── Progress ── */
+    .progress-bar {
+      display: flex; justify-content: center; gap: 8px;
+      padding: 28px 36px 0;
+    }
+    .prog-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--border);
+      transition: background 0.4s, transform 0.4s;
+    }
+    .prog-dot.active { background: var(--sage); transform: scale(1.3); }
+    .prog-dot.done   { background: var(--olive); }
+
+    /* ── Step body ── */
+    .step-body {
+      padding: 26px 36px 36px;
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+    .step-body.fading { opacity: 0; transform: translateY(8px); pointer-events: none; }
+
+    /* ── Sense header ── */
+    .sense-header {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 14px;
+    }
+    .sense-icon {
+      width: 50px; height: 50px; border-radius: 15px;
+      background: rgba(125,158,117,0.1); border: 1px solid rgba(125,158,117,0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--sage-dark); flex-shrink: 0;
+    }
+    .sense-icon svg { width: 21px; height: 21px; }
+    .sense-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 40px; font-weight: 700; color: var(--text); line-height: 1;
+    }
+    .sense-label {
+      font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-top: 4px;
+    }
+    .sense-prompt {
+      font-size: 15px; color: var(--text-mid); line-height: 1.75; margin-bottom: 20px;
+    }
+
+    /* ── Item list ── */
+    .items-list {
+      display: flex; flex-direction: column; gap: 6px;
+      margin-bottom: 16px;
+      min-height: 0;
+    }
+    .list-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      background: rgba(125,158,117,0.08);
+      border: 1px solid rgba(125,158,117,0.18);
+      border-radius: 12px;
+      animation: slideIn 0.22s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(6px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .list-bullet {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--sage); flex-shrink: 0;
+    }
+    .list-text {
+      flex: 1; font-size: 14px; color: var(--text); font-weight: 500;
+    }
+    .list-remove {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: none; background: transparent;
+      color: var(--text-light); font-size: 15px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0; padding: 0;
+    }
+    .list-remove:hover { background: rgba(0,0,0,0.07); color: var(--text-mid); }
+
+    /* ── Input row ── */
+    .input-row {
+      display: flex; gap: 8px; align-items: center; margin-bottom: 22px;
+    }
+    .sense-input {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .sense-input::placeholder { color: #c0b8ae; }
+    .sense-input:focus {
+      border-color: rgba(125,158,117,0.55);
+      box-shadow: 0 0 0 3px rgba(125,158,117,0.1);
+    }
+    .add-btn {
+      width: 44px; height: 44px; border-radius: 12px;
+      border: none; background: var(--sage); color: white;
+      font-size: 18px; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, transform 0.12s;
+    }
+    .add-btn:hover { background: var(--sage-dark); transform: scale(1.05); }
+    .add-btn:active { transform: scale(0.96); }
+    .sense-input:disabled { background: var(--cream); color: var(--text-light); cursor: default; }
+    .add-btn:disabled { background: var(--border); cursor: default; transform: none; }
+
+    /* ── Footer ── */
+    .step-footer {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .remaining { font-size: 13px; color: var(--text-light); transition: color 0.3s; }
+    .remaining.all-done { color: var(--sage-dark); font-weight: 500; }
+
+    .continue-btn {
+      padding: 12px 24px; border-radius: 999px; border: none;
+      background: var(--sage); color: white;
+      font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer; opacity: 0.35; pointer-events: none;
+      transition: background 0.2s, transform 0.15s, opacity 0.25s, box-shadow 0.25s;
+    }
+    .continue-btn.ready { opacity: 1; pointer-events: auto; box-shadow: 0 8px 20px rgba(125,158,117,0.26); }
+    .continue-btn.ready:hover { background: var(--sage-dark); transform: translateY(-1px); }
+
+    /* ── Intro ── */
+    .intro-body { padding: 36px 36px 40px; text-align: center; }
+    .intro-icon {
+      width: 60px; height: 60px;
+      background: rgba(125,158,117,0.1); border: 1px solid rgba(125,158,117,0.2);
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--sage-dark); margin: 0 auto 22px;
+    }
+    .intro-icon svg { width: 26px; height: 26px; }
+    .intro-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 4vw, 32px); font-weight: 600;
+      color: var(--text); margin-bottom: 12px; line-height: 1.2;
+    }
+    .intro-title em { font-style: italic; color: var(--sage-dark); }
+    .intro-desc {
+      font-size: 15px; color: var(--text-mid); line-height: 1.8;
+      max-width: 400px; margin: 0 auto 24px;
+    }
+    .intro-chips {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      justify-content: center; margin-bottom: 28px;
+    }
+    .intro-chip {
+      padding: 6px 14px; border-radius: 999px;
+      background: rgba(125,158,117,0.1); border: 1px solid rgba(125,158,117,0.22);
+      font-size: 13px; color: var(--sage-dark); font-weight: 500;
+    }
+    .start-btn {
+      display: inline-block; padding: 15px 40px; border-radius: 999px;
+      border: none; background: var(--sage); color: white;
+      font-size: 15px; font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer; box-shadow: 0 8px 20px rgba(125,158,117,0.26);
+      transition: background 0.2s, transform 0.15s;
+    }
+    .start-btn:hover { background: var(--sage-dark); transform: translateY(-1px); }
+
+    /* ── Completion ── */
+    .completion-body { padding: 36px 36px 40px; text-align: center; }
+    .completion-icon {
+      width: 64px; height: 64px;
+      background: rgba(125,158,117,0.1); border: 1px solid rgba(125,158,117,0.2);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--sage-dark); margin: 0 auto 22px;
+    }
+    .completion-icon svg { width: 28px; height: 28px; }
+    .completion-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 4vw, 30px); font-weight: 600;
+      color: var(--text); margin-bottom: 10px;
+    }
+    .completion-msg {
+      font-size: 15px; color: var(--text-mid); line-height: 1.8;
+      max-width: 400px; margin: 0 auto 26px;
+    }
+    .summary {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      margin-bottom: 28px; text-align: left;
+    }
+    @media (max-width: 480px) { .summary { grid-template-columns: 1fr; } }
+    .summary-block {
+      background: rgba(125,158,117,0.08); border: 1px solid rgba(125,158,117,0.18);
+      border-radius: 14px; padding: 14px 16px;
+    }
+    .summary-label {
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 8px;
+    }
+    .summary-item {
+      font-size: 13px; color: var(--text); padding: 2px 0;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .summary-item::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: var(--sage); flex-shrink: 0;
+    }
+    .completion-actions {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    }
+    .btn-primary {
+      padding: 13px 24px; border-radius: 999px; border: none;
+      background: var(--sage); color: white;
+      font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer; box-shadow: 0 8px 20px rgba(125,158,117,0.22);
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background: var(--sage-dark); transform: translateY(-1px); }
+    .btn-ghost {
+      padding: 13px 24px; border-radius: 999px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-mid); font-size: 14px;
+      font-family: 'Inter', sans-serif; text-decoration: none;
+      display: inline-flex; align-items: center;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(125,158,117,0.4); }
+
+    @media (max-width: 560px) {
+      nav { padding: 18px 24px; }
+      .intro-body, .step-body, .completion-body { padding: 24px 22px 28px; }
+      .progress-bar { padding: 22px 22px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+      <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+      <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+    </svg>
+    SALAMA
+  </a>
+  <a class="nav-back" href="#" onclick="history.back(); return false;">← Back</a>
+</nav>
+
+<div class="page-wrap">
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+  const senses = [
+    {
+      count: 5, label: 'See',
+      prompt: 'Look around you. Name 5 things you can see right now.',
+      placeholder: 'e.g. the lamp, a plant, my hands…',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
+    },
+    {
+      count: 4, label: 'Hear',
+      prompt: 'Go quiet for a moment. Name 4 things you can hear.',
+      placeholder: 'e.g. traffic, the fan, my breathing…',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>`
+    },
+    {
+      count: 3, label: 'Touch',
+      prompt: 'Notice your body. Name 3 things you can physically feel.',
+      placeholder: 'e.g. the chair, my sleeve, the desk…',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v0"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>`
+    },
+    {
+      count: 2, label: 'Smell',
+      prompt: 'Take a slow breath in. Name 2 things you can smell.',
+      placeholder: 'e.g. coffee, fresh air, my clothes…',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2c0 2.5 5 2.5 5 5s-5 2.5-5 5 5 2.5 5 5"/><path d="M14 2c0 2.5-5 2.5-5 5s5 2.5 5 5-5 2.5-5 5"/></svg>`
+    },
+    {
+      count: 1, label: 'Taste',
+      prompt: 'What can you taste right now, even the faint taste in your mouth?',
+      placeholder: 'e.g. toothpaste, coffee, nothing much…',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C6.5 22 2 17.5 2 12A10 10 0 0 1 12 2a10 10 0 0 1 10 10c0 5.5-4.5 10-10 10z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>`
+    }
+  ];
+
+  const answers = senses.map(() => []);
+  const card = document.getElementById('card');
+
+  function renderIntro() {
+    card.innerHTML = `
+      <div class="intro-body">
+        <div class="intro-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22V12"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/>
+            <path d="M12 2a4 4 0 0 1 4 4c0 2.5-2 4-4 6-2-2-4-3.5-4-6a4 4 0 0 1 4-4z"/>
+          </svg>
+        </div>
+        <h1 class="intro-title">5–4–3–2–1 <em>Grounding</em></h1>
+        <p class="intro-desc">When your mind is racing, this brings you back. For each sense, name the actual things you notice right now. Type them out, one by one.</p>
+        <div class="intro-chips">
+          <span class="intro-chip">5 things you see</span>
+          <span class="intro-chip">4 things you hear</span>
+          <span class="intro-chip">3 things you touch</span>
+          <span class="intro-chip">2 things you smell</span>
+          <span class="intro-chip">1 thing you taste</span>
+        </div>
+        <button class="start-btn" id="startBtn">Begin →</button>
+      </div>`;
+    card.querySelector('#startBtn').addEventListener('click', () => {
+      answers.forEach((_, i) => answers[i] = []);
+      renderStep(0);
+    });
+  }
+
+  function renderStep(index) {
+    const s = senses[index];
+    const items = answers[index];
+    const isReady = items.length >= s.count;
+
+    card.innerHTML = `
+      <div class="progress-bar">
+        ${senses.map((_, i) => `<div class="prog-dot ${i < index ? 'done' : i === index ? 'active' : ''}"></div>`).join('')}
+      </div>
+      <div class="step-body">
+        <div class="sense-header">
+          <div class="sense-icon">${s.icon}</div>
+          <div>
+            <div class="sense-number">${s.count}</div>
+            <div class="sense-label">${s.label}</div>
+          </div>
+        </div>
+        <p class="sense-prompt">${s.prompt}</p>
+        <div class="items-list" id="itemsList"></div>
+        <div class="input-row">
+          <input class="sense-input" id="senseInput" type="text" placeholder="${s.placeholder}" autocomplete="off" />
+          <button class="add-btn" id="addBtn">↵</button>
+        </div>
+        <div class="step-footer">
+          <span class="remaining ${isReady ? 'all-done' : ''}" id="remaining">
+            ${isReady ? 'Ready to continue.' : `${s.count - items.length} more to go`}
+          </span>
+          <button class="continue-btn ${isReady ? 'ready' : ''}" id="continueBtn">
+            ${index < senses.length - 1 ? 'Continue →' : 'Finish →'}
+          </button>
+        </div>
+      </div>`;
+
+    // Restore any previously typed items (back-nav safety)
+    items.forEach((val, i) => addItemToDOM(val, index, i));
+
+    const input = card.querySelector('#senseInput');
+    const addBtn = card.querySelector('#addBtn');
+
+    function submit() {
+      const val = input.value.trim();
+      if (!val || answers[index].length >= s.count) return;
+      input.value = '';
+      const itemIndex = answers[index].length;
+      answers[index].push(val);
+      addItemToDOM(val, index, itemIndex);
+      updateFooter(index);
+      if (answers[index].length >= s.count) {
+        input.disabled = true;
+        addBtn.disabled = true;
+      } else {
+        input.focus();
+      }
+    }
+
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+    addBtn.addEventListener('click', submit);
+
+    card.querySelector('#continueBtn').addEventListener('click', () => {
+      if (!card.querySelector('#continueBtn').classList.contains('ready')) return;
+      const body = card.querySelector('.step-body');
+      body.classList.add('fading');
+      setTimeout(() => {
+        if (index < senses.length - 1) renderStep(index + 1);
+        else renderCompletion();
+      }, 280);
+    });
+
+    input.focus();
+  }
+
+  function addItemToDOM(val, senseIndex, itemIndex) {
+    const list = card.querySelector('#itemsList');
+    if (!list) return;
+    const row = document.createElement('div');
+    row.className = 'list-item';
+    row.innerHTML = `<span class="list-bullet"></span><span class="list-text">${val}</span><button class="list-remove" aria-label="Remove">×</button>`;
+    row.querySelector('.list-remove').addEventListener('click', () => {
+      answers[senseIndex].splice(itemIndex, 1);
+      row.remove();
+      // Re-index remaining items' remove handlers by re-rendering the list
+      rebuildList(senseIndex);
+      updateFooter(senseIndex);
+    });
+    list.appendChild(row);
+  }
+
+  function rebuildList(senseIndex) {
+    const list = card.querySelector('#itemsList');
+    if (!list) return;
+    list.innerHTML = '';
+    answers[senseIndex].forEach((val, i) => addItemToDOM(val, senseIndex, i));
+    const s = senses[senseIndex];
+    const input = card.querySelector('#senseInput');
+    const addBtn = card.querySelector('#addBtn');
+    if (input && addBtn) {
+      const atLimit = answers[senseIndex].length >= s.count;
+      input.disabled = atLimit;
+      addBtn.disabled = atLimit;
+      input.placeholder = s.placeholder;
+      if (!atLimit) input.focus();
+    }
+  }
+
+  function updateFooter(index) {
+    const s = senses[index];
+    const count = answers[index].length;
+    const isReady = count >= s.count;
+    const remaining = card.querySelector('#remaining');
+    const continueBtn = card.querySelector('#continueBtn');
+    if (remaining) {
+      remaining.textContent = isReady ? 'Ready to continue.' : `${s.count - count} more to go`;
+      remaining.className = 'remaining' + (isReady ? ' all-done' : '');
+    }
+    if (continueBtn) {
+      continueBtn.className = 'continue-btn' + (isReady ? ' ready' : '');
+    }
+  }
+
+  function renderCompletion() {
+    const total = answers.reduce((sum, a) => sum + a.length, 0);
+    card.innerHTML = `
+      <div class="completion-body">
+        <div class="completion-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </div>
+        <h2 class="completion-title">You're here.</h2>
+        <p class="completion-msg">You just named ${total} real things your senses noticed. That's your body reminding you: you're present, you're grounded, you're okay.</p>
+        <div class="summary">
+          ${senses.map((s, i) => `
+            <div class="summary-block">
+              <div class="summary-label">${s.label}</div>
+              ${answers[i].map(a => `<div class="summary-item">${a}</div>`).join('')}
+            </div>`).join('')}
+        </div>
+        <div class="completion-actions">
+          <button class="btn-primary" id="againBtn">Go again</button>
+          <a class="btn-ghost" href="interactive.html">Back</a>
+        </div>
+      </div>`;
+    card.querySelector('#againBtn').addEventListener('click', renderIntro);
+  }
+
+  renderIntro();
+</script>
+</body>
+</html>

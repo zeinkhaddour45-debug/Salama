@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Journaling Thoughts | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:       #f5f0e8;
+      --cream-dark:  #ece5d8;
+      --sage:        #7d9e75;
+      --sage-light:  #adc4a6;
+      --sage-muted:  #c8d9c2;
+      --olive:       #4a6640;
+      --olive-dark:  #374f31;
+      --text:        #2a2722;
+      --text-mid:    #5a5650;
+      --text-light:  #8a8680;
+      --white:       #ffffff;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      visibility: hidden; /* hidden until auth check passes */
+    }
+
+    body.ready { visibility: visible; }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245, 240, 232, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .nav-logo svg { flex-shrink: 0; }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .nav-user {
+      font-size: 13px;
+      color: var(--text-light);
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .nav-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-mid);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+    .nav-back svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-signout {
+      background: none;
+      border: 1.5px solid var(--cream-dark);
+      color: var(--text-light);
+      padding: 7px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .nav-signout:hover { color: var(--text-mid); border-color: var(--sage-muted); }
+
+    /* PAGE BACKGROUND */
+    .page {
+      min-height: 100vh;
+      padding: 120px 24px 80px;
+      background:
+        radial-gradient(ellipse 800px 600px at 10% 10%, rgba(125,158,117,0.22) 0%, transparent 65%),
+        radial-gradient(ellipse 600px 500px at 90% 85%, rgba(157,180,150,0.18) 0%, transparent 65%),
+        var(--cream);
+      position: relative;
+    }
+
+    /* LEAF DECORATIONS */
+    .leaf {
+      position: fixed;
+      pointer-events: none;
+      opacity: 0.22;
+      z-index: 0;
+    }
+    .leaf-1 { top: 20%; left: -20px; width: 220px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 190px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 130px; transform: rotate(38deg); }
+
+    /* HEADER */
+    .header {
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto 60px;
+      position: relative;
+      z-index: 1;
+    }
+    .header-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 6vw, 58px);
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .header-title em { font-style: italic; color: var(--olive); }
+    .header-sub {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 1.75;
+    }
+
+    /* JOURNAL AREA */
+    .journal-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* PROMPT CARD */
+    .prompt-card {
+      background: rgba(200,217,194,0.35);
+      border: 1px solid rgba(125,158,117,0.25);
+      border-radius: 20px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    .prompt-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--olive);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    /* Dropdown trigger */
+    .prompt-dropdown {
+      position: relative;
+    }
+    .prompt-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.6);
+      border: 1.5px solid rgba(125,158,117,0.3);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      font-family: 'Inter', sans-serif;
+      text-align: left;
+    }
+    .prompt-trigger:hover {
+      border-color: var(--sage);
+      background: rgba(255,255,255,0.82);
+    }
+    .prompt-trigger.open {
+      border-color: var(--olive);
+      box-shadow: 0 0 0 3px rgba(74,102,64,0.08);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .prompt-trigger-text {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 15px;
+      color: var(--text-mid);
+      flex: 1;
+      line-height: 1.5;
+    }
+    .prompt-trigger-text.selected {
+      color: var(--text);
+      font-style: italic;
+    }
+    .prompt-trigger-chevron {
+      flex-shrink: 0;
+      color: var(--text-light);
+      transition: transform 0.25s;
+    }
+    .prompt-trigger.open .prompt-trigger-chevron {
+      transform: rotate(180deg);
+    }
+
+    /* Dropdown list */
+    .prompt-options {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0;
+      background: rgba(252,250,246,0.98);
+      border: 1.5px solid var(--olive);
+      border-top: none;
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 14px;
+      overflow: hidden;
+      z-index: 50;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+    }
+    .prompt-options.open { display: block; }
+    .prompt-option {
+      width: 100%;
+      display: block;
+      padding: 13px 18px;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 14px;
+      color: var(--text-mid);
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(125,158,117,0.12);
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+      line-height: 1.55;
+    }
+    .prompt-option:last-child { border-bottom: none; }
+    .prompt-option:hover { background: rgba(125,158,117,0.1); color: var(--olive); }
+    .prompt-option.active { background: rgba(74,102,64,0.08); color: var(--olive-dark); font-style: italic; }
+    .prompt-option.freestyle {
+      font-family: 'Inter', sans-serif;
+      font-style: normal;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-light);
+      letter-spacing: 0.01em;
+    }
+    .prompt-option.freestyle:hover { color: var(--olive); }
+
+    /* TEXTAREA */
+    .journal-textarea {
+      width: 100%;
+      min-height: 320px;
+      background: rgba(245,240,232,0.8);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(200,217,194,0.6);
+      border-radius: 24px;
+      padding: 32px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.85;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 20px;
+    }
+    .journal-textarea::placeholder { color: var(--text-light); }
+    .journal-textarea:focus {
+      border-color: var(--olive);
+      box-shadow: 0 0 0 4px rgba(74,102,64,0.08);
+    }
+
+    /* WORD COUNT */
+    .word-count {
+      text-align: right;
+      font-size: 12px;
+      color: var(--text-light);
+      margin-bottom: 28px;
+      letter-spacing: 0.3px;
+    }
+
+    /* ACTIONS */
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 60px;
+    }
+    .btn-primary {
+      background: var(--olive);
+      color: var(--white);
+      padding: 14px 40px;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(74,102,64,0.32);
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--olive-dark); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(74,102,64,0.42); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-light);
+      padding: 12px 24px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 400;
+      border: 1.5px solid var(--cream-dark);
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-ghost:hover { color: var(--text-mid); border-color: var(--sage-muted); }
+
+    /* SAVED ENTRIES */
+    .entries-section {
+      max-width: 720px;
+      margin: 0 auto 60px;
+      position: relative;
+      z-index: 1;
+    }
+    .entries-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 20px;
+      padding-top: 40px;
+      border-top: 1px solid var(--cream-dark);
+    }
+    .no-entries {
+      font-size: 14px;
+      color: var(--text-light);
+      text-align: center;
+      padding: 32px 0;
+    }
+    .entry-card {
+      background: rgba(245,240,232,0.75);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(200,217,194,0.4);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .entry-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .entry-date {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+    }
+    .entry-delete {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-light);
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      transition: color 0.2s, background 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .entry-delete:hover { color: #c0392b; background: rgba(192,57,43,0.06); }
+    .entry-prompt {
+      font-size: 12px;
+      font-style: italic;
+      color: var(--text-light);
+      margin-bottom: 10px;
+    }
+    .entry-body {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.75;
+      white-space: pre-wrap;
+    }
+
+    /* LOADING SPINNER */
+    .entries-loading {
+      text-align: center;
+      padding: 32px 0;
+      color: var(--text-light);
+      font-size: 14px;
+    }
+
+    /* SAVED TOAST */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--olive);
+      color: white;
+      padding: 12px 28px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 200;
+      transition: transform 0.35s ease;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 640px) {
+      nav { padding: 16px 20px; }
+      .nav-user { display: none; }
+      .prompt-card { padding: 20px; }
+      .journal-textarea { padding: 20px; }
+      .entry-card { padding: 20px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Leaf decorations -->
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 155 C80 145 44 156 24 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 155 C120 145 156 156 176 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 275 C100 275 28 205 28 130 C28 62 64 16 100 16 C136 16 172 62 172 130 C172 205 100 275 100 275Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.32)"/>
+    <path d="M100 275 L100 16" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 85 C82 75 56 83 40 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 85 C118 75 144 83 160 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <div class="nav-right">
+      <a class="nav-back" href="#" onclick="history.back(); return false;">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Check-In
+      </a>
+      <span class="nav-user" id="nav-user-email"></span>
+      <button class="nav-signout" onclick="signOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <div class="header">
+      <p class="header-label">Journaling Thoughts</p>
+      <h1 class="header-title">Write what's on your <em>mind.</em></h1>
+      <p class="header-sub">This space is yours alone. There's no right or wrong way to journal. Just let the words come as they are.</p>
+    </div>
+
+    <div class="journal-wrap">
+
+      <!-- Prompt -->
+      <div class="prompt-card">
+        <p class="prompt-label">Choose a prompt</p>
+        <div class="prompt-dropdown" id="prompt-dropdown">
+          <button class="prompt-trigger" id="prompt-trigger" onclick="toggleDropdown()">
+            <span class="prompt-trigger-text" id="prompt-trigger-text">Select a prompt or write freely…</span>
+            <svg class="prompt-trigger-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="prompt-options" id="prompt-options"></div>
+        </div>
+      </div>
+
+      <!-- Writing area -->
+      <textarea
+        class="journal-textarea"
+        id="journal-input"
+        placeholder="Start writing here… your thoughts are safe in this space."
+        oninput="updateWordCount()"
+      ></textarea>
+      <p class="word-count"><span id="word-count">0</span> words</p>
+
+      <div class="actions">
+        <button class="btn-primary" id="save-btn" onclick="saveEntry()">Save Entry</button>
+        <button class="btn-ghost" onclick="clearEntry()">Clear</button>
+      </div>
+
+    </div>
+
+    <!-- Past entries -->
+    <div class="entries-section">
+      <h2 class="entries-title">Past Entries</h2>
+      <div id="entries-list"><p class="entries-loading">Loading your entries…</p></div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">Entry saved ✓</div>
+
+  <script>
+    const SUPABASE_URL = 'https://yrbcozgtjjzexrqoynax.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_XMbgbPt2RZD_yeCEbc94oQ_7m2PQs5g';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+    const urlEmotion = new URLSearchParams(window.location.search).get('emotion') || '';
+    const emotionEmojis = { Calm: '😌', Anxious: '😰', Overwhelmed: '😮‍💨', Hopeful: '🌱' };
+
+    const emotionPrompts = {
+      Calm: [
+        "What helped me feel calm today?",
+        "What moments brought me peace?",
+        "What supports my sense of well-being?",
+        "What small joy did I notice today?",
+        "What does rest look like for me right now?"
+      ],
+      Anxious: [
+        "What is making me feel anxious right now?",
+        "What is within my control today?",
+        "What would I say to a friend feeling this way?",
+        "What does my body need from me right now?",
+        "What has helped me feel safer in the past?"
+      ],
+      Overwhelmed: [
+        "What is feeling heaviest right now?",
+        "What can I set down, even just for today?",
+        "What is one small thing I can do for myself?",
+        "What do I wish someone understood about how I'm feeling?",
+        "What would make tomorrow feel a little gentler?"
+      ],
+      Hopeful: [
+        "What is making me feel hopeful right now?",
+        "What do I feel called toward today?",
+        "What am I grateful for in this moment?",
+        "What small step aligns with where I want to go?",
+        "Who can I show up for today?"
+      ],
+      default: [
+        "What emotions have I been carrying lately?",
+        "What am I grateful for right now?",
+        "What do I need more of in my life?",
+        "What am I proud of, even if it feels small?",
+        "Where do I feel tension, and what might it be telling me?"
+      ]
+    };
+
+    let activePrompt = null;
+    let dropdownOpen = false;
+
+    function getPrompts() {
+      return emotionPrompts[urlEmotion] || emotionPrompts.default;
+    }
+
+    function renderPromptOptions() {
+      const opts = document.getElementById('prompt-options');
+      const list = getPrompts();
+      opts.innerHTML = '';
+      list.forEach(function(p) {
+        const btn = document.createElement('button');
+        btn.className = 'prompt-option';
+        btn.textContent = p;
+        btn.onclick = function() { selectPrompt(p); };
+        opts.appendChild(btn);
+      });
+      const free = document.createElement('button');
+      free.className = 'prompt-option freestyle';
+      free.textContent = '✦ Freestyle: write freely';
+      free.onclick = function() { selectPrompt(null); };
+      opts.appendChild(free);
+    }
+
+    function toggleDropdown() {
+      dropdownOpen = !dropdownOpen;
+      document.getElementById('prompt-trigger').classList.toggle('open', dropdownOpen);
+      document.getElementById('prompt-options').classList.toggle('open', dropdownOpen);
+    }
+
+    function closeDropdown() {
+      dropdownOpen = false;
+      document.getElementById('prompt-trigger').classList.remove('open');
+      document.getElementById('prompt-options').classList.remove('open');
+    }
+
+    function selectPrompt(p) {
+      document.querySelectorAll('.prompt-option').forEach(function(c) { c.classList.remove('active'); });
+      activePrompt = p;
+      const triggerText = document.getElementById('prompt-trigger-text');
+      if (p) {
+        triggerText.textContent = p;
+        triggerText.classList.add('selected');
+        document.getElementById('journal-input').placeholder = 'Start writing here… your thoughts are safe in this space.';
+        // mark active option
+        document.querySelectorAll('.prompt-option').forEach(function(c) {
+          if (c.textContent === p) c.classList.add('active');
+        });
+      } else {
+        triggerText.textContent = '✦ Freestyle: write freely';
+        triggerText.classList.add('selected');
+        document.getElementById('journal-input').placeholder = 'Write freely… no prompt, no rules. Just you.';
+        document.querySelectorAll('.prompt-option.freestyle').forEach(function(c) { c.classList.add('active'); });
+      }
+      closeDropdown();
+      document.getElementById('journal-input').focus();
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (dropdownOpen && !document.getElementById('prompt-dropdown').contains(e.target)) {
+        closeDropdown();
+      }
+    });
+
+    // Auth guard, runs immediately on page load
+    async function init() {
+      const { data: { session } } = await db.auth.getSession();
+
+      if (!session) {
+        window.location.href = 'login.html?redirect=journaling.html';
+        return;
+      }
+
+      currentUser = session.user;
+      document.getElementById('nav-user-email').textContent = currentUser.email;
+      renderPromptOptions();
+      document.body.classList.add('ready');
+
+      await renderEntries();
+    }
+
+    async function signOut() {
+      await db.auth.signOut();
+      window.location.href = 'login.html';
+    }
+
+
+    function updateWordCount() {
+      const text = document.getElementById('journal-input').value.trim();
+      const count = text === '' ? 0 : text.split(/\s+/).length;
+      document.getElementById('word-count').textContent = count;
+    }
+
+    function clearEntry() {
+      document.getElementById('journal-input').value = '';
+      updateWordCount();
+    }
+
+    async function saveEntry() {
+      const text = document.getElementById('journal-input').value.trim();
+      if (!text) return;
+
+      const btn = document.getElementById('save-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+
+      const { error } = await db.from('journal_entries').insert({
+        user_id: currentUser.id,
+        prompt: activePrompt || null,
+        content: text,
+        emotion: urlEmotion || null
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Save Entry';
+
+      if (error) {
+        console.error('Save error:', error);
+        showToast('Could not save. Please try again.', true);
+        return;
+      }
+
+      clearEntry();
+      await renderEntries();
+      showToast('Entry saved ✓', false);
+    }
+
+    async function deleteEntry(id) {
+      const { error } = await db
+        .from('journal_entries')
+        .delete()
+        .eq('id', id);
+
+      if (!error) await renderEntries();
+    }
+
+    async function renderEntries() {
+      const list = document.getElementById('entries-list');
+
+      const { data: entries, error } = await db
+        .from('journal_entries')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error || !entries || entries.length === 0) {
+        list.innerHTML = '<p class="no-entries">Your saved entries will appear here.</p>';
+        return;
+      }
+
+      list.innerHTML = entries.map(function(e) {
+        const date = new Date(e.created_at).toLocaleDateString('en-GB', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+        const emoji = e.emotion ? (emotionEmojis[e.emotion] || '💭') : null;
+        const emotionBadge = emoji
+          ? '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(125,158,117,0.13);border:1px solid rgba(74,102,64,0.18);border-radius:100px;padding:2px 10px;font-size:11px;font-weight:600;color:#4a6640;">' + emoji + ' ' + e.emotion + '</span>'
+          : '';
+        return '<div class="entry-card">' +
+          '<div class="entry-meta">' +
+            '<div style="display:flex;align-items:center;gap:8px;">' +
+              '<span class="entry-date">' + date + '</span>' +
+              emotionBadge +
+            '</div>' +
+            '<button class="entry-delete" onclick="deleteEntry(\'' + e.id + '\')">✕ Delete</button>' +
+          '</div>' +
+          (e.prompt ? '<p class="entry-prompt">Prompt: ' + e.prompt + '</p>' : '') +
+          '<p class="entry-body">' + e.content.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>' +
+        '</div>';
+      }).join('');
+    }
+
+    function showToast(message, isError) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message || 'Entry saved ✓';
+      toast.style.background = isError ? '#c0392b' : '';
+      toast.classList.add('show');
+      setTimeout(function() { toast.classList.remove('show'); }, 2500);
+    }
+
+    init();
+  </script>
+<script src="chat-widget.js"></script>
+</body>
+</html>

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paint Your Calm Space | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --sage: #7d9e75; --olive: #4a6640;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px; background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(20px); box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600;
+      letter-spacing: 3px; color: var(--text); text-decoration: none;
+      display: inline-flex; align-items: center; gap: 9px;
+    }
+    .nav-back { font-size: 14px; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+    .leaf { position: fixed; pointer-events: none; opacity: 0.18; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 220px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 190px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 130px; transform: rotate(38deg); }
+    main { padding: 130px 24px 80px; max-width: 940px; margin: 0 auto; position: relative; z-index: 1; }
+    .page-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 14px; }
+    .page-title { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 44px); font-weight: 600; line-height: 1.15; color: var(--text); margin-bottom: 12px; }
+    .page-title em { font-style: italic; color: var(--olive); }
+    .page-sub { font-size: 15px; color: var(--text-mid); line-height: 1.75; margin-bottom: 32px; }
+    .canvas-card { background: #fff; border: 2px solid rgba(74,102,64,0.25); border-radius: 20px; padding: 32px 28px; box-shadow: 0 6px 24px rgba(0,0,0,0.07); }
+
+    /* Scene tabs */
+    .scene-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .scene-tab {
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      padding: 8px 18px; border-radius: 99px; border: 2px solid rgba(74,102,64,0.28);
+      background: none; cursor: pointer; color: var(--text-mid); transition: all 0.2s;
+    }
+    .scene-tab:hover { border-color: var(--olive); color: var(--olive); }
+    .scene-tab.active { background: var(--olive); border-color: var(--olive); color: #fff; }
+    .scene-tab.coming-soon { opacity: 0.5; cursor: default; border-style: dashed; }
+    .scene-tab.coming-soon:hover { border-color: rgba(74,102,64,0.28); color: var(--text-mid); }
+    .scene-tab .soon-badge { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; color: var(--sage); margin-left: 5px; vertical-align: middle; }
+
+    /* Palette */
+    .palette-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); font-weight: 600; margin-bottom: 12px; }
+    .palette { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 22px; }
+    .color-btn { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.15s, border-color 0.15s; flex-shrink: 0; }
+    .color-btn:hover { transform: scale(1.18); }
+    .color-btn.active { border-color: var(--text); transform: scale(1.18); }
+
+    /* Scene SVGs */
+    .scene { display: none; }
+    .scene.active { display: block; }
+    .scene-wrap { display: flex; justify-content: center; margin-bottom: 22px; }
+    .scene-wrap svg { width: 100%; border-radius: 12px; border: 1.5px solid rgba(74,102,64,0.15); background: #eceae4; }
+    .shape { fill: #e4e0d8; stroke: rgba(50,40,30,0.25); stroke-width: 1; cursor: pointer; transition: filter 0.12s; }
+    .shape:hover { filter: brightness(0.86); }
+
+    .bottom-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .reset-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--text-mid); background: none; border: 1.5px solid rgba(74,102,64,0.25);
+      border-radius: 8px; padding: 9px 18px; cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    }
+    .reset-btn:hover { border-color: var(--olive); color: var(--olive); }
+    .hint { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+    .fade-in { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    @media (max-width: 600px) { nav { padding: 18px 24px; } .canvas-card { padding: 20px 14px; } }
+  </style>
+</head>
+<body>
+
+  <!-- Leaves -->
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 155 C80 145 44 156 24 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 155 C120 145 156 156 176 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 275 C100 275 28 205 28 130 C28 62 64 16 100 16 C136 16 172 62 172 130 C172 205 100 275 100 275Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.32)"/>
+    <path d="M100 275 L100 16" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 85 C82 75 56 83 40 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 85 C118 75 144 83 160 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <a class="nav-back" href="storytelling.html">← Back</a>
+  </nav>
+
+  <main>
+    <div class="fade-in">
+      <p class="page-label">Storytelling & Expression</p>
+      <h1 class="page-title">Paint your <em>calm space.</em></h1>
+      <p class="page-sub">No words needed. Pick a scene, choose a colour, and tap shapes to fill them in.</p>
+    </div>
+
+    <div class="canvas-card fade-in">
+
+      <!-- Scene switcher -->
+      <div class="scene-tabs">
+        <button class="scene-tab active" data-scene="forest">🌲 Forest</button>
+        <button class="scene-tab" data-scene="beach">🌊 Beach</button>
+        <button class="scene-tab" data-scene="night">🌙 Night Sky</button>
+        <button class="scene-tab" data-scene="garden">🌸 Garden</button>
+        <button class="scene-tab coming-soon" disabled>🏔️ Mountains <span class="soon-badge">Soon</span></button>
+        <button class="scene-tab coming-soon" disabled>🌅 Sunset <span class="soon-badge">Soon</span></button>
+        <button class="scene-tab coming-soon" disabled>🌧️ Rainy Day <span class="soon-badge">Soon</span></button>
+      </div>
+
+      <p class="palette-label">Choose a colour</p>
+      <div class="palette" id="palette"></div>
+
+      <!-- ═══════════════ SCENE: FOREST ═══════════════ -->
+      <div class="scene active" id="scene-forest">
+        <div class="scene-wrap">
+          <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sky -->
+            <rect class="shape" id="f-sky-upper"   x="0"   y="0"   width="560" height="145"/>
+            <rect class="shape" id="f-sky-horizon" x="0"   y="128" width="560" height="52"/>
+            <!-- Sun -->
+            <circle class="shape" id="f-sun-glow"  cx="468" cy="55" r="44"/>
+            <circle class="shape" id="f-sun-body"  cx="468" cy="55" r="28"/>
+            <circle class="shape" id="f-sun-inner" cx="460" cy="47" r="10"/>
+            <!-- Clouds -->
+            <ellipse class="shape" id="f-cl1-base"  cx="90"  cy="72" rx="44" ry="18"/>
+            <ellipse class="shape" id="f-cl1-puff1" cx="62"  cy="63" rx="26" ry="20"/>
+            <ellipse class="shape" id="f-cl1-puff2" cx="114" cy="65" rx="24" ry="18"/>
+            <ellipse class="shape" id="f-cl1-top"   cx="88"  cy="53" rx="20" ry="16"/>
+            <ellipse class="shape" id="f-cl2-base"  cx="268" cy="45" rx="36" ry="15"/>
+            <ellipse class="shape" id="f-cl2-puff1" cx="244" cy="38" rx="20" ry="15"/>
+            <ellipse class="shape" id="f-cl2-puff2" cx="292" cy="40" rx="19" ry="14"/>
+            <ellipse class="shape" id="f-cl3-base"  cx="388" cy="72" rx="28" ry="12"/>
+            <ellipse class="shape" id="f-cl3-puff"  cx="368" cy="66" rx="17" ry="13"/>
+            <!-- Birds -->
+            <path class="shape" id="f-bird1" d="M145,82 L150,76 L155,82 L150,80 Z"/>
+            <path class="shape" id="f-bird2" d="M162,70 L168,63 L174,70 L168,68 Z"/>
+            <path class="shape" id="f-bird3" d="M132,96 L137,90 L142,96 L137,94 Z"/>
+            <!-- Mountains -->
+            <polygon class="shape" id="f-mtn-l"  points="0,178 75,92 148,178"/>
+            <polygon class="shape" id="f-mtn-c"  points="120,178 232,54 344,178"/>
+            <polygon class="shape" id="f-mtn-r"  points="310,178 400,96 488,178"/>
+            <polygon class="shape" id="f-snow-l" points="75,92 58,130 92,130"/>
+            <polygon class="shape" id="f-snow-c" points="232,54 212,106 252,106"/>
+            <polygon class="shape" id="f-snow-r" points="400,96 383,132 417,132"/>
+            <!-- Hills & ground -->
+            <ellipse class="shape" id="f-hill-l"  cx="-30" cy="218" rx="215" ry="78"/>
+            <ellipse class="shape" id="f-hill-r"  cx="590" cy="222" rx="215" ry="78"/>
+            <rect   class="shape" id="f-ground"   x="0"   y="236" width="560" height="164"/>
+            <path   class="shape" id="f-bank-l"   d="M0,268 Q145,248 168,270 Q145,290 0,400 Z"/>
+            <path   class="shape" id="f-bank-r"   d="M392,270 Q415,248 560,268 L560,400 Q415,290 392,270 Z"/>
+            <!-- Background treelines -->
+            <path class="shape" id="f-treeline-l" d="M0,180 L12,158 L25,178 L38,148 L52,172 L65,152 L78,174 L88,162 L100,178 L0,178 Z"/>
+            <path class="shape" id="f-treeline-r" d="M460,178 L472,160 L485,176 L498,150 L512,170 L525,154 L538,173 L550,160 L560,174 L560,178 Z"/>
+            <!-- Lake -->
+            <ellipse class="shape" id="f-lake"       cx="280" cy="312" rx="128" ry="42"/>
+            <ellipse class="shape" id="f-lake-sh1"   cx="248" cy="304" rx="36"  ry="10"/>
+            <ellipse class="shape" id="f-lake-sh2"   cx="316" cy="322" rx="26"  ry="7"/>
+            <ellipse class="shape" id="f-lilypad1"   cx="222" cy="316" rx="14"  ry="8"/>
+            <ellipse class="shape" id="f-lilypad2"   cx="336" cy="308" rx="12"  ry="7"/>
+            <ellipse class="shape" id="f-lilypad3"   cx="278" cy="332" rx="11"  ry="6"/>
+            <circle  class="shape" id="f-lily-fl1"   cx="222" cy="312" r="5"/>
+            <circle  class="shape" id="f-lily-fl2"   cx="336" cy="305" r="4"/>
+            <!-- Path to lake -->
+            <path class="shape" id="f-path-l" d="M248,400 L260,312 L268,308 L272,400 Z"/>
+            <path class="shape" id="f-path-r" d="M288,400 L292,308 L300,312 L312,400 Z"/>
+            <!-- Left pine -->
+            <rect    class="shape" id="f-pine-l-trunk" x="56"  y="278" width="14" height="55"/>
+            <polygon class="shape" id="f-pine-l-bot"   points="22,282 63,226 104,282"/>
+            <polygon class="shape" id="f-pine-l-mid"   points="28,248 63,200  98,248"/>
+            <polygon class="shape" id="f-pine-l-top"   points="36,216 63,178  90,216"/>
+            <polygon class="shape" id="f-pine-l-peak"  points="46,190 63,162  80,190"/>
+            <!-- Left deciduous -->
+            <rect    class="shape" id="f-dtl-trunk"  x="106" y="262" width="10" height="40"/>
+            <ellipse class="shape" id="f-dtl-canopy" cx="111" cy="236" rx="32" ry="30"/>
+            <ellipse class="shape" id="f-dtl-shadow" cx="122" cy="250" rx="18" ry="12"/>
+            <ellipse class="shape" id="f-dtl-hi"     cx="102" cy="222" rx="15" ry="11"/>
+            <!-- Left birch -->
+            <rect    class="shape" id="f-birch-l-trunk" x="150" y="248" width="7"  height="44"/>
+            <ellipse class="shape" id="f-birch-l-top"   cx="154" cy="234" rx="16" ry="16"/>
+            <ellipse class="shape" id="f-birch-l-mid"   cx="154" cy="244" rx="12" ry="10"/>
+            <!-- Right pine -->
+            <rect    class="shape" id="f-pine-r-trunk" x="490" y="278" width="14" height="55"/>
+            <polygon class="shape" id="f-pine-r-bot"   points="456,282 497,226 538,282"/>
+            <polygon class="shape" id="f-pine-r-mid"   points="462,248 497,200 532,248"/>
+            <polygon class="shape" id="f-pine-r-top"   points="470,216 497,178 524,216"/>
+            <polygon class="shape" id="f-pine-r-peak"  points="480,190 497,162 514,190"/>
+            <!-- Right deciduous -->
+            <rect    class="shape" id="f-dtr-trunk"  x="435" y="262" width="10" height="40"/>
+            <ellipse class="shape" id="f-dtr-canopy" cx="440" cy="236" rx="32" ry="30"/>
+            <ellipse class="shape" id="f-dtr-shadow" cx="452" cy="250" rx="18" ry="12"/>
+            <ellipse class="shape" id="f-dtr-hi"     cx="430" cy="222" rx="15" ry="11"/>
+            <!-- Right birch -->
+            <rect    class="shape" id="f-birch-r-trunk" x="403" y="248" width="7"  height="44"/>
+            <ellipse class="shape" id="f-birch-r-top"   cx="407" cy="234" rx="16" ry="16"/>
+            <!-- Centre pine -->
+            <rect    class="shape" id="f-pine-c-trunk" x="276" y="262" width="10" height="42"/>
+            <polygon class="shape" id="f-pine-c-bot"   points="252,266 281,222 310,266"/>
+            <polygon class="shape" id="f-pine-c-mid"   points="256,238 281,200 306,238"/>
+            <polygon class="shape" id="f-pine-c-top"   points="262,212 281,180 300,212"/>
+            <!-- Fence left -->
+            <rect class="shape" id="f-fence-lp1"  x="128" y="272" width="5" height="26"/>
+            <rect class="shape" id="f-fence-lp2"  x="145" y="272" width="5" height="26"/>
+            <rect class="shape" id="f-fence-lr1"  x="128" y="276" width="22" height="3"/>
+            <rect class="shape" id="f-fence-lr2"  x="128" y="286" width="22" height="3"/>
+            <!-- Fence right -->
+            <rect class="shape" id="f-fence-rp1"  x="410" y="272" width="5" height="26"/>
+            <rect class="shape" id="f-fence-rp2"  x="427" y="272" width="5" height="26"/>
+            <rect class="shape" id="f-fence-rr1"  x="410" y="276" width="22" height="3"/>
+            <rect class="shape" id="f-fence-rr2"  x="410" y="286" width="22" height="3"/>
+            <!-- Rocks left -->
+            <ellipse class="shape" id="f-rock-l1" cx="184" cy="298" rx="20" ry="11"/>
+            <ellipse class="shape" id="f-rock-l2" cx="170" cy="294" rx="11" ry="8"/>
+            <!-- Rocks right -->
+            <ellipse class="shape" id="f-rock-r1" cx="376" cy="298" rx="20" ry="11"/>
+            <ellipse class="shape" id="f-rock-r2" cx="390" cy="294" rx="11" ry="8"/>
+            <!-- Flowers 1 -->
+            <rect    class="shape" id="f-fl1-stem"   x="47"  y="316" width="4"  height="24"/>
+            <ellipse class="shape" id="f-fl1-leaf-l" cx="40" cy="326" rx="9" ry="5" transform="rotate(-35 40 326)"/>
+            <ellipse class="shape" id="f-fl1-leaf-r" cx="58" cy="324" rx="9" ry="5" transform="rotate(35 58 324)"/>
+            <circle  class="shape" id="f-fl1-petals" cx="49" cy="312" r="10"/>
+            <circle  class="shape" id="f-fl1-center" cx="49" cy="312" r="4.5"/>
+            <!-- Flowers 2 -->
+            <rect    class="shape" id="f-fl2-stem"   x="196" y="314" width="4"  height="20"/>
+            <circle  class="shape" id="f-fl2-petals" cx="198" cy="310" r="9"/>
+            <circle  class="shape" id="f-fl2-center" cx="198" cy="310" r="4"/>
+            <!-- Flowers 3 -->
+            <rect    class="shape" id="f-fl3-stem"   x="359" y="314" width="4"  height="20"/>
+            <circle  class="shape" id="f-fl3-petals" cx="361" cy="310" r="9"/>
+            <circle  class="shape" id="f-fl3-center" cx="361" cy="310" r="4"/>
+            <!-- Flowers 4 -->
+            <rect    class="shape" id="f-fl4-stem"   x="510" y="316" width="4"  height="24"/>
+            <ellipse class="shape" id="f-fl4-leaf-l" cx="502" cy="326" rx="9" ry="5" transform="rotate(-35 502 326)"/>
+            <ellipse class="shape" id="f-fl4-leaf-r" cx="520" cy="324" rx="9" ry="5" transform="rotate(35 520 324)"/>
+            <circle  class="shape" id="f-fl4-petals" cx="512" cy="312" r="10"/>
+            <circle  class="shape" id="f-fl4-center" cx="512" cy="312" r="4.5"/>
+            <!-- Grass tufts -->
+            <path class="shape" id="f-grass-l1" d="M14,304 L18,286 L22,304 L26,286 L30,304 L22,304 Z"/>
+            <path class="shape" id="f-grass-l2" d="M34,308 L38,292 L42,308 L46,292 L50,308 L42,308 Z"/>
+            <path class="shape" id="f-grass-r1" d="M510,304 L514,287 L518,304 L522,287 L526,304 L518,304 Z"/>
+            <path class="shape" id="f-grass-r2" d="M530,308 L534,292 L538,308 L542,292 L546,308 L538,308 Z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ═══════════════ SCENE: BEACH ═══════════════ -->
+      <div class="scene" id="scene-beach">
+        <div class="scene-wrap">
+          <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sky -->
+            <rect class="shape" id="b-sky-upper"   x="0" y="0"   width="560" height="148"/>
+            <rect class="shape" id="b-sky-horizon" x="0" y="130" width="560" height="48"/>
+            <!-- Sun -->
+            <circle class="shape" id="b-sun-glow"  cx="458" cy="54" r="46"/>
+            <circle class="shape" id="b-sun-body"  cx="458" cy="54" r="30"/>
+            <circle class="shape" id="b-sun-inner" cx="450" cy="46" r="11"/>
+            <!-- Clouds -->
+            <ellipse class="shape" id="b-cl1-base"  cx="105" cy="70" rx="46" ry="18"/>
+            <ellipse class="shape" id="b-cl1-puff1" cx="74"  cy="61" rx="28" ry="21"/>
+            <ellipse class="shape" id="b-cl1-puff2" cx="133" cy="64" rx="26" ry="18"/>
+            <ellipse class="shape" id="b-cl1-top"   cx="103" cy="52" rx="22" ry="17"/>
+            <ellipse class="shape" id="b-cl2-base"  cx="290" cy="48" rx="34" ry="14"/>
+            <ellipse class="shape" id="b-cl2-puff1" cx="268" cy="41" rx="20" ry="14"/>
+            <ellipse class="shape" id="b-cl2-puff2" cx="312" cy="43" rx="18" ry="13"/>
+            <!-- Seagulls -->
+            <path class="shape" id="b-gull1" d="M192,84 L198,77 L204,84 L198,82 Z"/>
+            <path class="shape" id="b-gull2" d="M212,72 L219,65 L226,72 L219,70 Z"/>
+            <path class="shape" id="b-gull3" d="M178,96 L184,89 L190,96 L184,94 Z"/>
+            <!-- Sailboat -->
+            <rect    class="shape" id="b-boat-mast"       x="374" y="118" width="4"  height="58"/>
+            <polygon class="shape" id="b-boat-sail-main"  points="378,120 378,172 414,172"/>
+            <polygon class="shape" id="b-boat-sail-jib"   points="374,172 374,148 352,172"/>
+            <polygon class="shape" id="b-boat-hull"       points="348,174 428,174 420,190 356,190"/>
+            <polygon class="shape" id="b-boat-flag"       points="378,118 392,124 378,130"/>
+            <rect    class="shape" id="b-boat-cabin"      x="384" y="158" width="22" height="16"/>
+            <!-- Ocean -->
+            <rect class="shape" id="b-ocean-deep" x="0" y="148" width="560" height="70"/>
+            <rect class="shape" id="b-ocean-mid"  x="0" y="192" width="560" height="48"/>
+            <!-- Waves -->
+            <path class="shape" id="b-wave1" d="M0,224 C50,213 100,228 150,218 C200,208 250,226 300,216 C350,206 400,222 450,213 C490,206 530,218 560,213 L560,238 L0,238 Z"/>
+            <path class="shape" id="b-wave2" d="M0,235 C40,226 90,238 140,230 C190,222 240,236 290,228 C340,220 390,234 440,226 C490,218 530,230 560,224 L560,246 L0,246 Z"/>
+            <ellipse class="shape" id="b-foam1" cx="120" cy="228" rx="22" ry="5"/>
+            <ellipse class="shape" id="b-foam2" cx="340" cy="234" rx="18" ry="4"/>
+            <!-- Beach sand -->
+            <rect class="shape" id="b-sand-main" x="0"   y="242" width="560" height="158"/>
+            <path class="shape" id="b-sand-wet"  d="M0,242 C80,250 180,245 280,252 C380,259 480,248 560,254 L560,265 C480,258 380,269 280,262 C180,255 80,260 0,252 Z"/>
+            <!-- Palm left -->
+            <path class="shape" id="b-palm-l-trunk"   d="M62,400 C58,360 64,330 70,305 C74,285 72,268 68,252" stroke-width="9" fill="none"/>
+            <path class="shape" id="b-palm-l-frond1"  d="M68,252 C48,234 22,230 8,238 C18,246 44,246 68,264 Z"/>
+            <path class="shape" id="b-palm-l-frond2"  d="M68,252 C58,228 60,204 70,196 C74,208 74,234 68,268 Z"/>
+            <path class="shape" id="b-palm-l-frond3"  d="M68,252 C88,232 112,230 124,240 C112,248 88,250 68,268 Z"/>
+            <path class="shape" id="b-palm-l-frond4"  d="M68,252 C88,246 110,258 116,272 C100,272 82,264 68,268 Z"/>
+            <path class="shape" id="b-palm-l-frond5"  d="M68,252 C52,248 36,260 30,274 C46,272 58,262 68,268 Z"/>
+            <circle  class="shape" id="b-palm-l-coc1" cx="72" cy="258" r="7"/>
+            <circle  class="shape" id="b-palm-l-coc2" cx="64" cy="262" r="6"/>
+            <!-- Palm right -->
+            <path class="shape" id="b-palm-r-trunk"   d="M498,400 C502,360 496,330 490,305 C486,285 488,268 492,252" stroke-width="9" fill="none"/>
+            <path class="shape" id="b-palm-r-frond1"  d="M492,252 C512,234 538,230 552,238 C542,246 516,246 492,264 Z"/>
+            <path class="shape" id="b-palm-r-frond2"  d="M492,252 C502,228 500,204 490,196 C486,208 486,234 492,268 Z"/>
+            <path class="shape" id="b-palm-r-frond3"  d="M492,252 C472,232 448,230 436,240 C448,248 472,250 492,268 Z"/>
+            <path class="shape" id="b-palm-r-frond4"  d="M492,252 C472,246 450,258 444,272 C460,272 478,264 492,268 Z"/>
+            <path class="shape" id="b-palm-r-frond5"  d="M492,252 C508,248 524,260 530,274 C514,272 502,262 492,268 Z"/>
+            <circle  class="shape" id="b-palm-r-coc1" cx="488" cy="258" r="7"/>
+            <circle  class="shape" id="b-palm-r-coc2" cx="496" cy="263" r="6"/>
+            <!-- Beach umbrella -->
+            <rect    class="shape" id="b-umb-pole"    x="156" y="288" width="4"  height="62"/>
+            <path    class="shape" id="b-umb-left"    d="M158,290 C138,280 122,270 110,280 C120,295 140,298 158,300 Z"/>
+            <path    class="shape" id="b-umb-right"   d="M158,290 C178,280 194,270 206,280 C196,295 176,298 158,300 Z"/>
+            <path    class="shape" id="b-umb-center"  d="M158,290 C150,278 148,268 158,266 C168,268 166,278 158,290 Z"/>
+            <ellipse class="shape" id="b-umb-tip"     cx="158" cy="266" rx="6" ry="4"/>
+            <!-- Towel -->
+            <rect class="shape" id="b-towel-body"     x="80"  y="318" width="72" height="32" rx="4" transform="rotate(-4 80 318)"/>
+            <rect class="shape" id="b-towel-stripe1"  x="87"  y="318" width="10" height="32" transform="rotate(-4 87 318)"/>
+            <rect class="shape" id="b-towel-stripe2"  x="115" y="318" width="10" height="32" transform="rotate(-4 115 318)"/>
+            <!-- Sandcastle -->
+            <rect    class="shape" id="b-castle-base"   x="374" y="342" width="82" height="30"/>
+            <rect    class="shape" id="b-castle-tower-l" x="366" y="318" width="24" height="32"/>
+            <rect    class="shape" id="b-castle-tower-c" x="392" y="308" width="24" height="38"/>
+            <rect    class="shape" id="b-castle-tower-r" x="420" y="318" width="24" height="32"/>
+            <rect    class="shape" id="b-castle-bat-l1"  x="366" y="312" width="6"  height="6"/>
+            <rect    class="shape" id="b-castle-bat-l2"  x="378" y="312" width="6"  height="6"/>
+            <rect    class="shape" id="b-castle-bat-c1"  x="392" y="302" width="6"  height="6"/>
+            <rect    class="shape" id="b-castle-bat-c2"  x="404" y="302" width="6"  height="6"/>
+            <rect    class="shape" id="b-castle-bat-r1"  x="420" y="312" width="6"  height="6"/>
+            <rect    class="shape" id="b-castle-bat-r2"  x="432" y="312" width="6"  height="6"/>
+            <polygon class="shape" id="b-castle-flag"    points="404,300 418,304 404,308"/>
+            <rect    class="shape" id="b-castle-door"    x="398" y="326" width="12" height="16"/>
+            <rect    class="shape" id="b-castle-win-l"   x="372" y="326" width="10" height="10"/>
+            <rect    class="shape" id="b-castle-win-r"   x="426" y="326" width="10" height="10"/>
+            <!-- Shells & starfish -->
+            <ellipse class="shape" id="b-shell1"     cx="228" cy="356" rx="14" ry="9"/>
+            <ellipse class="shape" id="b-shell2"     cx="310" cy="370" rx="10" ry="7"/>
+            <polygon class="shape" id="b-starfish1"  points="268,344 271,336 278,336 272,330 275,322 268,328 261,322 264,330 258,336 265,336"/>
+            <polygon class="shape" id="b-starfish2"  points="340,358 342,352 348,352 343,347 345,341 340,346 335,341 337,347 332,352 338,352"/>
+            <!-- Rocks -->
+            <ellipse class="shape" id="b-rock1" cx="470" cy="358" rx="22" ry="13"/>
+            <ellipse class="shape" id="b-rock2" cx="455" cy="354" rx="13" ry="9"/>
+            <ellipse class="shape" id="b-rock3" cx="486" cy="353" rx="10" ry="7"/>
+            <!-- Beach bucket & spade -->
+            <path    class="shape" id="b-bucket-body"  d="M192,354 L198,340 L214,340 L220,354 Z"/>
+            <rect    class="shape" id="b-bucket-rim"   x="196" y="338" width="20" height="4" rx="2"/>
+            <rect    class="shape" id="b-spade-handle" x="226" y="336" width="4"  height="28"/>
+            <ellipse class="shape" id="b-spade-head"   cx="228" cy="332" rx="9"  ry="10"/>
+            <!-- Footprints path -->
+            <ellipse class="shape" id="b-foot1" cx="275" cy="380" rx="8" ry="5" transform="rotate(-10 275 380)"/>
+            <ellipse class="shape" id="b-foot2" cx="285" cy="366" rx="8" ry="5" transform="rotate(10 285 366)"/>
+            <ellipse class="shape" id="b-foot3" cx="276" cy="352" rx="8" ry="5" transform="rotate(-10 276 352)"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ═══════════════ SCENE: NIGHT SKY ═══════════════ -->
+      <div class="scene" id="scene-night">
+        <div class="scene-wrap">
+          <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sky -->
+            <rect class="shape" id="n-sky-deep"  x="0" y="0"   width="560" height="240"/>
+            <rect class="shape" id="n-sky-lower" x="0" y="220" width="560" height="40"/>
+            <!-- Milky way band -->
+            <path class="shape" id="n-milkyway" d="M0,40 C80,20 160,60 240,30 C320,0 400,50 480,20 C510,10 540,25 560,18 L560,80 C540,87 510,72 480,82 C400,110 320,60 240,90 C160,120 80,80 0,100 Z" stroke-width="0.5"/>
+            <!-- Aurora borealis -->
+            <path class="shape" id="n-aurora1" d="M0,55 C80,35 160,75 240,45 C320,15 400,65 480,38 C510,28 535,40 560,35 L560,88 C535,93 510,81 480,88 C400,115 320,65 240,95 C160,125 80,85 0,105 Z"/>
+            <path class="shape" id="n-aurora2" d="M0,88 C70,72 150,100 230,78 C310,56 390,90 470,70 C505,60 535,72 560,67 L560,108 C535,113 505,101 470,110 C390,130 310,96 230,118 C150,140 70,112 0,128 Z"/>
+            <path class="shape" id="n-aurora3" d="M60,110 C120,98 200,118 280,102 C360,86 430,110 500,96 L500,126 C430,140 360,116 280,132 C200,148 120,128 60,140 Z"/>
+            <!-- Moon glow & body -->
+            <circle class="shape" id="n-moon-glow"  cx="418" cy="72"  r="52"/>
+            <circle class="shape" id="n-moon-body"  cx="418" cy="72"  r="36"/>
+            <circle class="shape" id="n-moon-crater1" cx="410" cy="62" r="7"/>
+            <circle class="shape" id="n-moon-crater2" cx="428" cy="80" r="5"/>
+            <circle class="shape" id="n-moon-crater3" cx="406" cy="82" r="4"/>
+            <!-- Stars -->
+            <circle class="shape" id="n-star1"  cx="28"  cy="18"  r="3.5"/>
+            <circle class="shape" id="n-star2"  cx="72"  cy="8"   r="2.5"/>
+            <circle class="shape" id="n-star3"  cx="108" cy="28"  r="3"/>
+            <circle class="shape" id="n-star4"  cx="150" cy="12"  r="2"/>
+            <circle class="shape" id="n-star5"  cx="188" cy="35"  r="3"/>
+            <circle class="shape" id="n-star6"  cx="228" cy="14"  r="2.5"/>
+            <circle class="shape" id="n-star7"  cx="268" cy="28"  r="2"/>
+            <circle class="shape" id="n-star8"  cx="310" cy="10"  r="3"/>
+            <circle class="shape" id="n-star9"  cx="348" cy="30"  r="2.5"/>
+            <circle class="shape" id="n-star10" cx="384" cy="14"  r="2"/>
+            <circle class="shape" id="n-star11" cx="46"  cy="48"  r="2"/>
+            <circle class="shape" id="n-star12" cx="130" cy="55"  r="2.5"/>
+            <circle class="shape" id="n-star13" cx="200" cy="65"  r="2"/>
+            <circle class="shape" id="n-star14" cx="300" cy="52"  r="2"/>
+            <circle class="shape" id="n-star15" cx="470" cy="18"  r="2.5"/>
+            <circle class="shape" id="n-star16" cx="520" cy="35"  r="2"/>
+            <circle class="shape" id="n-star17" cx="546" cy="12"  r="3"/>
+            <!-- Shooting star -->
+            <path class="shape" id="n-shoot-star" d="M160,48 L188,28 L178,46 Z"/>
+            <!-- Hills -->
+            <ellipse class="shape" id="n-hill-l"  cx="-20" cy="270" rx="220" ry="80"/>
+            <ellipse class="shape" id="n-hill-r"  cx="580" cy="270" rx="220" ry="80"/>
+            <path    class="shape" id="n-hill-c"  d="M180,260 C220,225 280,215 340,225 C400,235 440,255 480,260 L480,400 L180,400 Z"/>
+            <!-- Still water -->
+            <rect    class="shape" id="n-water-body"      x="0"   y="310" width="560" height="90"/>
+            <ellipse class="shape" id="n-water-moon-refl" cx="418" cy="340" rx="35" ry="12"/>
+            <path    class="shape" id="n-water-aurora-r"  d="M80,320 C160,312 240,326 320,318 C380,312 440,320 480,316 L480,335 C440,339 380,331 320,337 C240,345 160,331 80,339 Z"/>
+            <!-- Pine trees on hills -->
+            <polygon class="shape" id="n-pine1-bot"  points="55,270 68,240 81,270"/>
+            <polygon class="shape" id="n-pine1-mid"  points="58,248 68,224 78,248"/>
+            <polygon class="shape" id="n-pine1-top"  points="61,230 68,210 75,230"/>
+            <rect    class="shape" id="n-pine1-trunk" x="65" y="270" width="6" height="20"/>
+            <polygon class="shape" id="n-pine2-bot"  points="110,265 122,238 134,265"/>
+            <polygon class="shape" id="n-pine2-mid"  points="113,244 122,220 131,244"/>
+            <rect    class="shape" id="n-pine2-trunk" x="119" y="265" width="6" height="18"/>
+            <polygon class="shape" id="n-pine3-bot"  points="378,258 392,228 406,258"/>
+            <polygon class="shape" id="n-pine3-mid"  points="381,238 392,212 403,238"/>
+            <polygon class="shape" id="n-pine3-top"  points="384,220 392,200 400,220"/>
+            <rect    class="shape" id="n-pine3-trunk" x="389" y="258" width="6" height="20"/>
+            <polygon class="shape" id="n-pine4-bot"  points="430,260 442,232 454,260"/>
+            <polygon class="shape" id="n-pine4-mid"  points="433,240 442,216 451,240"/>
+            <rect    class="shape" id="n-pine4-trunk" x="439" y="260" width="6" height="18"/>
+            <polygon class="shape" id="n-pine5-bot"  points="496,265 508,238 520,265"/>
+            <rect    class="shape" id="n-pine5-trunk" x="505" y="265" width="6" height="16"/>
+            <!-- Cabin -->
+            <rect    class="shape" id="n-cabin-body"    x="162" y="252" width="72" height="52"/>
+            <polygon class="shape" id="n-cabin-roof"    points="154,254 198,222 242,254"/>
+            <rect    class="shape" id="n-cabin-chimney" x="202" y="224" width="12" height="22"/>
+            <rect    class="shape" id="n-cabin-door"    x="188" y="274" width="18" height="30"/>
+            <rect    class="shape" id="n-cabin-win-l"   x="168" y="262" width="16" height="14"/>
+            <rect    class="shape" id="n-cabin-win-r"   x="212" y="262" width="16" height="14"/>
+            <circle  class="shape" id="n-smoke1"        cx="206" cy="218" r="6"/>
+            <circle  class="shape" id="n-smoke2"        cx="212" cy="210" r="5"/>
+            <circle  class="shape" id="n-smoke3"        cx="208" cy="202" r="4"/>
+            <!-- Fireflies -->
+            <circle class="shape" id="n-firefly1" cx="148" cy="240" r="4"/>
+            <circle class="shape" id="n-firefly2" cx="270" cy="218" r="3.5"/>
+            <circle class="shape" id="n-firefly3" cx="320" cy="245" r="4"/>
+            <circle class="shape" id="n-firefly4" cx="356" cy="228" r="3"/>
+            <circle class="shape" id="n-firefly5" cx="88"  cy="256" r="3.5"/>
+            <circle class="shape" id="n-firefly6" cx="240" cy="250" r="3"/>
+            <!-- Foreground rocks -->
+            <ellipse class="shape" id="n-rock1" cx="40"  cy="305" rx="28" ry="16"/>
+            <ellipse class="shape" id="n-rock2" cx="510" cy="308" rx="28" ry="15"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ═══════════════ SCENE: GARDEN ═══════════════ -->
+      <div class="scene" id="scene-garden">
+        <div class="scene-wrap">
+          <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sky -->
+            <rect class="shape" id="g-sky-upper"  x="0" y="0"   width="560" height="135"/>
+            <rect class="shape" id="g-sky-lower"  x="0" y="118" width="560" height="42"/>
+            <!-- Sun -->
+            <circle class="shape" id="g-sun-glow"  cx="78"  cy="52"  r="40"/>
+            <circle class="shape" id="g-sun-body"  cx="78"  cy="52"  r="26"/>
+            <circle class="shape" id="g-sun-inner" cx="70"  cy="44"  r="9"/>
+            <!-- Clouds -->
+            <ellipse class="shape" id="g-cl1-base"  cx="255" cy="50" rx="38" ry="16"/>
+            <ellipse class="shape" id="g-cl1-puff1" cx="228" cy="43" rx="22" ry="16"/>
+            <ellipse class="shape" id="g-cl1-puff2" cx="280" cy="44" rx="20" ry="15"/>
+            <ellipse class="shape" id="g-cl1-top"   cx="254" cy="35" rx="18" ry="14"/>
+            <ellipse class="shape" id="g-cl2-base"  cx="425" cy="42" rx="30" ry="13"/>
+            <ellipse class="shape" id="g-cl2-puff"  cx="406" cy="36" rx="18" ry="13"/>
+            <!-- Ground -->
+            <rect class="shape" id="g-ground-main"  x="0"   y="148" width="560" height="252"/>
+            <!-- Garden beds -->
+            <path class="shape" id="g-bed-l" d="M0,148 C60,148 140,155 210,148 L210,400 L0,400 Z"/>
+            <path class="shape" id="g-bed-r" d="M350,148 C420,155 500,148 560,148 L560,400 L350,400 Z"/>
+            <!-- Center stone path -->
+            <path class="shape" id="g-path-body" d="M228,148 L218,400 L342,400 L332,148 Z"/>
+            <ellipse class="shape" id="g-stone1" cx="280" cy="186" rx="24" ry="12" transform="rotate(-5 280 186)"/>
+            <ellipse class="shape" id="g-stone2" cx="278" cy="228" rx="22" ry="11" transform="rotate(4 278 228)"/>
+            <ellipse class="shape" id="g-stone3" cx="281" cy="270" rx="24" ry="12" transform="rotate(-3 281 270)"/>
+            <ellipse class="shape" id="g-stone4" cx="279" cy="312" rx="22" ry="11" transform="rotate(5 279 312)"/>
+            <ellipse class="shape" id="g-stone5" cx="280" cy="354" rx="24" ry="12"/>
+            <!-- Garden arch -->
+            <rect class="shape" id="g-arch-l"   x="224" y="148" width="14" height="80"/>
+            <rect class="shape" id="g-arch-r"   x="322" y="148" width="14" height="80"/>
+            <path class="shape" id="g-arch-top" d="M224,200 C224,162 336,162 336,200 L322,200 C322,170 238,170 238,200 Z"/>
+            <circle class="shape" id="g-arch-fl1" cx="224" cy="172" r="9"/>
+            <circle class="shape" id="g-arch-fl2" cx="280" cy="152" r="8"/>
+            <circle class="shape" id="g-arch-fl3" cx="336" cy="172" r="9"/>
+            <!-- LEFT BED PLANTS -->
+            <!-- Rose 1 -->
+            <rect    class="shape" id="g-r1-stem"   x="58"  y="242" width="5"  height="82"/>
+            <ellipse class="shape" id="g-r1-leaf-l" cx="44"  cy="274" rx="16" ry="8" transform="rotate(-38 44 274)"/>
+            <ellipse class="shape" id="g-r1-leaf-r" cx="74"  cy="268" rx="16" ry="8" transform="rotate(33 74 268)"/>
+            <circle  class="shape" id="g-r1-outer"  cx="61"  cy="236" r="20"/>
+            <circle  class="shape" id="g-r1-mid"    cx="61"  cy="236" r="14"/>
+            <circle  class="shape" id="g-r1-center" cx="61"  cy="236" r="6"/>
+            <!-- Tulip 1 -->
+            <rect    class="shape" id="g-t1-stem"   x="108" y="258" width="5"  height="66"/>
+            <ellipse class="shape" id="g-t1-leaf"   cx="98"  cy="280" rx="14" ry="7" transform="rotate(-32 98 280)"/>
+            <ellipse class="shape" id="g-t1-body"   cx="111" cy="248" rx="15" ry="20"/>
+            <ellipse class="shape" id="g-t1-petal-l" cx="100" cy="254" rx="9" ry="16" transform="rotate(-18 100 254)"/>
+            <ellipse class="shape" id="g-t1-petal-r" cx="122" cy="254" rx="9" ry="16" transform="rotate(18 122 254)"/>
+            <!-- Lavender 1 -->
+            <rect    class="shape" id="g-lav1-stem"  x="155" y="274" width="4"  height="50"/>
+            <ellipse class="shape" id="g-lav1-cl-b"  cx="157" cy="262" rx="8"  ry="16"/>
+            <ellipse class="shape" id="g-lav1-cl-t"  cx="157" cy="248" rx="6"  ry="10"/>
+            <ellipse class="shape" id="g-lav1-leaf-l" cx="146" cy="284" rx="12" ry="6" transform="rotate(-30 146 284)"/>
+            <ellipse class="shape" id="g-lav1-leaf-r" cx="168" cy="282" rx="12" ry="6" transform="rotate(28 168 282)"/>
+            <!-- Daisy left -->
+            <rect    class="shape" id="g-d1-stem"    x="188" y="270" width="4"  height="54"/>
+            <circle  class="shape" id="g-d1-petals"  cx="190" cy="263" r="16"/>
+            <circle  class="shape" id="g-d1-center"  cx="190" cy="263" r="7"/>
+            <ellipse class="shape" id="g-d1-leaf-l"  cx="179" cy="288" rx="12" ry="6" transform="rotate(-28 179 288)"/>
+            <!-- Small wildflower left -->
+            <rect    class="shape" id="g-wf1-stem"   x="32"  y="298" width="3"  height="38"/>
+            <circle  class="shape" id="g-wf1-petals" cx="34"  cy="294" r="10"/>
+            <circle  class="shape" id="g-wf1-center" cx="34"  cy="294" r="4"/>
+            <!-- Lavender 2 -->
+            <rect    class="shape" id="g-lav2-stem"  x="136" y="320" width="4"  height="46"/>
+            <ellipse class="shape" id="g-lav2-cl-b"  cx="138" cy="308" rx="7"  ry="14"/>
+            <ellipse class="shape" id="g-lav2-cl-t"  cx="138" cy="296" rx="5"  ry="9"/>
+            <!-- RIGHT BED PLANTS -->
+            <!-- Sunflower 1 -->
+            <rect    class="shape" id="g-sf1-stem"   x="378" y="228" width="6"  height="88"/>
+            <ellipse class="shape" id="g-sf1-leaf-l" cx="362" cy="268" rx="18" ry="9" transform="rotate(-38 362 268)"/>
+            <ellipse class="shape" id="g-sf1-leaf-r" cx="398" cy="262" rx="18" ry="9" transform="rotate(35 398 262)"/>
+            <circle  class="shape" id="g-sf1-petals" cx="381" cy="218" r="28"/>
+            <circle  class="shape" id="g-sf1-disc"   cx="381" cy="218" r="16"/>
+            <circle  class="shape" id="g-sf1-center" cx="381" cy="218" r="8"/>
+            <!-- Rose 2 -->
+            <rect    class="shape" id="g-r2-stem"    x="432" y="252" width="5"  height="74"/>
+            <ellipse class="shape" id="g-r2-leaf-l"  cx="418" cy="280" rx="15" ry="8" transform="rotate(-36 418 280)"/>
+            <ellipse class="shape" id="g-r2-leaf-r"  cx="450" cy="274" rx="15" ry="8" transform="rotate(32 450 274)"/>
+            <circle  class="shape" id="g-r2-outer"   cx="435" cy="246" r="19"/>
+            <circle  class="shape" id="g-r2-mid"     cx="435" cy="246" r="13"/>
+            <circle  class="shape" id="g-r2-center"  cx="435" cy="246" r="5"/>
+            <!-- Tulip 2 -->
+            <rect    class="shape" id="g-t2-stem"    x="488" y="268" width="5"  height="62"/>
+            <ellipse class="shape" id="g-t2-leaf"    cx="500" cy="288" rx="14" ry="7" transform="rotate(30 500 288)"/>
+            <ellipse class="shape" id="g-t2-body"    cx="491" cy="256" rx="15" ry="20"/>
+            <ellipse class="shape" id="g-t2-petal-l" cx="480" cy="263" rx="9"  ry="16" transform="rotate(-18 480 263)"/>
+            <ellipse class="shape" id="g-t2-petal-r" cx="502" cy="263" rx="9"  ry="16" transform="rotate(18 502 263)"/>
+            <!-- Daisy right -->
+            <rect    class="shape" id="g-d2-stem"    x="360" y="278" width="4"  height="52"/>
+            <circle  class="shape" id="g-d2-petals"  cx="362" cy="272" r="15"/>
+            <circle  class="shape" id="g-d2-center"  cx="362" cy="272" r="7"/>
+            <!-- Sunflower 2 (smaller) -->
+            <rect    class="shape" id="g-sf2-stem"   x="533" y="265" width="5"  height="75"/>
+            <ellipse class="shape" id="g-sf2-leaf-l" cx="520" cy="296" rx="14" ry="7" transform="rotate(-35 520 296)"/>
+            <circle  class="shape" id="g-sf2-petals" cx="536" cy="258" r="22"/>
+            <circle  class="shape" id="g-sf2-disc"   cx="536" cy="258" r="12"/>
+            <circle  class="shape" id="g-sf2-center" cx="536" cy="258" r="6"/>
+            <!-- Butterfly 1 (left bed) -->
+            <ellipse class="shape" id="g-but1-body"    cx="130" cy="220" rx="5"  ry="13"/>
+            <ellipse class="shape" id="g-but1-wing-tl" cx="112" cy="211" rx="20" ry="13" transform="rotate(-20 112 211)"/>
+            <ellipse class="shape" id="g-but1-wing-tr" cx="148" cy="211" rx="20" ry="13" transform="rotate(20 148 211)"/>
+            <ellipse class="shape" id="g-but1-wing-bl" cx="115" cy="228" rx="13" ry="8"  transform="rotate(-30 115 228)"/>
+            <ellipse class="shape" id="g-but1-wing-br" cx="145" cy="228" rx="13" ry="8"  transform="rotate(30 145 228)"/>
+            <!-- Butterfly 2 (right bed) -->
+            <ellipse class="shape" id="g-but2-body"    cx="460" cy="214" rx="5"  ry="12"/>
+            <ellipse class="shape" id="g-but2-wing-tl" cx="442" cy="206" rx="19" ry="12" transform="rotate(-22 442 206)"/>
+            <ellipse class="shape" id="g-but2-wing-tr" cx="478" cy="206" rx="19" ry="12" transform="rotate(22 478 206)"/>
+            <ellipse class="shape" id="g-but2-wing-bl" cx="445" cy="222" rx="12" ry="8"  transform="rotate(-30 445 222)"/>
+            <ellipse class="shape" id="g-but2-wing-br" cx="475" cy="222" rx="12" ry="8"  transform="rotate(30 475 222)"/>
+            <!-- Watering can -->
+            <path    class="shape" id="g-wcan-body"   d="M296,328 L296,310 C296,306 310,306 310,310 L310,328 Z"/>
+            <rect    class="shape" id="g-wcan-bottom" x="292" y="326" width="22" height="8" rx="3"/>
+            <path    class="shape" id="g-wcan-spout"  d="M310,314 C322,310 334,308 342,316 L336,320 C330,314 322,318 310,322 Z"/>
+            <path    class="shape" id="g-wcan-handle" d="M296,312 C288,308 286,326 296,328" stroke-width="4" fill="none"/>
+            <ellipse class="shape" id="g-wcan-rose"   cx="342" cy="318" rx="6"  ry="5"/>
+            <!-- Fence left -->
+            <rect class="shape" id="g-fence-lp1" x="0"  y="185" width="6" height="50"/>
+            <rect class="shape" id="g-fence-lp2" x="18" y="185" width="6" height="50"/>
+            <rect class="shape" id="g-fence-lr1" x="0"  y="193" width="24" height="4"/>
+            <rect class="shape" id="g-fence-lr2" x="0"  y="214" width="24" height="4"/>
+            <!-- Fence right -->
+            <rect class="shape" id="g-fence-rp1" x="536" y="185" width="6" height="50"/>
+            <rect class="shape" id="g-fence-rp2" x="518" y="185" width="6" height="50"/>
+            <rect class="shape" id="g-fence-rr1" x="518" y="193" width="24" height="4"/>
+            <rect class="shape" id="g-fence-rr2" x="518" y="214" width="24" height="4"/>
+            <!-- Birdhouse -->
+            <rect    class="shape" id="g-bh-pole"  x="514" y="162" width="6"  height="60"/>
+            <rect    class="shape" id="g-bh-body"  x="498" y="134" width="36" height="36"/>
+            <polygon class="shape" id="g-bh-roof"  points="494,136 516,118 540,136"/>
+            <circle  class="shape" id="g-bh-hole"  cx="516" cy="148" r="8"/>
+            <!-- Background tree -->
+            <rect    class="shape" id="g-bg-tree-trunk"  x="24" y="155" width="8"  height="28"/>
+            <ellipse class="shape" id="g-bg-tree-canopy" cx="28" cy="145" rx="20" ry="18"/>
+            <ellipse class="shape" id="g-bg-tree-hi"     cx="22" cy="138" rx="10" ry="9"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="bottom-row">
+        <button class="reset-btn" id="resetBtn">↺ Clear and start over</button>
+        <p class="hint">Tap any shape to colour it in 🎨</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const palettes = {
+      forest: [
+        {c:'#aecbdc',t:'Sky blue'}, {c:'#6fa8c7',t:'Deep sky'}, {c:'#c8e8f0',t:'Ice blue'},
+        {c:'#f5d06a',t:'Sunlight'}, {c:'#f9f3e0',t:'Cloud'},
+        {c:'#6b8f71',t:'Sage'}, {c:'#4a6640',t:'Forest'}, {c:'#a3b18a',t:'Mint'},
+        {c:'#2d5a27',t:'Dark forest'}, {c:'#c8dbb0',t:'Meadow'},
+        {c:'#8b5e3c',t:'Bark'}, {c:'#5c3d1e',t:'Dark wood'}, {c:'#c9a87c',t:'Sand'},
+        {c:'#e8b4c8',t:'Blossom'}, {c:'#f4d03f',t:'Buttercup'}, {c:'#f4a261',t:'Amber'},
+        {c:'#c8c2b8',t:'Stone'}, {c:'#8a8680',t:'Shadow'}, {c:'#f5f0e8',t:'Erase'},
+      ],
+      beach: [
+        {c:'#87ceeb',t:'Sky blue'}, {c:'#b8d4f0',t:'Pale sky'}, {c:'#f7f0d8',t:'Cloud white'},
+        {c:'#f5d06a',t:'Sunlight'}, {c:'#f4a261',t:'Sunset amber'}, {c:'#e76f51',t:'Coral'},
+        {c:'#1a5276',t:'Deep ocean'}, {c:'#2980b9',t:'Ocean blue'}, {c:'#5dade2',t:'Sea'},
+        {c:'#48c9b0',t:'Aqua'}, {c:'#76d7c4',t:'Turquoise'}, {c:'#c8e8f0',t:'Seafoam'},
+        {c:'#f0d9a0',t:'Sand'}, {c:'#e8c97a',t:'Wet sand'}, {c:'#c9a96e',t:'Dark sand'},
+        {c:'#2ecc71',t:'Palm green'}, {c:'#8b5e3c',t:'Palm trunk'},
+        {c:'#e8b4c8',t:'Shell pink'}, {c:'#f5c518',t:'Starfish'},
+        {c:'#8a8680',t:'Rock'}, {c:'#f5f0e8',t:'Erase'},
+      ],
+      night: [
+        {c:'#0a0a2e',t:'Deep night'}, {c:'#1a1a4e',t:'Midnight'}, {c:'#2d2d6b',t:'Dark blue'},
+        {c:'#1c3a6e',t:'Navy'}, {c:'#243b55',t:'Dusk blue'},
+        {c:'#00c853',t:'Aurora green'}, {c:'#69f0ae',t:'Aurora mint'}, {c:'#b9f6ca',t:'Soft aurora'},
+        {c:'#e040fb',t:'Aurora violet'}, {c:'#ce93d8',t:'Aurora pink'}, {c:'#f8bbd0',t:'Aurora blush'},
+        {c:'#7e57c2',t:'Purple'}, {c:'#4a148c',t:'Deep purple'},
+        {c:'#fffde7',t:'Starlight'}, {c:'#ffd54f',t:'Moonlight'}, {c:'#fff9c4',t:'Pale moon'},
+        {c:'#8b5e3c',t:'Cabin wood'}, {c:'#f39c12',t:'Warm window'}, {c:'#e74c3c',t:'Chimney glow'},
+        {c:'#e3f2fd',t:'Snow'}, {c:'#b0bec5',t:'Frost'},
+        {c:'#a5d6a7',t:'Firefly'}, {c:'#f5f0e8',t:'Erase'},
+      ],
+      garden: [
+        {c:'#87ceeb',t:'Sky'}, {c:'#b8d4f0',t:'Pale sky'}, {c:'#f5d06a',t:'Sunlight'},
+        {c:'#4caf50',t:'Grass'}, {c:'#66bb6a',t:'Light grass'}, {c:'#2e7d32',t:'Dark green'},
+        {c:'#a5d6a7',t:'Mint'}, {c:'#c8dbb0',t:'Pale green'},
+        {c:'#e53935',t:'Rose red'}, {c:'#ef9a9a',t:'Rose pink'}, {c:'#ffcdd2',t:'Blush'},
+        {c:'#fdd835',t:'Sunflower'}, {c:'#f9a825',t:'Dark sunflower'}, {c:'#8d6e63',t:'Disc'},
+        {c:'#7b1fa2',t:'Tulip purple'}, {c:'#9575cd',t:'Lavender'}, {c:'#b39ddb',t:'Light lavender'},
+        {c:'#e91e63',t:'Fuchsia'}, {c:'#f48fb1',t:'Petal pink'}, {c:'#fafafa',t:'White daisy'},
+        {c:'#00bcd4',t:'Butterfly blue'}, {c:'#ff9800',t:'Butterfly orange'},
+        {c:'#8b5e3c',t:'Wood'}, {c:'#d7ccc8',t:'Stone path'}, {c:'#f5f0e8',t:'Erase'},
+      ]
+    };
+
+    let selectedColor = palettes.forest[0].c;
+    let activeScene = 'forest';
+
+    function renderPalette(scene) {
+      const pal = document.getElementById('palette');
+      pal.innerHTML = palettes[scene].map((p, i) =>
+        `<div class="color-btn${i === 0 ? ' active' : ''}" style="background:${p.c};${p.c === '#f5f0e8' ? 'border-color:#ccc;' : ''}" data-color="${p.c}" title="${p.t}"></div>`
+      ).join('');
+      selectedColor = palettes[scene][0].c;
+      pal.querySelectorAll('.color-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          pal.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          selectedColor = btn.dataset.color;
+        });
+      });
+    }
+
+    function switchScene(scene) {
+      document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.scene-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('scene-' + scene).classList.add('active');
+      document.querySelector(`[data-scene="${scene}"]`).classList.add('active');
+      renderPalette(scene);
+      activeScene = scene;
+    }
+
+    document.querySelectorAll('.scene-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchScene(tab.dataset.scene));
+    });
+
+    document.addEventListener('click', e => {
+      if (e.target.classList.contains('shape')) {
+        e.target.style.fill = selectedColor;
+      }
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      document.querySelectorAll(`#scene-${activeScene} .shape`).forEach(s => s.style.fill = '');
+    });
+
+    // Init
+    renderPalette('forest');
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

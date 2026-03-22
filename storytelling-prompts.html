@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guided Prompts | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --cream-dark: #ece5d8; --sage: #7d9e75;
+      --sage-muted: #c8d9c2; --olive: #4a6640; --olive-dark: #374f31;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680; --white: #ffffff;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between; padding: 20px 60px;
+      background: rgba(245,240,232,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; letter-spacing: 3px; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 9px; }
+    .nav-back { font-size: 14px; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+    .leaf { position: fixed; pointer-events: none; opacity: 0.18; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 220px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 190px; transform: rotate(158deg); }
+    .page {
+      min-height: 100vh; padding: 110px 24px 80px;
+      background: radial-gradient(ellipse 800px 600px at 10% 10%, rgba(125,158,117,0.22) 0%, transparent 65%), radial-gradient(ellipse 600px 500px at 90% 85%, rgba(157,180,150,0.18) 0%, transparent 65%), var(--cream);
+    }
+    .wrap { max-width: 680px; margin: 0 auto; position: relative; z-index: 1; }
+    .header { margin-bottom: 40px; }
+    .header-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 10px; }
+    .header-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 5vw, 46px); font-weight: 600; color: var(--text); line-height: 1.15; margin-bottom: 10px; }
+    .header-title em { font-style: italic; color: var(--olive); }
+    .header-sub { font-size: 14px; color: var(--text-mid); line-height: 1.7; }
+    .prompts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 40px; }
+    @media (max-width: 520px) { .prompts-grid { grid-template-columns: 1fr; } }
+    .prompt-chip {
+      background: rgba(200,217,194,0.38); border: 1px solid rgba(125,158,117,0.22);
+      border-radius: 16px; padding: 20px 22px; font-size: 15px; font-family: 'Playfair Display', serif;
+      font-style: italic; color: var(--text-mid); cursor: pointer; transition: all 0.2s; text-align: left;
+      display: block; width: 100%;
+    }
+    .prompt-chip:hover { background: rgba(125,158,117,0.18); border-color: var(--sage); color: var(--olive-dark); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+    .prompt-chip::before { content: '"'; color: var(--sage); font-size: 20px; font-style: normal; display: block; margin-bottom: 6px; }
+    .write-area { background: rgba(255,255,255,0.55); border: 1px solid rgba(125,158,117,0.22); border-radius: 22px; padding: 28px; backdrop-filter: blur(8px); }
+    .write-label { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--olive); margin-bottom: 12px; }
+    .selected-prompt { font-family: 'Playfair Display', serif; font-size: 16px; font-style: italic; color: var(--text-mid); margin-bottom: 16px; padding: 14px 18px; background: rgba(200,217,194,0.3); border-radius: 12px; border-left: 3px solid var(--sage); display: none; }
+    .form-textarea {
+      width: 100%; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text);
+      background: rgba(245,240,232,0.7); border: 1.5px solid rgba(125,158,117,0.25);
+      border-radius: 12px; padding: 13px 16px; outline: none; resize: none;
+      transition: border-color 0.2s, box-shadow 0.2s; min-height: 160px; line-height: 1.7;
+    }
+    .form-textarea:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(125,158,117,0.12); }
+    .form-textarea::placeholder { color: var(--text-light); }
+    .write-actions { display: flex; gap: 12px; margin-top: 16px; }
+    .btn-share { flex: 1; background: var(--olive); color: var(--white); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; padding: 13px; border: none; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+    .btn-share:hover { background: var(--olive-dark); }
+    .btn-clear-prompt { background: none; border: 1.5px solid rgba(125,158,117,0.3); color: var(--text-mid); font-family: 'Inter', sans-serif; font-size: 13px; padding: 13px 18px; border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+    .btn-clear-prompt:hover { border-color: var(--sage); color: var(--olive); }
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--olive-dark); color: var(--white); padding: 14px 28px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 9000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 600px) { nav { padding: 18px 24px; } }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <a class="nav-back" href="storytelling.html">← Storytelling</a>
+  </nav>
+
+  <div class="page">
+    <div class="wrap">
+
+      <div class="header">
+        <p class="header-label">📝 Guided Prompts</p>
+        <h1 class="header-title">Need help<br><em>starting?</em></h1>
+        <p class="header-sub">Sometimes we don't know where to begin. Tap a prompt below   it will open a writing space just for you.</p>
+      </div>
+
+      <div class="prompts-grid">
+        <button class="prompt-chip" onclick="usePrompt(this)">Right now, I feel…</button>
+        <button class="prompt-chip" onclick="usePrompt(this)">Something I'm struggling with is…</button>
+        <button class="prompt-chip" onclick="usePrompt(this)">What I wish someone told me is…</button>
+        <button class="prompt-chip" onclick="usePrompt(this)">Today, I'm proud of…</button>
+        <button class="prompt-chip" onclick="usePrompt(this)">A letter to myself…</button>
+        <button class="prompt-chip" onclick="usePrompt(this)">Something beautiful I noticed today…</button>
+        <button class="prompt-chip" onclick="usePrompt(this)">I'm learning to let go of…</button>
+        <button class="prompt-chip" onclick="usePrompt(this)">One thing I need right now is…</button>
+      </div>
+
+      <div class="write-area" id="write-area" style="display:none;">
+        <p class="write-label">Your response</p>
+        <div class="selected-prompt" id="selected-prompt"></div>
+        <textarea class="form-textarea" id="response-textarea" placeholder="Write whatever comes to you…"></textarea>
+        <div class="write-actions">
+          <button class="btn-share" onclick="shareResponse()">Share with community →</button>
+          <button class="btn-clear-prompt" onclick="clearPrompt()">Change prompt</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    function usePrompt(chip) {
+      const text = chip.textContent;
+      document.getElementById('selected-prompt').textContent = '"' + text + '"';
+      document.getElementById('selected-prompt').style.display = 'block';
+      document.getElementById('response-textarea').value = text;
+      document.getElementById('response-textarea').focus();
+      const ta = document.getElementById('response-textarea');
+      ta.setSelectionRange(ta.value.length, ta.value.length);
+      const area = document.getElementById('write-area');
+      area.style.display = 'block';
+      area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function clearPrompt() {
+      document.getElementById('write-area').style.display = 'none';
+      document.getElementById('response-textarea').value = '';
+      document.getElementById('selected-prompt').style.display = 'none';
+    }
+
+    function shareResponse() {
+      const text = document.getElementById('response-textarea').value.trim();
+      if (!text) { showToast('Write something first 🌿'); return; }
+      showToast('Shared with the community 🌿 Thank you for your courage.');
+      clearPrompt();
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
+  </script>
+</body>
+</html>

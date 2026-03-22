@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Letting Go | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #f5f0e8;
+      --cream-dark: #ece5d8;
+      --sage:       #7d9e75;
+      --olive:      #4a6640;
+      --olive-dark: #374f31;
+      --text:       #2a2722;
+      --text-mid:   #5a5650;
+      --text-light: #8a8680;
+      --white:      #ffffff;
+      --lavender:   #a89bb5;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245,240,232,0.82);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 600; letter-spacing: 3px;
+      color: var(--text); text-decoration: none;
+      display: inline-flex; align-items: center; gap: 9px;
+    }
+    .nav-logo svg { flex-shrink: 0; }
+    .nav-back {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; color: var(--text-mid); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+    .nav-back svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .page-hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 40px 80px;
+      background:
+        radial-gradient(ellipse 800px 600px at 20% 20%, rgba(168,155,176,0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 600px 500px at 80% 80%, rgba(125,158,117,0.13) 0%, transparent 60%),
+        var(--cream);
+      position: relative;
+    }
+
+    .hero-label {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--lavender); font-weight: 600; margin-bottom: 16px;
+      position: relative; z-index: 10;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(40px, 7vw, 72px); font-weight: 700;
+      color: var(--text); line-height: 1.1; margin-bottom: 20px;
+      position: relative; z-index: 10;
+    }
+    .hero-title em { font-style: italic; color: var(--olive); }
+    .hero-subtitle {
+      font-size: 16px; color: var(--text-mid);
+      max-width: 520px; line-height: 1.75; margin-bottom: 48px;
+      position: relative; z-index: 10;
+    }
+
+    /* Input container, fades in/out */
+    .input-container {
+      width: 100%; max-width: 560px;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      position: relative; z-index: 10;
+    }
+    .input-container.hidden {
+      opacity: 0; pointer-events: none; transform: translateY(8px);
+    }
+    .input-container.visible {
+      opacity: 1; pointer-events: all; transform: translateY(0);
+    }
+
+    .habit-input-wrap { display: flex; gap: 12px; align-items: center; }
+
+    .habit-input {
+      flex: 1;
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(168,155,176,0.4);
+      border-radius: 100px;
+      padding: 16px 24px;
+      font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .habit-input::placeholder { color: var(--text-light); }
+    .habit-input:focus {
+      border-color: var(--lavender);
+      box-shadow: 0 0 0 4px rgba(168,155,176,0.15);
+    }
+
+    .release-btn {
+      background: linear-gradient(135deg, var(--olive), var(--olive-dark));
+      color: var(--white); border: none; border-radius: 100px;
+      padding: 16px 28px;
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 18px rgba(74,102,64,0.35);
+    }
+    .release-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(74,102,64,0.45); }
+    .release-btn:active { transform: translateY(0); }
+
+    .input-hint { margin-top: 12px; font-size: 12px; color: var(--text-light); text-align: center; }
+
+    #release-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+
+    #affirmation-toast {
+      position: fixed; bottom: 48px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(74,102,64,0.92); backdrop-filter: blur(12px);
+      color: var(--white); padding: 14px 28px; border-radius: 100px;
+      font-size: 14px; font-weight: 400; letter-spacing: 0.2px;
+      opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease;
+      z-index: 200; white-space: nowrap; pointer-events: none;
+    }
+    #affirmation-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .released-section { width: 100%; max-width: 560px; margin-top: 48px; display: none; position: relative; z-index: 10; }
+    .released-section.visible { display: block; }
+    .released-label {
+      font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-light); font-weight: 600; margin-bottom: 16px; text-align: center;
+    }
+    .released-list { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .released-tag {
+      background: rgba(168,155,176,0.12);
+      border: 1px solid rgba(168,155,176,0.3);
+      border-radius: 100px; padding: 8px 18px;
+      font-size: 13px; color: var(--text-mid);
+      animation: tagFadeIn 0.4s ease;
+      text-decoration: line-through;
+      text-decoration-color: rgba(168,155,176,0.55);
+    }
+    @keyframes tagFadeIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .back-section { margin-top: 48px; text-align: center; position: relative; z-index: 10; }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 14px; color: var(--text-mid); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--olive); }
+    .back-link svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ─── Scenic background ──────────────────────────── */
+    .hill {
+      position: absolute;
+      bottom: -40px;
+      border-radius: 50%;
+      z-index: 2;
+      filter: blur(0.2px);
+      pointer-events: none;
+    }
+    .hill-1 { left: -10%; width: 65%; height: 180px; background: rgba(198,210,186,0.55); }
+    .hill-2 { right: -8%; width: 58%; height: 160px; background: rgba(174,189,162,0.45); }
+    .hill-3 { left: 20%;  width: 70%; height: 120px; bottom: -25px; background: rgba(143,162,131,0.18); }
+
+    .branch-wrap {
+      position: absolute;
+      bottom: 0;
+      width: 34vw;
+      min-width: 260px;
+      max-width: 520px;
+      height: 300px;
+      z-index: 3;
+      pointer-events: none;
+      transform-origin: bottom center;
+    }
+    .branch-wrap.left  { left: -10px; animation: swayLeft 8s ease-in-out infinite; }
+    .branch-wrap.right { right: -10px; transform: scaleX(-1); animation: swayRight 9s ease-in-out infinite; }
+
+    .branch-svg { width: 100%; height: 100%; overflow: visible; }
+
+    .twig       { stroke: #8e7f72; stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: 0.72; }
+    .twig.light { stroke: #a8998b; stroke-width: 2.5; opacity: 0.55; }
+
+    .leaf { transform-origin: center; animation: leafFlutter 4s ease-in-out infinite; }
+    .leaf.l1 { fill: #a8ba9d; animation-delay: 0s; }
+    .leaf.l2 { fill: #c6d2ba; animation-delay: 0.7s; }
+    .leaf.l3 { fill: #90a784; animation-delay: 1.4s; }
+
+    .floating-leaf {
+      position: absolute;
+      z-index: 4;
+      opacity: 0;
+      font-size: 1.1rem;
+      animation: floatLeaf linear infinite;
+      pointer-events: none;
+    }
+    .floating-leaf.one   { bottom: 90px; left: 16%;  animation-duration: 10s; animation-delay: 0s; }
+    .floating-leaf.two   { bottom: 90px; left: 28%;  animation-duration: 13s; animation-delay: 3s; }
+    .floating-leaf.three { bottom: 90px; right: 22%; animation-duration: 11s; animation-delay: 1.2s; }
+    .floating-leaf.four  { bottom: 90px; right: 12%; animation-duration: 14s; animation-delay: 5s; }
+    .floating-leaf.five  { bottom: 90px; left: 48%;  animation-duration: 12s; animation-delay: 7s; }
+
+    @keyframes swayLeft {
+      0%, 100% { transform: rotate(0deg); }
+      50%       { transform: rotate(2.2deg); }
+    }
+    @keyframes swayRight {
+      0%, 100% { transform: scaleX(-1) rotate(0deg); }
+      50%       { transform: scaleX(-1) rotate(2.6deg); }
+    }
+    @keyframes leafFlutter {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      50%       { transform: rotate(5deg) translateY(-1px); }
+    }
+    @keyframes floatLeaf {
+      0%   { transform: translate(0,0) rotate(0deg); opacity: 0; }
+      10%  { opacity: 0.45; }
+      30%  { transform: translate(20px,-90px) rotate(18deg); opacity: 0.5; }
+      55%  { transform: translate(-10px,-190px) rotate(-10deg); opacity: 0.42; }
+      85%  { opacity: 0.18; }
+      100% { transform: translate(30px,-290px) rotate(24deg); opacity: 0; }
+    }
+
+    @media (max-width: 640px) {
+      nav { padding: 16px 20px; }
+      .page-hero { padding: 100px 24px 60px; }
+      .habit-input-wrap { flex-direction: column; }
+      .habit-input, .release-btn { width: 100%; border-radius: 16px; }
+      .branch-wrap { width: 42vw; min-width: 180px; height: 220px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .branch-wrap, .leaf, .floating-leaf { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+      <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+      <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+    </svg>
+    SALAMA
+  </a>
+  <a class="nav-back" href="#" onclick="history.back(); return false;">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
+  </a>
+</nav>
+
+<canvas id="release-canvas"></canvas>
+<div id="affirmation-toast"></div>
+
+<main class="page-hero">
+  <!-- Floating emoji leaves -->
+  <div class="floating-leaf one">🍃</div>
+  <div class="floating-leaf two">🍃</div>
+  <div class="floating-leaf three">🍃</div>
+  <div class="floating-leaf four">🍃</div>
+  <div class="floating-leaf five">🍃</div>
+
+  <!-- Left branch -->
+  <div class="branch-wrap left">
+    <svg class="branch-svg" viewBox="0 0 420 300" xmlns="http://www.w3.org/2000/svg">
+      <path class="twig" d="M20 300 C65 240, 110 200, 170 168 C225 140, 275 112, 330 72"/>
+      <path class="twig" d="M75 245 C110 220, 140 198, 165 165"/>
+      <path class="twig" d="M128 205 C155 185, 185 160, 208 128"/>
+      <path class="twig" d="M180 170 C215 150, 250 130, 288 94"/>
+      <path class="twig" d="M238 136 C265 118, 292 98, 318 68"/>
+      <path class="twig light" d="M152 176 C138 150, 126 135, 106 120"/>
+      <path class="twig light" d="M214 125 C204 103, 196 90, 180 74"/>
+      <path class="twig light" d="M258 113 C245 95, 236 85, 222 70"/>
+      <path class="twig light" d="M116 198 C103 182, 92 171, 76 160"/>
+      <ellipse class="leaf l1" cx="104" cy="119" rx="10" ry="5" transform="rotate(-22 104 119)"/>
+      <ellipse class="leaf l2" cx="126" cy="135" rx="11" ry="5" transform="rotate(15 126 135)"/>
+      <ellipse class="leaf l3" cx="180" cy="74"  rx="10" ry="5" transform="rotate(-10 180 74)"/>
+      <ellipse class="leaf l1" cx="197" cy="92"  rx="9"  ry="4.5" transform="rotate(18 197 92)"/>
+      <ellipse class="leaf l2" cx="223" cy="70"  rx="10" ry="5" transform="rotate(-28 223 70)"/>
+      <ellipse class="leaf l3" cx="242" cy="87"  rx="9"  ry="4.5" transform="rotate(6 242 87)"/>
+      <ellipse class="leaf l1" cx="289" cy="94"  rx="10" ry="5" transform="rotate(-16 289 94)"/>
+      <ellipse class="leaf l2" cx="307" cy="82"  rx="10" ry="4.5" transform="rotate(20 307 82)"/>
+      <ellipse class="leaf l3" cx="333" cy="72"  rx="9"  ry="4.5" transform="rotate(-10 333 72)"/>
+      <ellipse class="leaf l2" cx="78"  cy="160" rx="10" ry="4.5" transform="rotate(25 78 160)"/>
+    </svg>
+  </div>
+
+  <!-- Right branch (mirrored) -->
+  <div class="branch-wrap right">
+    <svg class="branch-svg" viewBox="0 0 420 300" xmlns="http://www.w3.org/2000/svg">
+      <path class="twig" d="M20 300 C65 240, 110 200, 170 168 C225 140, 275 112, 330 72"/>
+      <path class="twig" d="M75 245 C110 220, 140 198, 165 165"/>
+      <path class="twig" d="M128 205 C155 185, 185 160, 208 128"/>
+      <path class="twig" d="M180 170 C215 150, 250 130, 288 94"/>
+      <path class="twig" d="M238 136 C265 118, 292 98, 318 68"/>
+      <path class="twig light" d="M152 176 C138 150, 126 135, 106 120"/>
+      <path class="twig light" d="M214 125 C204 103, 196 90, 180 74"/>
+      <path class="twig light" d="M258 113 C245 95, 236 85, 222 70"/>
+      <path class="twig light" d="M116 198 C103 182, 92 171, 76 160"/>
+      <ellipse class="leaf l1" cx="104" cy="119" rx="10" ry="5" transform="rotate(-22 104 119)"/>
+      <ellipse class="leaf l2" cx="126" cy="135" rx="11" ry="5" transform="rotate(15 126 135)"/>
+      <ellipse class="leaf l3" cx="180" cy="74"  rx="10" ry="5" transform="rotate(-10 180 74)"/>
+      <ellipse class="leaf l1" cx="197" cy="92"  rx="9"  ry="4.5" transform="rotate(18 197 92)"/>
+      <ellipse class="leaf l2" cx="223" cy="70"  rx="10" ry="5" transform="rotate(-28 223 70)"/>
+      <ellipse class="leaf l3" cx="242" cy="87"  rx="9"  ry="4.5" transform="rotate(6 242 87)"/>
+      <ellipse class="leaf l1" cx="289" cy="94"  rx="10" ry="5" transform="rotate(-16 289 94)"/>
+      <ellipse class="leaf l2" cx="307" cy="82"  rx="10" ry="4.5" transform="rotate(20 307 82)"/>
+      <ellipse class="leaf l3" cx="333" cy="72"  rx="9"  ry="4.5" transform="rotate(-10 333 72)"/>
+      <ellipse class="leaf l2" cx="78"  cy="160" rx="10" ry="4.5" transform="rotate(25 78 160)"/>
+    </svg>
+  </div>
+
+  <!-- Hills -->
+  <div class="hill hill-1"></div>
+  <div class="hill hill-2"></div>
+  <div class="hill hill-3"></div>
+
+  <p class="hero-label">Release &amp; Renew</p>
+  <h1 class="hero-title">Letting <em>Go</em></h1>
+  <p class="hero-subtitle">
+    Write down a habit or pattern you've been holding onto, one that no longer serves you. Release it, and watch the leaves carry it away.
+  </p>
+
+  <div class="input-container visible" id="input-container">
+    <div class="habit-input-wrap">
+      <input class="habit-input" id="habit-input" type="text"
+        placeholder="e.g. overthinking every decision..."
+        maxlength="60" autocomplete="off" />
+      <button class="release-btn" onclick="releaseHabit()">Let go ✦</button>
+    </div>
+    <p class="input-hint">Press Enter or click "Let go" to release it.</p>
+  </div>
+
+  <div class="released-section" id="released-section">
+    <p class="released-label">What you've let go of</p>
+    <div class="released-list" id="released-list"></div>
+  </div>
+
+  <div class="back-section">
+    <a class="back-link" href="checkin.html">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Return to your resources
+    </a>
+  </div>
+</main>
+
+<script src="chat-widget.js"></script>
+<script>
+(function () {
+  const canvas = document.getElementById('release-canvas');
+  const ctx    = canvas.getContext('2d');
+  let entities  = [];   // mix of Leaf and TextPill
+  let releasing = false;
+
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* ── Affirmations ──────────────────────────────────── */
+  const AFFIRMATIONS = [
+    'That habit no longer defines you.',
+    'You are lighter now.',
+    'Space has been made for something better.',
+    'Letting go is an act of courage.',
+    'You don\'t have to carry that anymore.',
+    'Release is the first step to renewal.',
+    'That\'s behind you now.',
+    'You\'ve chosen yourself.',
+    'Growth begins with letting go.',
+    'Watch it drift. You are free.',
+  ];
+  function showAffirmation() {
+    const toast = document.getElementById('affirmation-toast');
+    toast.textContent = AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)];
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3400);
+  }
+
+  /* ── Input show / hide ─────────────────────────────── */
+  function hideInput() {
+    document.getElementById('input-container').classList.replace('visible', 'hidden');
+    releasing = true;
+  }
+  function showInput() {
+    document.getElementById('input-container').classList.replace('hidden', 'visible');
+    releasing = false;
+    setTimeout(() => document.getElementById('habit-input').focus(), 60);
+  }
+
+  /* ── Realistic Leaf ────────────────────────────────── */
+  const LEAF_PALETTES = [
+    { fill: '#6b9e5e', dark: '#3d6b31', vein: '#4a7a3a' },
+    { fill: '#7db06a', dark: '#4a7a3a', vein: '#5a8a4a' },
+    { fill: '#5a8a4a', dark: '#374f31', vein: '#3d6b31' },
+    { fill: '#8db87a', dark: '#5a8a4a', vein: '#4a7a3a' },
+    { fill: '#a3b87a', dark: '#6b8a3a', vein: '#5a7a30' },
+    { fill: '#9db496', dark: '#5a7a50', vein: '#4a6640' },
+  ];
+
+  const SHAPES = ['ovate', 'elliptic', 'lanceolate', 'cordate'];
+
+  class Leaf {
+    constructor(x, y, vx, vy) {
+      this.x = x; this.y = y;
+      this.vx = vx; this.vy = vy;
+      this.wobble  = Math.random() * Math.PI * 2;
+      this.wobbleS = 0.025 + Math.random() * 0.02;
+      this.wobbleA = 0.3   + Math.random() * 0.4;
+      this.rot     = Math.random() * Math.PI * 2;
+      this.rotV    = (Math.random() - 0.5) * 0.025;
+      this.alpha   = 0;
+      this.growScale = 1;
+      this.life    = 0;
+      this.maxLife = 220 + Math.random() * 80;
+      this.scale   = 0.7 + Math.random() * 0.7;
+      const pal    = LEAF_PALETTES[Math.floor(Math.random() * LEAF_PALETTES.length)];
+      this.fill = pal.fill; this.dark = pal.dark; this.vein = pal.vein;
+      this.shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+      this.curl  = (Math.random() - 0.5) * 0.4;
+    }
+
+    update() {
+      this.life++;
+      this.wobble += this.wobbleS;
+      this.rot    += this.rotV;
+      this.x  += this.vx + Math.sin(this.wobble) * this.wobbleA;
+      this.y  += this.vy;
+      this.vy *= 0.998;
+      this.vx += (Math.random() - 0.5) * 0.025;
+
+      const fadeIn  = 12;
+      const fadeOut = this.maxLife * 0.45;
+      if (this.life < fadeIn) {
+        this.alpha     = this.life / fadeIn;
+        this.growScale = 1;
+      } else if (this.life > fadeOut) {
+        const t        = (this.life - fadeOut) / (this.maxLife - fadeOut);
+        this.alpha     = 1 - (t * t);
+        this.growScale = 1 + t * 1.5;
+      } else {
+        this.alpha     = 1;
+        this.growScale = 1;
+      }
+      // fade out as leaf approaches top of screen
+      const topFade = window.innerHeight * 0.25;
+      if (this.y < topFade) {
+        this.alpha *= Math.max(0, this.y / topFade);
+      }
+    }
+
+    draw(c) {
+      if (this.alpha <= 0) return;
+      c.save();
+      c.globalAlpha = Math.max(0, this.alpha);
+      c.translate(this.x, this.y);
+      c.rotate(this.rot);
+      c.scale(this.scale * this.growScale, this.scale * this.growScale);
+
+      this._drawLeafBody(c);
+
+      c.restore();
+    }
+
+    _drawLeafBody(c) {
+      const s = this.shape;
+      let lx, ly; // half-length, half-width
+
+      if (s === 'lanceolate') { lx = 26; ly = 8; }
+      else if (s === 'elliptic') { lx = 20; ly = 12; }
+      else if (s === 'cordate')  { lx = 18; ly = 14; }
+      else { lx = 22; ly = 11; } // ovate default
+
+      // ── Leaf silhouette ──
+      c.beginPath();
+      if (s === 'cordate') {
+        // heart-shaped base
+        c.moveTo(0, lx);  // tip (bottom when upright, but we rotate randomly)
+        c.bezierCurveTo( ly * 1.3, lx * 0.3,  ly * 1.3, -lx * 0.5, 0, -lx * 0.55);
+        c.bezierCurveTo(-ly * 1.3, -lx * 0.5, -ly * 1.3,  lx * 0.3, 0, lx);
+      } else if (s === 'lanceolate') {
+        c.moveTo(0, lx);
+        c.bezierCurveTo( ly * 0.9, lx * 0.55,  ly,  -lx * 0.35 + this.curl * lx, 0, -lx);
+        c.bezierCurveTo(-ly,       -lx * 0.35 + this.curl * lx, -ly * 0.9, lx * 0.55, 0, lx);
+      } else {
+        // ovate / elliptic
+        const taper = s === 'ovate' ? 0.25 : 0; // ovate: wider toward base
+        c.moveTo(0, lx);  // pointed tip
+        c.bezierCurveTo( ly * (1 + taper), lx * 0.5,  ly, -lx * 0.4 + this.curl * lx, 0, -lx);
+        c.bezierCurveTo(-ly,               -lx * 0.4 + this.curl * lx, -ly * (1 + taper), lx * 0.5, 0, lx);
+      }
+      c.closePath();
+
+      // Fill with gradient
+      const grad = c.createLinearGradient(0, -lx, 0, lx);
+      grad.addColorStop(0,   this.dark + 'cc');
+      grad.addColorStop(0.4, this.fill + 'ee');
+      grad.addColorStop(1,   this.dark + 'aa');
+      c.fillStyle = grad;
+      c.fill();
+
+      // Leaf edge
+      c.strokeStyle = this.dark + '99';
+      c.lineWidth   = 0.8;
+      c.stroke();
+
+      // ── Central vein ──
+      c.beginPath();
+      c.moveTo(0, lx * 0.9);
+      c.quadraticCurveTo(this.curl * 4, 0, 0, -lx * 0.9);
+      c.strokeStyle = this.vein + 'bb';
+      c.lineWidth   = 0.9;
+      c.stroke();
+
+      // ── Lateral veins (4 pairs) ──
+      const pairs = 4;
+      for (let i = 1; i <= pairs; i++) {
+        const t    = i / (pairs + 1);
+        const baseY = lx * 0.85 - t * lx * 1.6;  // along central vein
+        const spread = ly * 0.72 * Math.sin(t * Math.PI);
+        const tipY   = baseY - lx * 0.18;
+
+        c.beginPath();
+        c.moveTo(0, baseY);
+        c.quadraticCurveTo( spread * 0.5, baseY - lx * 0.07,  spread, tipY);
+        c.strokeStyle = this.vein + '77';
+        c.lineWidth   = 0.5;
+        c.stroke();
+
+        c.beginPath();
+        c.moveTo(0, baseY);
+        c.quadraticCurveTo(-spread * 0.5, baseY - lx * 0.07, -spread, tipY);
+        c.stroke();
+      }
+    }
+
+    isDead() { return this.life >= this.maxLife || this.alpha < 0; }
+  }
+
+  /* ── Text Pill (the habit label) ──────────────────── */
+  class TextPill {
+    constructor(text, x, y, vx, vy) {
+      this.text = text;
+      this.x = x; this.y = y;
+      this.vx = vx; this.vy = vy;
+      this.wobble  = Math.random() * Math.PI * 2;
+      this.rot     = (Math.random() - 0.5) * 0.1;
+      this.rotV    = (Math.random() - 0.5) * 0.004;
+      this.alpha   = 0;
+      this.growScale = 1;
+      this.life    = 0;
+      this.maxLife = 220;
+    }
+
+    update() {
+      this.life++;
+      this.wobble += 0.02;
+      this.x += this.vx + Math.sin(this.wobble) * 0.25;
+      this.y += this.vy;
+      this.vy *= 0.998;
+      this.rot += this.rotV;
+
+      const fadeIn  = 12;
+      const fadeOut = this.maxLife * 0.50;
+      if (this.life < fadeIn) {
+        this.alpha = this.life / fadeIn;
+      } else if (this.life > fadeOut) {
+        const t    = (this.life - fadeOut) / (this.maxLife - fadeOut);
+        this.alpha = 1 - (t * t);
+      } else {
+        this.alpha = 1;
+      }
+      // fade out as pill approaches top of screen
+      const topFade = window.innerHeight * 0.25;
+      if (this.y < topFade) {
+        this.alpha *= Math.max(0, this.y / topFade);
+      }
+    }
+
+    draw(c) {
+      if (this.alpha <= 0) return;
+      c.save();
+      c.globalAlpha = Math.max(0, this.alpha);
+      c.translate(this.x, this.y);
+      c.rotate(this.rot);
+      c.scale(this.growScale, this.growScale);
+
+      const fs   = 36;
+      const pad  = 22;
+      c.font = `400 ${fs}px Inter, sans-serif`;
+      const tw = c.measureText(this.text).width;
+      const pw = tw + pad * 2;
+      const ph = fs + pad;
+
+      // Pill shadow
+      c.shadowColor  = 'rgba(42,39,34,0.18)';
+      c.shadowBlur   = 10;
+      c.shadowOffsetY = 3;
+
+      // Pill background
+      c.beginPath();
+      c.roundRect(-pw / 2, -ph / 2, pw, ph, ph / 2);
+      c.fillStyle = `rgba(245,240,232,0.88)`;
+      c.fill();
+      c.shadowBlur = 0; c.shadowOffsetY = 0;
+      c.strokeStyle = `rgba(168,155,176,0.5)`;
+      c.lineWidth = 1;
+      c.stroke();
+
+      // Text
+      c.fillStyle = `rgba(42,39,34,${0.78 * this.alpha})`;
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.fillText(this.text, 0, 0);
+
+      c.restore();
+    }
+
+    isDead() { return this.life >= this.maxLife || this.alpha < 0; }
+  }
+
+  /* ── Animation loop ───────────────────────────────── */
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const prev = entities.length;
+    entities = entities.filter(e => !e.isDead());
+    entities.forEach(e => { e.update(); e.draw(ctx); });
+
+    if (releasing && entities.length === 0 && prev > 0) showInput();
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  /* ── Release ──────────────────────────────────────── */
+  window.releaseHabit = function () {
+    const input = document.getElementById('habit-input');
+    const text  = input.value.trim();
+    if (!text || releasing) return;
+
+    const rect = input.getBoundingClientRect();
+    const cx   = rect.left + rect.width  / 2;
+    const cy   = rect.top  + rect.height / 2;
+
+    // text pill rises with the leaves
+    entities.push(new TextPill(text, cx, cy, (Math.random() - 0.5) * 0.3, -(4.2 + Math.random() * 0.4)));
+
+    // leaves spread out below the word and carry it upward
+    const count = 30 + Math.floor(Math.random() * 10);
+    for (let i = 0; i < count; i++) {
+      const px = cx + (Math.random() - 0.5) * 500;  // spread wide horizontally
+      const py = cy - 20 + Math.random() * 80;        // start around the word, slightly above/below
+      const vx = (Math.random() - 0.5) * 1.8;
+      const vy = -(4.5 + Math.random() * 1.5);       // faster rise
+      entities.push(new Leaf(px, py, vx, vy));
+    }
+
+    hideInput();
+    setTimeout(showAffirmation, 400);
+    addReleasedTag(text);
+    input.value = '';
+  };
+
+  function addReleasedTag(text) {
+    document.getElementById('released-section').classList.add('visible');
+    const tag = document.createElement('span');
+    tag.className = 'released-tag';
+    tag.textContent = text;
+    document.getElementById('released-list').appendChild(tag);
+  }
+
+  document.getElementById('habit-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') window.releaseHabit();
+  });
+})();
+</script>
+</body>
+</html>

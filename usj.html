@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USJ Student Services | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --cream-dark: #ece5d8; --sage: #7d9e75; --sage-light: #adc4a6;
+      --sage-muted: #c8d9c2; --olive: #4a6640; --olive-dark: #374f31;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680; --white: #ffffff;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+
+    /* Nav */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 48px; background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700;
+      color: var(--olive-dark); text-decoration: none; letter-spacing: 0.04em;
+      display: inline-flex; align-items: center; gap: 9px;
+    }
+    .nav-back {
+      font-size: 13px; color: var(--text-mid); text-decoration: none;
+      display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+
+    /* Hero */
+    .hero {
+      padding: 148px 48px 40px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 20px;
+    }
+    .hero-eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sage); }
+    .hero-title-row {
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 22px;
+    }
+    .usj-logo-badge { flex-shrink: 0; border-radius: 8px; overflow: hidden; }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 5.5vw, 58px);
+      font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 0;
+    }
+    .hero-title em { font-style: italic; color: var(--olive); }
+    .hero-sub {
+      font-size: 17px; color: var(--text-mid); line-height: 1.75; max-width: 580px;
+      margin-bottom: 16px;
+    }
+    .hero-note {
+      font-size: 13px; color: var(--text-light); line-height: 1.7; max-width: 560px;
+      padding: 14px 18px; background: rgba(200,217,194,0.18);
+      border-left: 3px solid var(--sage-muted); border-radius: 0 10px 10px 0;
+    }
+
+    /* Page body */
+    .page-body {
+      max-width: 900px; margin: 0 auto; padding: 32px 48px 120px;
+      display: flex; flex-direction: column; gap: 24px;
+    }
+
+    /* Section heading */
+    .section-heading { padding: 16px 0 8px; }
+    .section-label {
+      font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 6px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif; font-size: 26px;
+      font-weight: 600; color: var(--text);
+    }
+    .section-divider {
+      width: 48px; height: 2px; background: var(--sage-muted);
+      border-radius: 2px; margin: 4px 0 0;
+    }
+
+    /* Resource card */
+    .resource-card {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.75);
+      border-radius: 20px; padding: 32px 32px 28px;
+      display: flex; flex-direction: column; gap: 12px;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      text-decoration: none; color: inherit; cursor: pointer;
+    }
+    .resource-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 44px rgba(0,0,0,0.07);
+      border-color: rgba(125,158,117,0.3);
+    }
+    .resource-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 16px;
+    }
+    .resource-name {
+      font-family: 'Playfair Display', serif; font-size: 20px;
+      font-weight: 600; color: var(--text); line-height: 1.3;
+    }
+    .resource-tag {
+      flex-shrink: 0; font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+      text-transform: uppercase; padding: 4px 11px; border-radius: 100px;
+      background: var(--sage-muted); color: var(--olive-dark);
+    }
+    .resource-tag.free { background: rgba(125,158,117,0.18); color: var(--olive); }
+    .resource-tag.referral { background: rgba(90,86,80,0.1); color: var(--text-mid); }
+    .resource-desc { font-size: 15px; color: var(--text-mid); line-height: 1.7; }
+    .learn-more-hint {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 13px; font-weight: 500; color: var(--sage); margin-top: 4px;
+    }
+    .resource-card:hover .learn-more-hint { color: var(--olive); }
+
+    /* Fade in */
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: none; }
+    .fade-in-delay-1 { transition-delay: 0.08s; }
+    .fade-in-delay-2 { transition-delay: 0.16s; }
+
+    /* Footer */
+    .page-footer {
+      text-align: center; padding: 0 48px 60px;
+      font-size: 13px; color: var(--text-light); line-height: 1.8;
+    }
+    .page-footer a { color: var(--olive); text-decoration: none; }
+    .page-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 700px) {
+      nav { padding: 18px 24px; }
+      .hero { padding: 120px 24px 32px; }
+      .page-body { padding: 24px 24px 100px; }
+      .resource-card { padding: 24px 22px 22px; }
+      .page-footer { padding: 0 24px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="14" height="20" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,21 L8,4" stroke="#4a6640" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="#4a6640"/>
+    </svg>
+    SALAMA
+  </a>
+  <a class="nav-back" href="#" onclick="history.back(); return false;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+    </svg>
+    Back
+  </a>
+</nav>
+
+<!-- Hero -->
+<div class="hero fade-in">
+  <div class="hero-eyebrow">
+    <span class="hero-eyebrow-dot"></span>
+    USJ · University Support
+  </div>
+  <div class="hero-title-row">
+    <div class="usj-logo-badge">
+      <svg width="118" height="52" viewBox="0 0 236 104" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background -->
+        <rect width="236" height="104" rx="12" fill="#4a6640"/>
+        <!-- USJ text -->
+        <text x="13" y="77" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="66" fill="white" letter-spacing="-3">USJ</text>
+        <!-- Emblem box -->
+        <rect x="168" y="9" width="60" height="86" rx="6" fill="#374f31"/>
+        <!-- Three arch/pillar lines -->
+        <!-- Arch 1: tallest, white, leftmost -->
+        <path d="M181,88 L181,55 Q181,37 188.5,37 Q196,37 196,55 L196,88" fill="none" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
+        <!-- Arch 2: tall, white, middle -->
+        <path d="M194,88 L194,47 Q194,27 201.5,27 Q209,27 209,47 L209,88" fill="none" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
+        <!-- Arch 3: tan/beige, rightmost -->
+        <path d="M207,88 L207,51 Q207,33 214.5,33 Q222,33 222,51 L222,88" fill="none" stroke="#c4a97a" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- 1875 text -->
+        <text x="174" y="100" font-family="Arial,sans-serif" font-weight="600" font-size="10" fill="white" letter-spacing="0.5" opacity="0.88">1875</text>
+      </svg>
+    </div>
+    <h1 class="hero-title">Student <em>Services</em></h1>
+  </div>
+  <p class="hero-sub">Saint Joseph University of Beirut offers a range of mental health and wellbeing resources for students. Below is an overview of the services available to you.</p>
+  <p class="hero-note">Office locations and contact details may change over time. Contact each service directly for the most up-to-date information.</p>
+</div>
+
+<!-- Resources -->
+<div class="page-body">
+
+  <div class="section-heading fade-in">
+    <p class="section-label">Available Services</p>
+    <h2 class="section-title">Resources at USJ</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <!-- Counseling Services (SAP) -->
+  <a class="resource-card fade-in fade-in-delay-1" href="usj-counseling.html">
+    <div class="resource-header">
+      <h3 class="resource-name">Counseling Services (SAP)</h3>
+      <span class="resource-tag free">Free</span>
+    </div>
+    <p class="resource-desc">The Counseling Office (SAP) provides confidential psychological and psychiatric support to students experiencing emotional or psychological distress. Staffed by qualified psychologists and psychiatrists, it is part of the Department of Psychology at the Faculty of Humanities.</p>
+    <span class="learn-more-hint">Learn more →</span>
+  </a>
+
+  <!-- Psychiatry at Hôtel-Dieu de France -->
+  <a class="resource-card fade-in fade-in-delay-2" href="usj-psychiatry.html">
+    <div class="resource-header">
+      <h3 class="resource-name">Psychiatry &amp; Mental Health</h3>
+      <span class="resource-tag referral">Hôtel-Dieu de France</span>
+    </div>
+    <p class="resource-desc">USJ offers comprehensive mental health services through the Psychiatry Department at Hôtel-Dieu de France, providing specialist psychiatric and psychological care for students and the wider community.</p>
+    <span class="learn-more-hint">Learn more →</span>
+  </a>
+
+</div>
+
+<!-- Footer -->
+<p class="page-footer">
+  This page is part of the Salama resource directory. Information is provided for awareness purposes only.
+</p>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

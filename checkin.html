@@ -1,0 +1,1440 @@
+i<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Check-In | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:       #f5f0e8;
+      --cream-dark:  #ece5d8;
+      --sage:        #7d9e75;
+      --sage-light:  #adc4a6;
+      --sage-muted:  #c8d9c2;
+      --sage-bg:     #9db496;
+      --olive:       #4a6640;
+      --olive-dark:  #374f31;
+      --text:        #2a2722;
+      --text-mid:    #5a5650;
+      --text-light:  #8a8680;
+      --white:       #ffffff;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245, 240, 232, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .nav-logo svg { flex-shrink: 0; }
+    .nav-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-mid);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+    .nav-back svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* PAGE */
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 24px 80px;
+      background:
+        radial-gradient(ellipse 800px 600px at 10% 10%, rgba(125,158,117,0.22) 0%, transparent 65%),
+        radial-gradient(ellipse 600px 500px at 90% 85%, rgba(157,180,150,0.18) 0%, transparent 65%),
+        var(--cream);
+    }
+
+    /* STEPS */
+    .step { display: none; flex-direction: column; align-items: center; text-align: center; max-width: 680px; width: 100%; animation: stepIn 0.5s ease; }
+    .step.active { display: flex; }
+
+    @keyframes stepIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .step-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .step-title em { font-style: italic; color: var(--olive); }
+    .step-sub {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 1.7;
+      margin-bottom: 48px;
+      max-width: 480px;
+    }
+
+    /* PROGRESS BAR */
+    .progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      background: var(--olive);
+      transition: width 0.5s ease;
+      z-index: 200;
+    }
+
+    /* EMOTION GRID */
+    .emotion-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      width: 100%;
+      margin-bottom: 40px;
+    }
+    .emotion-btn {
+      background: rgba(245,240,232,0.75);
+      backdrop-filter: blur(12px);
+      border: 2px solid transparent;
+      border-radius: 20px;
+      padding: 24px 16px;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .emotion-btn:hover { border-color: var(--sage-muted); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+    .emotion-btn.selected { border-color: var(--olive); background: rgba(74,102,64,0.08); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(74,102,64,0.15); }
+    .emotion-emoji { font-size: 36px; line-height: 1; }
+    .emotion-label { font-size: 13px; font-weight: 500; color: var(--text-mid); letter-spacing: 0.3px; }
+    .emotion-btn.selected .emotion-label { color: var(--olive-dark); }
+
+    /* INTENSITY SLIDER */
+    .intensity-wrap {
+      width: 100%;
+      margin-bottom: 40px;
+    }
+    .intensity-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      letter-spacing: 0.3px;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 100px;
+      background: var(--cream-dark);
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--olive);
+      box-shadow: 0 2px 10px rgba(74,102,64,0.35);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    .intensity-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 52px;
+      font-weight: 600;
+      color: var(--olive);
+      margin-top: 20px;
+      line-height: 1;
+    }
+
+    /* REFLECTION TEXTAREA */
+    .reflection-wrap {
+      width: 100%;
+      margin-bottom: 40px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      background: rgba(245,240,232,0.75);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(200,217,194,0.6);
+      border-radius: 20px;
+      padding: 24px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.7;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    textarea::placeholder { color: var(--text-light); }
+    textarea:focus { border-color: var(--olive); box-shadow: 0 0 0 4px rgba(74,102,64,0.08); }
+
+    /* AFFIRMATION CARD */
+    .affirmation-card {
+      background: rgba(200,217,194,0.4);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 24px;
+      padding: 36px 40px;
+      margin-bottom: 40px;
+      width: 100%;
+      position: relative;
+    }
+    .affirmation-quote {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 20px;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .affirmation-source {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--olive-dark);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .big-check {
+      font-size: 64px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    /* BUTTONS */
+    .btn-primary {
+      background: var(--olive);
+      color: var(--white);
+      padding: 14px 40px;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(74,102,64,0.32);
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--olive-dark); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(74,102,64,0.42); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-light);
+      padding: 12px 24px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 400;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s;
+      margin-top: 12px;
+    }
+    .btn-ghost:hover { color: var(--text-mid); }
+    .btn-row { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .btn-secondary {
+      background: transparent;
+      color: var(--olive);
+      padding: 12px 32px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1.5px solid rgba(74,102,64,0.35);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-secondary:hover { background: rgba(74,102,64,0.06); border-color: var(--olive); }
+    .step2-divider {
+      width: 40px;
+      height: 1px;
+      background: var(--cream-dark);
+      margin: 6px 0;
+    }
+    .btn-primary.saved {
+      background: var(--sage);
+      box-shadow: none;
+      cursor: default;
+    }
+    .btn-primary.saved:hover { background: var(--sage); transform: none; box-shadow: none; }
+
+    /* SUBMIT MODAL */
+    .submit-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+      background: rgba(42,39,34,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .submit-modal-overlay.open { opacity: 1; pointer-events: all; }
+    .submit-modal-card {
+      background: var(--cream);
+      border-radius: 28px;
+      padding: 40px 36px 36px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.13);
+      transform: scale(0.95) translateY(10px);
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .submit-modal-overlay.open .submit-modal-card { transform: scale(1) translateY(0); }
+    .submit-modal-check {
+      width: 56px; height: 56px;
+      background: rgba(125,158,117,0.18);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 24px;
+      color: var(--olive);
+    }
+    .submit-modal-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .submit-modal-card p {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
+    .submit-modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .modal-btn-primary {
+      background: var(--olive);
+      color: #fff;
+      border: none;
+      padding: 13px 24px;
+      border-radius: 100px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      box-shadow: 0 4px 16px rgba(74,102,64,0.28);
+    }
+    .modal-btn-primary:hover { background: var(--olive-dark); transform: translateY(-1px); }
+    .modal-btn-ghost {
+      background: transparent;
+      color: var(--text-light);
+      border: 1.5px solid var(--cream-dark);
+      padding: 12px 24px;
+      border-radius: 100px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .modal-btn-ghost:hover { color: var(--text-mid); border-color: var(--sage-muted); }
+
+    /* RESULTS PAGE */
+    .step-results {
+      max-width: 100%;
+      width: 100%;
+      padding: 0;
+      text-align: center;
+    }
+    #step-4.active {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      z-index: 50;
+      background: var(--cream);
+      display: block;
+      padding: 0;
+    }
+    .result-banner {
+      width: 100%;
+      padding: 100px 24px 80px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .result-banner h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      line-height: 1.15;
+    }
+    .result-banner p {
+      font-size: 15px;
+      line-height: 1.85;
+      color: rgba(42,39,34,0.82);
+      max-width: 600px;
+    }
+    .result-body {
+      padding: 52px 0;
+      margin-bottom: 28px;
+      width: 100%;
+    }
+    .result-leaf {
+      position: fixed;
+      pointer-events: none;
+      opacity: 0.22;
+      z-index: 51;
+    }
+    .result-leaf-1 { top: 30%; left: -20px; width: 220px; transform: rotate(-18deg); }
+    .result-leaf-2 { bottom: 10%; right: -10px; width: 190px; transform: rotate(158deg); }
+    .result-leaf-3 { top: 10%; right: 4%; width: 130px; transform: rotate(38deg); }
+    .result-body-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(22px, 4vw, 34px);
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .result-body-sub {
+      font-size: 14px;
+      color: var(--text-mid);
+      text-align: center;
+      line-height: 1.7;
+      margin-bottom: 48px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .result-section {
+      padding-top: 40px;
+      border-top: 1px solid var(--cream-dark);
+      margin-bottom: 0;
+    }
+    .result-section:first-child {
+      padding-top: 0;
+      border-top: none;
+    }
+    .result-section + .result-section {
+      margin-top: 40px;
+    }
+    .result-section h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .result-section-desc {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.85;
+      text-align: center;
+      margin-bottom: 24px;
+      white-space: pre-line;
+    }
+    .member-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: rgba(200,217,194,0.28);
+      border: 1px solid rgba(125,158,117,0.28);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .member-note-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .member-note-text { font-size: 13.5px; color: var(--text-mid); line-height: 1.65; }
+    .member-note-text strong { color: var(--olive); font-weight: 600; }
+    .member-note-text a { color: var(--olive); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+
+    .resource-group {
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    .resource-group:last-child { margin-bottom: 0; }
+    .resource-group-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-mid);
+      margin-bottom: 10px;
+    }
+    .resource-btn {
+      display: block;
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto 10px;
+      padding: 14px 24px;
+      text-align: center;
+      background: transparent;
+      border: 1.5px solid var(--cream-dark);
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+    .resource-btn:hover {
+      border-color: var(--sage);
+      background: rgba(125,158,117,0.06);
+      color: var(--olive);
+    }
+    .resource-btn-youtube {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-color: rgba(255,0,0,0.2);
+      color: var(--text);
+    }
+    .resource-btn-youtube:hover {
+      border-color: rgba(255,0,0,0.45);
+      background: rgba(255,0,0,0.04);
+      color: #c00;
+    }
+    .resource-btn-internal {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-color: rgba(74,102,64,0.3);
+      background: rgba(125,158,117,0.06);
+    }
+    .resource-btn-internal:hover {
+      border-color: var(--olive);
+      background: rgba(125,158,117,0.12);
+      color: var(--olive-dark);
+    }
+    .resource-btn-badge {
+      margin-left: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background: rgba(255,0,0,0.1);
+      color: #c00;
+      border-radius: 4px;
+      padding: 2px 6px;
+    }
+    .resource-btn-badge-internal {
+      background: rgba(74,102,64,0.12);
+      color: var(--olive);
+    }
+
+    /* CHECKIN SAVED BADGE */
+    .checkin-saved {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: rgba(125,158,117,0.15);
+      border: 1px solid rgba(125,158,117,0.35);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--olive);
+      font-weight: 500;
+    }
+
+    /* PAST ENTRIES CARD */
+    .past-entries-card {
+      margin-top: 32px;
+      width: 100%;
+      background: rgba(255,255,255,0.5);
+      backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(200,217,194,0.55);
+      border-radius: 24px;
+      padding: 28px 28px 24px;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+    .past-entries-card::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 140px; height: 140px;
+      background: radial-gradient(circle, rgba(125,158,117,0.13) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .past-entries-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .past-entries-icon {
+      width: 44px; height: 44px;
+      background: rgba(125,158,117,0.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .past-entries-text { flex: 1; }
+    .past-entries-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--olive);
+      background: rgba(74,102,64,0.1);
+      border-radius: 100px;
+      padding: 4px 10px;
+      margin-bottom: 8px;
+    }
+    .past-entries-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+    .past-entries-card p {
+      font-size: 13.5px;
+      color: var(--text-mid);
+      line-height: 1.7;
+    }
+    .past-entries-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .past-entries-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--olive);
+      color: #fff;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 10px 20px;
+      border-radius: 100px;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 3px 14px rgba(74,102,64,0.28);
+      text-decoration: none;
+    }
+    .past-entries-btn:hover { background: var(--olive-dark); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(74,102,64,0.36); }
+    .past-entries-signin-link {
+      font-size: 13px;
+      color: var(--text-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .past-entries-signin-link:hover { color: var(--olive); }
+
+    /* ENTRIES PANEL */
+    .entries-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(42,39,34,0.4);
+      display: flex;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .entries-panel.open { opacity: 1; pointer-events: all; }
+    .entries-panel-inner {
+      width: 100%;
+      max-height: 84vh;
+      background: var(--cream);
+      border-radius: 28px 28px 0 0;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+      overflow: hidden;
+    }
+    .entries-panel.open .entries-panel-inner { transform: translateY(0); }
+    .entries-panel-handle {
+      width: 40px; height: 4px;
+      background: var(--cream-dark);
+      border-radius: 100px;
+      margin: 14px auto 0;
+      flex-shrink: 0;
+    }
+    .entries-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 32px 18px;
+      border-bottom: 1px solid var(--cream-dark);
+      flex-shrink: 0;
+    }
+    .entries-panel-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 21px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .entries-panel-close {
+      background: rgba(0,0,0,0.07);
+      border: none;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      color: var(--text-mid);
+      transition: background 0.2s;
+    }
+    .entries-panel-close:hover { background: rgba(0,0,0,0.13); }
+    .entries-panel-body {
+      overflow-y: auto;
+      padding: 28px 32px 48px;
+      flex: 1;
+    }
+    .entries-section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .entries-section + .entries-section {
+      margin-top: 36px;
+      padding-top: 36px;
+      border-top: 1px solid var(--cream-dark);
+    }
+    .entry-card {
+      background: rgba(255,255,255,0.55);
+      border: 1px solid var(--cream-dark);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 10px;
+    }
+    .entry-card-date {
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 10px;
+    }
+    .entry-card-emotion {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .entry-card-emotion-emoji { font-size: 22px; line-height: 1; }
+    .entry-card-emotion-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .intensity-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .intensity-bar-label-left {
+      font-size: 11px;
+      color: var(--text-light);
+      min-width: 50px;
+    }
+    .intensity-bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--cream-dark);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .intensity-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--sage-light), var(--olive));
+      border-radius: 100px;
+      transition: width 0.4s ease;
+    }
+    .intensity-bar-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--olive);
+      min-width: 34px;
+      text-align: right;
+    }
+    .journal-entry-prompt {
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 6px;
+    }
+    .journal-entry-content {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.75;
+    }
+    .entries-empty {
+      text-align: center;
+      padding: 28px 0;
+      color: var(--text-light);
+      font-size: 13.5px;
+      line-height: 1.7;
+    }
+    .entries-empty a { color: var(--olive); text-underline-offset: 3px; }
+    .entries-loading {
+      text-align: center;
+      padding: 48px 0;
+      color: var(--text-light);
+      font-size: 14px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      nav { padding: 16px 20px; }
+      .emotion-grid { grid-template-columns: repeat(2, 1fr); }
+      .affirmation-card { padding: 28px 24px; }
+      .result-banner { padding: 36px 28px; }
+      .result-body { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="progress-bar" id="progress-bar" style="width: 25%;"></div>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <a class="nav-back" href="#" onclick="history.back(); return false;">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </a>
+  </nav>
+
+  <main class="page">
+
+    <!-- STEP 1: Choose emotion -->
+    <div class="step active" id="step-1">
+      <p class="step-label">Step 1 of 3 · Daily Check-In</p>
+      <h1 class="step-title">How are you feeling <em>today?</em></h1>
+      <p class="step-sub">There's no right or wrong answer. Just choose what feels closest to your mood right now.</p>
+      <div class="emotion-grid" id="emotion-grid">
+        <button class="emotion-btn" data-emotion="Calm" onclick="selectEmotion(this)">
+          <span class="emotion-emoji">😌</span>
+          <span class="emotion-label">Calm</span>
+        </button>
+        <button class="emotion-btn" data-emotion="Anxious" onclick="selectEmotion(this)">
+          <span class="emotion-emoji">😰</span>
+          <span class="emotion-label">Anxious</span>
+        </button>
+        <button class="emotion-btn" data-emotion="Overwhelmed" onclick="selectEmotion(this)">
+          <span class="emotion-emoji">😮‍💨</span>
+          <span class="emotion-label">Overwhelmed</span>
+        </button>
+        <button class="emotion-btn" data-emotion="Hopeful" onclick="selectEmotion(this)">
+          <span class="emotion-emoji">🌱</span>
+          <span class="emotion-label">Hopeful</span>
+        </button>
+      </div>
+      <div class="past-entries-card">
+        <div class="past-entries-card-top">
+          <div class="past-entries-icon">📈</div>
+          <div class="past-entries-text">
+            <span class="past-entries-badge">🔒 Members exclusive</span>
+            <h3>Track Your Emotional Journey</h3>
+            <p>See how your feelings shift over time. Members can revisit past check-ins, view intensity scores, and read back through journal entries, all in one place.</p>
+          </div>
+        </div>
+        <!-- Shown when signed in -->
+        <div class="past-entries-card-actions" id="past-entries-member-actions" style="display:none">
+          <button class="past-entries-btn" onclick="openPastEntries()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+            View past entries
+          </button>
+        </div>
+        <!-- Shown when not signed in -->
+        <div class="past-entries-card-actions" id="past-entries-guest-actions">
+          <a class="past-entries-btn" href="login.html?tab=signup">Start tracking for free</a>
+          <a class="past-entries-signin-link" href="login.html">Already a member? Sign in</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Intensity (members only) -->
+    <div class="step" id="step-2">
+      <p class="step-label">Step 2 of 2 · Daily Check-In</p>
+      <h1 class="step-title">How <em>intense</em> is this feeling?</h1>
+      <p class="step-sub">Slide to reflect the strength of your emotion, from a gentle ripple to a full wave.</p>
+      <div class="intensity-wrap">
+        <div class="intensity-labels">
+          <span>Barely there</span>
+          <span>Overwhelming</span>
+        </div>
+        <input type="range" id="intensity-slider" min="1" max="10" value="5" oninput="updateIntensity(this.value)"/>
+        <div class="intensity-value" id="intensity-display">5</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="submit-entry-btn" onclick="submitEntry()">Submit entry</button>
+        <div class="step2-divider"></div>
+        <button class="btn-secondary" onclick="goToStep(4)">Find Resources →</button>
+        <button class="btn-ghost" onclick="goToStep(1)">← Back</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Reflection -->
+    <div class="step" id="step-3">
+      <p class="step-label">Step 3 of 3 · Daily Check-In</p>
+      <h1 class="step-title">Anything you'd like to <em>share?</em></h1>
+      <p class="step-sub">This is just for you. Write as little or as much as feels right. No one else will see this.</p>
+      <div class="reflection-wrap">
+        <textarea id="reflection-text" placeholder="What's on your mind today? What happened, what are you thinking about, or what do you need right now..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="goToStep(4)">Complete Check-In</button>
+        <button class="btn-ghost" onclick="goToStep(2)">← Back</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Results -->
+    <div class="step step-results" id="step-4">
+      <!-- Leaf decorations -->
+      <svg class="result-leaf result-leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+        <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+        <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+        <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+        <path d="M100 155 C80 145 44 156 24 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+        <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+        <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+        <path d="M100 155 C120 145 156 156 176 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+      </svg>
+      <svg class="result-leaf result-leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+        <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+        <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+        <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+        <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+        <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+      </svg>
+      <svg class="result-leaf result-leaf-3" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 275 C100 275 28 205 28 130 C28 62 64 16 100 16 C136 16 172 62 172 130 C172 205 100 275 100 275Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.32)"/>
+        <path d="M100 275 L100 16" stroke="#4a6640" stroke-width="2"/>
+        <path d="M100 85 C82 75 56 83 40 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+        <path d="M100 85 C118 75 144 83 160 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+      </svg>
+      <div class="result-banner" id="result-banner">
+        <h1 id="result-banner-title"></h1>
+        <p id="result-banner-desc"></p>
+        <div class="checkin-saved" id="checkin-saved-badge">✓ Check-in saved to your account</div>
+      </div>
+      <div style="max-width: 800px; margin: 0 auto; padding: 40px 24px 60px; width: 100%;">
+        <div class="result-body">
+          <h2 class="result-body-title" id="result-body-title"></h2>
+          <p class="result-body-sub" id="result-body-sub"></p>
+          <div id="result-sections"></div>
+        </div>
+        <div class="btn-row" style="padding-bottom: 20px;">
+          <a href="index.html" class="btn-primary">Back</a>
+          <button class="btn-ghost" onclick="resetCheckin()">Start a new check-in</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- SUBMIT MODAL -->
+  <div class="submit-modal-overlay" id="submit-modal">
+    <div class="submit-modal-card">
+      <div class="submit-modal-check">✓</div>
+      <h3>Entry saved!</h3>
+      <p>Your check-in has been recorded. What would you like to do next?</p>
+      <div class="submit-modal-actions">
+        <button class="modal-btn-primary" onclick="modalFindResources()">Find resources</button>
+        <button class="modal-btn-ghost" onclick="modalLeaveCheckin()">Leave the daily check-in</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAST ENTRIES PANEL -->
+  <div class="entries-panel" id="entries-panel" onclick="handlePanelBackdropClick(event)">
+    <div class="entries-panel-inner">
+      <div class="entries-panel-handle"></div>
+      <div class="entries-panel-header">
+        <h2>Your Past Entries</h2>
+        <button class="entries-panel-close" onclick="closePastEntries()">✕</button>
+      </div>
+      <div class="entries-panel-body" id="entries-panel-body">
+        <div class="entries-loading">Loading your entries...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://yrbcozgtjjzexrqoynax.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_XMbgbPt2RZD_yeCEbc94oQ_7m2PQs5g';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+    let selectedEmotion = null;
+
+    (async function() {
+      const { data: { session } } = await db.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        document.getElementById('past-entries-member-actions').style.display = 'flex';
+        document.getElementById('past-entries-guest-actions').style.display = 'none';
+      }
+    })();
+
+    const emotionResults = {
+      Calm: {
+        bannerBg: 'rgba(125,158,117,0.72)',
+        title: 'Feeling Calm Today!',
+        desc: 'Feeling calm is an important signal from your mind and body that things are in balance. Moments of calm allow your brain to rest, process experiences, and restore emotional energy. Taking a few minutes to recognise and nurture this state can help you strengthen habits that support long-term well-being.',
+        bodyTitle: 'Maintaining This Feeling',
+        bodySub: 'To help maintain this sense of balance, here are a few gentle practices and resources you can explore.',
+        sections: [
+          {
+            title: '1. Journaling',
+            desc: 'Journaling can help you reflect on your thoughts and emotions, improving self-awareness and emotional balance.\n\nYou might reflect on questions like:\n• What helped me feel calm today?\n• What moments brought me peace?\n• What supports my sense of well-being?',
+            memberNote: 'This is a <strong>members-only</strong> feature. Sign up for a free Salama account to journal, track your progress, and revisit your entries anytime. <a href="login.html">Create your account →</a>',
+            resources: [
+              { label: '', links: [{ text: 'Journaling', href: 'journaling.html', journaling: true }] }
+            ]
+          },
+          {
+            title: '2. Mindful breathing and meditation',
+            desc: 'Breathing exercises are a simple but powerful way to support your mental well-being. By slowing and controlling your breath, you can help your body relax and restore balance. Research shows that breathwork and mindful breathing can reduce stress, improve mood, and support emotional regulation. Here are a few guided breathing exercises you can explore.',
+            resources: [
+              { label: 'Videos:', links: [{ text: '5-Minute Guided Breathing Meditation', href: 'https://www.youtube.com/watch?v=inpok4MKVLM', target: '_blank' }, { text: '10 Minute Mindfulness Meditation', href: 'https://www.youtube.com/watch?v=ZToicYcHIOU', target: '_blank' }] },
+              { label: 'Box breathing:', links: [{ text: 'Box Breathing Tutorial', href: 'https://www.youtube.com/watch?v=tEmt1Znux58', target: '_blank', youtube: true }, { text: 'Try it on Salama', href: 'breathing-hub.html', internal: true }] }
+            ]
+          },
+          {
+            title: '3. Gentle Activities',
+            desc: 'If you\'re feeling calm right now, you might consider:\n• Taking a short walk outside\n• Stretching your body\n• Listening to relaxing music',
+            resources: [
+              { label: 'Importance of walking:', links: [{ text: 'The Effect of Walking', href: 'https://pubmed.ncbi.nlm.nih.gov/39045858/', target: '_blank' }] },
+              { label: 'Stretching tutorials / Videos:', links: [{ text: '10 min Yoga Full Body Stretch', href: 'https://www.youtube.com/watch?v=4pKly2JojMw&t=1s', target: '_blank' }, { text: 'Full Body Stretch', href: 'https://www.youtube.com/watch?v=CY6QP4ofwx4', target: '_blank' }] },
+              { label: 'Music to listen to:', links: [{ text: 'Relaxing Music', href: 'https://www.youtube.com/watch?v=lFcSrYw-ARY', target: '_blank' }] }
+            ]
+          }
+        ]
+      },
+      Anxious: {
+        bannerBg: 'rgba(192,175,158,0.72)',
+        title: 'Feeling Anxious Today',
+        desc: 'Anxiety is a natural human response. It means your mind is working to protect you. Acknowledging how you feel is the first, most important step. What you\'re experiencing is valid, and with a little support, you can find your way back to steadiness.',
+        bodyTitle: 'Finding Your Ground',
+        bodySub: 'Here are some gentle, evidence-based tools to help you feel more settled and supported.',
+        sections: [
+          {
+            title: '1. Journaling',
+            desc: 'Writing about your anxiety can help you process and release it. Let your thoughts flow freely on the page. There\'s no right or wrong way to do this.\n\nYou might explore questions like:\n• What is making me feel anxious right now?\n• What is within my control?\n• What would I say to a friend feeling this way?',
+            memberNote: 'This is a <strong>members-only</strong> feature. Sign up for a free Salama account to journal, save your entries, and track your emotional journey over time. <a href="login.html">Create your account →</a>',
+            resources: [
+              { label: '', links: [{ text: 'Go to Journaling', href: 'journaling.html', journaling: true }] }
+            ]
+          },
+          {
+            title: '2. Breathe through it',
+            desc: 'When anxiety rises, your breath is one of the most powerful tools you have. Slow, intentional breathing signals to your nervous system that you are safe. Try these techniques to help bring yourself back to the present.',
+            resources: [
+              { label: 'Calming breath exercises:', links: [{ text: '4-7-8 Breathing Technique', href: 'https://www.youtube.com/watch?v=LiUnFJ8P4gM', target: '_blank' }, { text: 'Box Breathing for Anxiety', href: 'https://www.youtube.com/watch?v=a7uQXDkxEtM', target: '_blank' }] }
+            ]
+          },
+          {
+            title: '3. Dealing with anxiety',
+            desc: 'Grounding helps bring your awareness back to the present moment. The 5-4-3-2-1 technique is a simple, effective way to interrupt anxious thoughts:\n• 5 things you can see\n• 4 things you can touch\n• 3 things you can hear\n• 2 things you can smell\n• 1 thing you can taste',
+            resources: [
+              { label: 'Guided grounding:', links: [{ text: '5-4-3-2-1 Grounding Exercise', href: 'https://www.youtube.com/watch?v=30VMIEmA114', target: '_blank' }, { text: 'How to calm your anxiety', href: 'https://www.youtube.com/watch?v=FpiWSFcL3-c', target: '_blank' }] }
+            ]
+          },
+          {
+            title: '4. Gentle movement',
+            desc: 'Light physical activity can help release tension stored in the body. Even a short walk or gentle stretch can shift your nervous system toward calm.',
+            resources: [
+              { label: 'Yoga for anxiety:', links: [{ text: 'Yoga for Anxiety Relief', href: 'https://www.youtube.com/watch?v=hJbRpHZr_d0', target: '_blank' }] }
+            ]
+          }
+        ]
+      },
+      Overwhelmed: {
+        bannerBg: 'rgba(168,155,176,0.68)',
+        title: 'Feeling Overwhelmed Today',
+        desc: 'When everything feels like too much, it\'s okay to pause. Overwhelm often comes from carrying more than any one person should hold at once. Be gentle with yourself. One breath, one step at a time is always enough.',
+        bodyTitle: 'One Step at a Time',
+        bodySub: 'Here are a few ways to gently release pressure and find your footing again.',
+        sections: [
+          {
+            title: '1. Journaling',
+            desc: 'When everything feels like too much, putting it on paper can help you externalise the weight. Writing doesn\'t need to be polished, just honest.\n\nYou might start with:\n• What is feeling heaviest right now?\n• What can I set down, even just for today?\n• What is one small thing I can do for myself?',
+            memberNote: 'This is a <strong>members-only</strong> feature. Sign up for a free Salama account to journal, save your entries, and find patterns over time. <a href="login.html">Create your account →</a>',
+            resources: [
+              { label: '', links: [{ text: 'Go to Journaling', href: 'journaling.html', journaling: true }] }
+            ]
+          },
+          {
+            title: '2. Pause and breathe',
+            desc: 'Before anything else, breathe. Even one slow, deep breath creates space between you and the overwhelm. These short practices can help you reset quickly.',
+            resources: [
+              { label: 'Breathing resets:', links: [{ text: 'Belly Breathing Exercise', href: 'https://www.youtube.com/watch?v=7Ep5mKuRmAA&t=119s', target: '_blank' }, { text: 'Box Breathing', href: 'https://health.clevelandclinic.org/box-breathing-benefits', target: '_blank' }] }
+            ]
+          },
+          {
+            title: '3. Let go of old habits',
+            desc: 'Sometimes what overwhelms us most are the habits and patterns we\'ve been holding onto for too long. Writing them down and choosing to release them is a powerful first step toward feeling lighter. Try our interactive Letting Go experience. Watch your habits drift away as you release them.',
+            resources: [
+              { label: 'Interactive release:', links: [{ text: 'Letting Go', href: 'letting-go.html' }] }
+            ]
+          },
+          {
+            title: '4. Reach out',
+            desc: 'You don\'t have to carry this alone. Talking to someone, a friend, a community, or a counsellor, can lighten the load more than you might expect.',
+            resources: [
+              { label: 'Community support:', links: [{ text: 'Salama Community', href: 'index.html#community' }] }
+            ]
+          }
+        ]
+      },
+      Hopeful: {
+        bannerBg: 'rgba(125,158,117,0.72)',
+        title: 'Feeling Hopeful Today!',
+        desc: 'Hope is a quiet, powerful force. It means you\'re looking toward what\'s possible, and that perspective is worth honouring and protecting. Let this feeling guide you as you move through your day.',
+        bodyTitle: 'Nurturing Your Hope',
+        bodySub: 'Here are some ways to channel this energy and build on the momentum you\'re feeling.',
+        sections: [
+          {
+            title: '1. Journaling',
+            desc: 'Use this feeling to reflect on your journey. Journaling while hopeful can help you capture insights and motivations that you can return to on harder days.\n\nYou might reflect on:\n• What is making me feel hopeful right now?\n• What do I feel called toward today?\n• Who can I show up for?',
+            memberNote: 'This is a <strong>members-only</strong> feature. Sign up for a free Salama account to capture these moments and revisit them when you need a lift. <a href="login.html">Create your account →</a>',
+            resources: [
+              { label: '', links: [{ text: 'Go to Journaling', href: 'journaling.html', journaling: true }] }
+            ]
+          },
+          {
+            title: '2. Gratitude practice',
+            desc: 'When we feel hopeful, gratitude can deepen that feeling and make it last. Taking a few moments to acknowledge what\'s going well trains your mind to seek out the positive.',
+            memberNote: 'This is a <strong>members-only</strong> feature. Sign up for a free Salama account to grow your gratitude forest and watch it fill in over time. <a href="login.html">Create your account →</a>',
+            resources: [
+              { label: '', links: [{ text: 'Grow your Gratitude Forest', href: 'gratitude.html', internal: true }] }
+            ]
+          },
+          {
+            title: '3. Set a gentle intention',
+            desc: 'Hope flourishes when it has direction. Consider setting one small, meaningful intention for today or this week. Not a demanding goal, just a gentle direction.\n\nYou might ask yourself:\n• What do I feel called toward today?\n• What small action aligns with my values?\n• Who can I show up for?',
+            memberNote: 'This is a <strong>members-only</strong> feature. Sign up for a free Salama account to set intentions, have them framed, and revisit them whenever you need a reminder. <a href="login.html">Create your account →</a>',
+            resources: [
+              { label: 'Inspiration:', links: [{ text: 'The Power of Intention', href: 'intention.html', internal: true }] }
+            ]
+          }
+        ]
+      }
+    };
+
+    function renderResults() {
+      const data = emotionResults[selectedEmotion] || emotionResults.Calm;
+      document.getElementById('result-banner').style.background = data.bannerBg;
+      document.getElementById('result-banner-title').textContent = data.title;
+      document.getElementById('result-banner-desc').textContent = data.desc;
+      document.getElementById('result-body-title').textContent = data.bodyTitle;
+      document.getElementById('result-body-sub').textContent = data.bodySub;
+
+      const sectionsEl = document.getElementById('result-sections');
+      sectionsEl.innerHTML = '';
+      data.sections.forEach(function(section) {
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = 'result-section';
+
+        let html = '<h3>' + section.title + '</h3>';
+        html += '<p class="result-section-desc">' + section.desc.replace(/\n/g, '<br>') + '</p>';
+
+        if (section.memberNote && !currentUser) {
+          html += '<div class="member-note"><span class="member-note-icon">🔒</span><p class="member-note-text">' + section.memberNote + '</p></div>';
+        }
+
+        section.resources.forEach(function(rg) {
+          html += '<div class="resource-group">';
+          if (rg.label) html += '<p class="resource-group-label">' + rg.label + '</p>';
+          rg.links.forEach(function(link) {
+            if (link.journaling) {
+              html += '<a class="resource-btn" href="journaling.html" onclick="goToJournaling(event)">' + link.text + '</a>';
+            } else if (link.youtube) {
+              html += '<a class="resource-btn resource-btn-youtube" href="' + link.href + '" target="_blank"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="margin-right:6px;vertical-align:-2px;flex-shrink:0"><path d="M8 5v14l11-7z"/></svg>' + link.text + '<span class="resource-btn-badge">YouTube</span></a>';
+            } else if (link.internal) {
+              html += '<a class="resource-btn resource-btn-internal" href="' + link.href + '"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px;flex-shrink:0"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' + link.text + '<span class="resource-btn-badge resource-btn-badge-internal">Salama</span></a>';
+            } else {
+              html += '<a class="resource-btn" href="' + link.href + '"' + (link.target ? ' target="' + link.target + '"' : '') + '>' + link.text + '</a>';
+            }
+          });
+          html += '</div>';
+        });
+
+        sectionDiv.innerHTML = html;
+        sectionsEl.appendChild(sectionDiv);
+      });
+    }
+
+    // progress: step 1 = 50% (1 of 2 for members, single step for non-members), step 2 = 100%, step 4 = 100%
+    const progressSteps = { 1: '50%', 2: '100%', 3: '75%', 4: '100%' };
+
+    function goToJournaling(e) {
+      e.preventDefault();
+      window.location.href = 'journaling.html?emotion=' + encodeURIComponent(selectedEmotion || '');
+    }
+
+    async function goToStep(n) {
+      document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+      document.getElementById('step-' + n).classList.add('active');
+      document.getElementById('progress-bar').style.width = progressSteps[n];
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (n === 4) renderResults();
+    }
+
+    async function submitEntry() {
+      const btn = document.getElementById('submit-entry-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      // Always fetch a fresh session so we never rely on a stale currentUser
+      const { data: { session } } = await db.auth.getSession();
+
+      if (session) {
+        currentUser = session.user;
+        const intensity = parseInt(document.getElementById('intensity-slider').value);
+        const { error } = await db.from('checkin_logs').insert({
+          user_id: session.user.id,
+          emotion: selectedEmotion,
+          intensity: intensity
+        });
+        if (!error) {
+          btn.classList.add('saved');
+          btn.textContent = '✓ Entry saved';
+          document.getElementById('checkin-saved-badge').style.display = 'flex';
+        } else {
+          // Save failed, re-enable button so they can retry
+          btn.disabled = false;
+          btn.classList.remove('saved');
+          btn.textContent = 'Submit entry';
+          document.getElementById('submit-modal').classList.add('open');
+          return;
+        }
+      } else {
+        btn.classList.add('saved');
+        btn.textContent = '✓ Done';
+      }
+
+      document.getElementById('submit-modal').classList.add('open');
+    }
+
+    function modalFindResources() {
+      document.getElementById('submit-modal').classList.remove('open');
+      goToStep(4);
+    }
+
+    function modalLeaveCheckin() {
+      document.getElementById('submit-modal').classList.remove('open');
+      resetCheckin();
+    }
+
+    async function selectEmotion(btn) {
+      document.querySelectorAll('.emotion-btn').forEach(function(b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedEmotion = btn.dataset.emotion;
+      // Re-check session at click time in case it changed
+      const { data: { session } } = await db.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        goToStep(2); // intensity step for members
+      } else {
+        goToStep(4); // go straight to results for non-members
+      }
+    }
+
+    function updateIntensity(val) {
+      document.getElementById('intensity-display').textContent = val;
+    }
+
+    const emotionEmojis = { Calm: '😌', Anxious: '😰', Overwhelmed: '😮‍💨', Hopeful: '🌱' };
+
+    async function openPastEntries() {
+      document.getElementById('entries-panel').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      await loadPastEntries();
+    }
+
+    function closePastEntries() {
+      document.getElementById('entries-panel').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function handlePanelBackdropClick(e) {
+      if (e.target === document.getElementById('entries-panel')) closePastEntries();
+    }
+
+    async function loadPastEntries() {
+      const body = document.getElementById('entries-panel-body');
+      body.innerHTML = '<div class="entries-loading">Loading your entries...</div>';
+
+      const [checkinsRes, journalsRes] = await Promise.all([
+        db.from('checkin_logs').select('*').order('created_at', { ascending: false }).limit(30),
+        db.from('journal_entries').select('*').order('created_at', { ascending: false }).limit(30)
+      ]);
+
+      let html = '';
+
+      // Check-in history
+      html += '<div class="entries-section">';
+      html += '<p class="entries-section-title">Feelings Rating</p>';
+      const checkins = checkinsRes.data || [];
+      if (checkins.length > 0) {
+        checkins.forEach(function(entry) {
+          const d = new Date(entry.created_at);
+          const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+          const emoji = emotionEmojis[entry.emotion] || '💭';
+          const pct = (entry.intensity / 10 * 100).toFixed(0) + '%';
+          html += '<div class="entry-card">';
+          html += '<p class="entry-card-date">' + dateStr + '</p>';
+          html += '<div class="entry-card-emotion"><span class="entry-card-emotion-emoji">' + emoji + '</span><span class="entry-card-emotion-name">' + entry.emotion + '</span></div>';
+          html += '<div class="intensity-bar-wrap">';
+          html += '<span class="intensity-bar-label-left">Intensity</span>';
+          html += '<div class="intensity-bar-track"><div class="intensity-bar-fill" style="width:' + pct + '"></div></div>';
+          html += '<span class="intensity-bar-value">' + entry.intensity + '/10</span>';
+          html += '</div>';
+          html += '</div>';
+        });
+      } else {
+        html += '<div class="entries-empty">No feelings rated yet. Submit your intensity score above to start tracking.</div>';
+      }
+      html += '</div>';
+
+      // Journal entries
+      html += '<div class="entries-section">';
+      html += '<p class="entries-section-title">Journal Entries</p>';
+      const journals = journalsRes.data || [];
+      if (journals.length > 0) {
+        journals.forEach(function(entry) {
+          const d = new Date(entry.created_at);
+          const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+          const emoji = entry.emotion ? (emotionEmojis[entry.emotion] || '💭') : null;
+          html += '<div class="entry-card">';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
+          html += '<p class="entry-card-date" style="margin-bottom:0">' + dateStr + '</p>';
+          if (emoji) html += '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(125,158,117,0.13);border:1px solid rgba(74,102,64,0.18);border-radius:100px;padding:2px 9px;font-size:11px;font-weight:600;color:#4a6640;white-space:nowrap;">' + emoji + ' ' + entry.emotion + '</span>';
+          html += '</div>';
+          if (entry.prompt) html += '<p class="journal-entry-prompt">' + entry.prompt + '</p>';
+          html += '<p class="journal-entry-content">' + entry.content.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>';
+          html += '</div>';
+        });
+      } else {
+        html += '<div class="entries-empty">No journal entries yet. Visit the <a href="journaling.html">journaling page</a> to start writing.</div>';
+      }
+      html += '</div>';
+
+      body.innerHTML = html;
+    }
+
+    function resetCheckin() {
+      selectedEmotion = null;
+      document.querySelectorAll('.emotion-btn').forEach(function(b) { b.classList.remove('selected'); });
+      document.getElementById('intensity-slider').value = 5;
+      document.getElementById('intensity-display').textContent = '5';
+      document.getElementById('checkin-saved-badge').style.display = 'none';
+      const btn = document.getElementById('submit-entry-btn');
+      btn.disabled = false;
+      btn.classList.remove('saved');
+      btn.textContent = 'Submit entry';
+      goToStep(1);
+    }
+  </script>
+<script src="chat-widget.js"></script>
+</body>
+</html>

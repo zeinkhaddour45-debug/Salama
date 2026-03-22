@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gratitude Forest | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --cream:       #f5f0e8;
+      --cream-dark:  #ece5d8;
+      --sage:        #7d9e75;
+      --sage-light:  #adc4a6;
+      --olive:       #4a6640;
+      --olive-dark:  #374f31;
+      --text:        #2a2722;
+      --text-mid:    #5a5650;
+      --text-light:  #8a8680;
+      --white:       #ffffff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      visibility: hidden;
+    }
+    body.ready { visibility: visible; }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 48px;
+      background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 700;
+      color: var(--olive-dark); text-decoration: none; letter-spacing: 0.04em;
+      display: inline-flex; align-items: center; gap: 9px;
+    }
+    .nav-logo svg { flex-shrink: 0; }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+    .nav-user {
+      font-size: 13px; color: var(--text-light);
+      max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .nav-back {
+      font-size: 13px; color: var(--text-mid);
+      text-decoration: none; display: flex; align-items: center; gap: 6px;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+    .nav-signout {
+      background: none; border: 1.5px solid var(--cream-dark);
+      color: var(--text-light); padding: 7px 16px; border-radius: 100px;
+      font-size: 13px; font-family: 'Inter', sans-serif; cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .nav-signout:hover { color: var(--text-mid); border-color: var(--sage-light); }
+
+    /* PAGE */
+    .page {
+      min-height: 100vh;
+      padding: 130px 24px 100px;
+      background:
+        radial-gradient(ellipse 700px 500px at 15% 10%, rgba(125,158,117,0.15) 0%, transparent 65%),
+        radial-gradient(ellipse 600px 500px at 85% 90%, rgba(173,196,166,0.12) 0%, transparent 65%),
+        var(--cream);
+    }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto 48px;
+    }
+    .section-label {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 18px;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 5.5vw, 56px); font-weight: 700;
+      line-height: 1.12; color: var(--text); margin-bottom: 20px;
+    }
+    .hero-title em { font-style: italic; color: var(--olive); }
+    .hero-sub {
+      font-size: 16px; color: var(--text-mid); line-height: 1.8;
+      max-width: 500px; margin: 0 auto 24px;
+    }
+    .tree-count-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(125,158,117,0.15);
+      border: 1px solid rgba(125,158,117,0.25);
+      border-radius: 100px; padding: 8px 20px;
+      font-size: 13px; font-weight: 500; color: var(--olive);
+    }
+
+    /* INPUT */
+    .input-section { max-width: 620px; margin: 0 auto 64px; }
+    .input-card {
+      background: rgba(200,217,194,0.25);
+      border: 1px solid rgba(125,158,117,0.25);
+      border-radius: 24px; padding: 36px 40px; text-align: center;
+    }
+    .input-card-label {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--olive); font-weight: 600; margin-bottom: 14px;
+    }
+    .input-card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 24px;
+    }
+    .gratitude-input {
+      width: 100%; padding: 16px 20px;
+      font-family: 'Playfair Display', serif; font-style: italic;
+      font-size: 16px; color: var(--text);
+      background: rgba(255,255,255,0.65);
+      border: 1.5px solid rgba(125,158,117,0.3);
+      border-radius: 14px; outline: none; resize: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 16px; line-height: 1.6;
+    }
+    .gratitude-input::placeholder { color: var(--text-light); font-style: italic; }
+    .gratitude-input:focus {
+      border-color: var(--olive);
+      box-shadow: 0 0 0 4px rgba(74,102,64,0.08);
+    }
+    .btn-primary {
+      background: var(--olive); color: var(--white);
+      padding: 14px 40px; border-radius: 100px;
+      font-size: 15px; font-weight: 500; border: none; cursor: pointer;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(74,102,64,0.3);
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--olive-dark); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(74,102,64,0.4); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* FOREST */
+    .forest-section { max-width: 1100px; margin: 0 auto 80px; }
+    .forest-heading { text-align: center; margin-bottom: 28px; }
+    .forest-heading h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: 8px;
+    }
+    .forest-heading p { font-size: 14px; color: var(--text-light); }
+
+    .forest-scene {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 280px;
+      background: linear-gradient(
+        to bottom,
+        rgba(210,230,205,0.25) 0%,
+        rgba(235,245,232,0.45) 55%,
+        rgba(150,188,143,0.38) 100%
+      );
+      border-radius: 24px;
+      border: 1px solid rgba(125,158,117,0.2);
+      overflow: hidden;
+      padding: 20px 28px 0;
+    }
+
+    .trees-container {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      align-content: flex-end;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0 6px;
+      position: relative; z-index: 1;
+    }
+
+    .forest-ground {
+      flex-shrink: 0;
+      height: 52px;
+      background: linear-gradient(to bottom, rgba(80,125,70,0.4), rgba(55,79,49,0.65));
+      border-radius: 0 0 24px 24px;
+      position: relative;
+    }
+    .forest-ground::before {
+      content: '';
+      position: absolute; top: -8px; left: 0; right: 0; height: 16px;
+      background: radial-gradient(ellipse 110% 100% at 50% 100%, rgba(90,140,80,0.45) 0%, transparent 70%);
+    }
+
+    .tree-wrap {
+      position: relative;
+      display: flex; flex-direction: column; align-items: center;
+      cursor: default; flex-shrink: 0;
+      margin-bottom: -3px;
+    }
+    .tree-wrap:hover .tree-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .tree-wrap:hover .tree-remove { opacity: 1; }
+
+    .tree-remove {
+      position: absolute;
+      bottom: calc(100% - 8px);
+      right: -4px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(192,57,43,0.25);
+      color: #c0392b;
+      font-size: 11px; line-height: 20px; text-align: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+      z-index: 20;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tree-remove:hover { background: rgba(192,57,43,0.1); }
+
+    .tree-svg {
+      display: block;
+      transform-origin: bottom center;
+    }
+    .tree-svg.grow {
+      animation: treeGrow 0.9s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+    }
+    @keyframes treeGrow {
+      from { transform: scaleY(0.05) scaleX(0.3); opacity: 0; }
+      to   { transform: scaleY(1)    scaleX(1);   opacity: 1; }
+    }
+
+    .tree-tooltip {
+      position: absolute;
+      bottom: calc(100% + 2px);
+      left: 50%; transform: translateX(-50%) translateY(6px);
+      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(125,158,117,0.3);
+      border-radius: 10px; padding: 8px 12px;
+      font-family: 'Playfair Display', serif; font-style: italic;
+      font-size: 13px; color: var(--text-mid);
+      white-space: nowrap; max-width: 200px;
+      overflow: hidden; text-overflow: ellipsis;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 10;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    .forest-empty {
+      width: 100%; text-align: center;
+      padding: 60px 0 40px;
+      color: var(--text-light);
+      font-family: 'Playfair Display', serif; font-style: italic;
+      font-size: 16px; line-height: 1.8;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--olive); color: white;
+      padding: 12px 28px; border-radius: 100px;
+      font-size: 14px; font-weight: 500;
+      z-index: 200; transition: transform 0.35s ease;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* FADE IN */
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* LEAVES */
+    .leaf { position: fixed; pointer-events: none; opacity: 0.18; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 220px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 190px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 130px; transform: rotate(38deg); }
+
+    @media (max-width: 640px) {
+      nav { padding: 18px 24px; }
+      .nav-user { display: none; }
+      .input-card { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Leaf decorations -->
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 155 C80 145 44 156 24 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 155 C120 145 156 156 176 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 275 C100 275 28 205 28 130 C28 62 64 16 100 16 C136 16 172 62 172 130 C172 205 100 275 100 275Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.32)"/>
+    <path d="M100 275 L100 16" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 85 C82 75 56 83 40 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 85 C118 75 144 83 160 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+      <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+      <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+    </svg>
+    SALAMA
+  </a>
+  <div class="nav-right">
+    <a class="nav-back" href="#" onclick="history.back(); return false;">← Back</a>
+    <span class="nav-user" id="nav-user-email"></span>
+    <button class="nav-signout" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="hero fade-in">
+    <p class="section-label">Gratitude Practice</p>
+    <h1 class="hero-title">Grow your <em>gratitude forest.</em></h1>
+    <p class="hero-sub">Every time you write something you are grateful for, a new tree grows. Come back each day and watch your forest fill in.</p>
+    <div class="tree-count-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22V12"/><path d="M12 2a4 4 0 0 1 4 4c0 2.5-2 4-4 6-2-2-4-3.5-4-6a4 4 0 0 1 4-4z"/>
+      </svg>
+      <span id="tree-count-text">Your forest has 0 trees</span>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-section fade-in">
+    <div class="input-card">
+      <p class="input-card-label">Plant a Tree</p>
+      <h2 class="input-card-title">What are you grateful for today?</h2>
+      <textarea
+        class="gratitude-input"
+        id="gratitude-input"
+        rows="3"
+        placeholder="I'm grateful for…"
+        maxlength="200"
+      ></textarea>
+      <button class="btn-primary" id="plant-btn" onclick="plantTree()">Plant this tree</button>
+    </div>
+  </div>
+
+  <!-- Forest -->
+  <div class="forest-section fade-in">
+    <div class="forest-heading">
+      <h2>Your Forest</h2>
+      <p>Hover over a tree to remember what it stands for.</p>
+    </div>
+    <div class="forest-scene">
+      <div class="trees-container" id="trees-container">
+        <p class="forest-empty">Your forest is waiting to grow.<br>Plant your first tree above.</p>
+      </div>
+      <div class="forest-ground"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://yrbcozgtjjzexrqoynax.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_XMbgbPt2RZD_yeCEbc94oQ_7m2PQs5g';
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentUser = null;
+  let entries = [];
+
+  async function init() {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) {
+      window.location.href = 'login.html?redirect=gratitude.html';
+      return;
+    }
+    currentUser = session.user;
+    document.getElementById('nav-user-email').textContent = currentUser.email;
+    document.body.classList.add('ready');
+
+    document.querySelectorAll('.fade-in').forEach((el, i) => {
+      setTimeout(() => {
+        const obs = new IntersectionObserver((entries) => {
+          entries.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+          });
+        }, { threshold: 0.08 });
+        obs.observe(el);
+      }, i * 60);
+    });
+
+    await loadForest();
+  }
+
+  async function signOut() {
+    await db.auth.signOut();
+    window.location.href = 'login.html';
+  }
+
+  async function plantTree() {
+    const val = document.getElementById('gratitude-input').value.trim();
+    if (!val) return;
+
+    const btn = document.getElementById('plant-btn');
+    btn.disabled = true;
+    btn.textContent = 'Planting…';
+
+    const { data, error } = await db
+      .from('gratitude_entries')
+      .insert({ user_id: currentUser.id, content: val })
+      .select()
+      .single();
+
+    btn.disabled = false;
+    btn.textContent = 'Plant this tree';
+
+    if (error) { showToast('Could not plant. Please try again.'); return; }
+
+    document.getElementById('gratitude-input').value = '';
+    entries.push(data);
+    renderForest(true);
+    showToast('A new tree has been planted.');
+  }
+
+  async function loadForest() {
+    const { data: rows } = await db
+      .from('gratitude_entries')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: true });
+
+    entries = rows || [];
+    renderForest(false);
+  }
+
+  async function deleteTree(id) {
+    const { error } = await db.from('gratitude_entries').delete().eq('id', id);
+    if (error) { showToast('Could not remove. Please try again.'); return; }
+    entries = entries.filter(e => e.id !== id);
+    renderForest(false);
+    showToast('Tree removed.');
+  }
+
+  function renderForest(hasNew) {
+    const container = document.getElementById('trees-container');
+    const n = entries.length;
+
+    const countEl = document.getElementById('tree-count-text');
+    countEl.textContent = n === 0
+      ? 'Your forest has 0 trees'
+      : n === 1
+      ? 'Your forest has 1 tree'
+      : 'Your forest has ' + n + ' trees';
+
+    if (n === 0) {
+      container.innerHTML = '<p class="forest-empty">Your forest is waiting to grow.<br>Plant your first tree above.</p>';
+      return;
+    }
+
+    container.innerHTML = entries.map(function(entry, i) {
+      const isNew = hasNew && i === entries.length - 1;
+      const treeInner = makeTreeSVG(i);
+      const dims = getTreeDims(i);
+      const truncated = entry.content.length > 45
+        ? entry.content.slice(0, 45) + '…'
+        : entry.content;
+      const escaped = entry.content.replace(/"/g, '&quot;');
+
+      return '<div class="tree-wrap">' +
+        '<div class="tree-tooltip">' + truncated + '</div>' +
+        '<button class="tree-remove" onclick="deleteTree(\'' + entry.id + '\')" title="Remove this tree">✕</button>' +
+        '<svg class="tree-svg' + (isNew ? ' grow' : '') + '" ' +
+          'width="' + dims[0] + '" height="' + dims[1] + '" ' +
+          'viewBox="0 0 80 100" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">' +
+          treeInner +
+        '</svg>' +
+      '</div>';
+    }).join('');
+  }
+
+  function getTreeDims(index) {
+    // [width, height] per variant
+    const dims = [[68,86],[54,84],[78,84],[62,86],[70,86],[50,76]];
+    return dims[index % 6];
+  }
+
+  function makeTreeSVG(index) {
+    const variant = index % 6;
+    const lean = [-2, 0, 3, -1, 2, 0][variant];
+    const cx = 40 + lean;
+
+    const trunks = ['#3d5535','#4a6640','#374f31','#445e3c','#3a5232','#4a6640'];
+    const t = trunks[index % trunks.length];
+
+    const palettes = [
+      ['rgba(74,102,64,0.9)', 'rgba(90,122,78,0.85)', 'rgba(61,85,53,0.82)'],
+      ['rgba(90,122,78,0.9)', 'rgba(107,143,98,0.85)', 'rgba(74,102,64,0.82)'],
+      ['rgba(61,85,53,0.9)',  'rgba(74,102,64,0.85)',  'rgba(90,122,78,0.82)'],
+      ['rgba(107,143,98,0.88)','rgba(74,102,64,0.9)', 'rgba(61,85,53,0.82)'],
+    ];
+    const [l1, l2, l3] = palettes[index % palettes.length];
+
+    if (variant === 0) { // Classic round
+      return '<rect x="' + (cx-4) + '" y="68" width="8" height="32" rx="2" fill="' + t + '"/>' +
+             '<ellipse cx="' + cx + '" cy="55" rx="20" ry="16" fill="' + l1 + '"/>' +
+             '<ellipse cx="' + (cx-12) + '" cy="63" rx="13" ry="11" fill="' + l2 + '"/>' +
+             '<ellipse cx="' + (cx+12) + '" cy="63" rx="13" ry="11" fill="' + l2 + '"/>' +
+             '<ellipse cx="' + cx + '" cy="42" rx="15" ry="13" fill="' + l3 + '"/>';
+    }
+    if (variant === 1) { // Tall narrow
+      return '<rect x="' + (cx-3) + '" y="70" width="6" height="30" rx="2" fill="' + t + '"/>' +
+             '<ellipse cx="' + cx + '" cy="62" rx="11" ry="15" fill="' + l1 + '"/>' +
+             '<ellipse cx="' + cx + '" cy="47" rx="9"  ry="12" fill="' + l2 + '"/>' +
+             '<ellipse cx="' + cx + '" cy="34" rx="7"  ry="10" fill="' + l3 + '"/>';
+    }
+    if (variant === 2) { // Wide spreading
+      return '<rect x="' + (cx-4) + '" y="71" width="8" height="29" rx="2" fill="' + t + '"/>' +
+             '<ellipse cx="' + cx + '"     cy="62" rx="24" ry="12" fill="' + l1 + '"/>' +
+             '<ellipse cx="' + (cx-15) + '" cy="68" rx="15" ry="10" fill="' + l2 + '"/>' +
+             '<ellipse cx="' + (cx+15) + '" cy="68" rx="15" ry="10" fill="' + l2 + '"/>' +
+             '<ellipse cx="' + cx + '"     cy="50" rx="17" ry="12" fill="' + l3 + '"/>';
+    }
+    if (variant === 3) { // Layered pine
+      return '<rect x="' + (cx-3) + '" y="72" width="6" height="28" rx="2" fill="' + t + '"/>' +
+             '<ellipse cx="' + cx + '" cy="73" rx="17" ry="8"  fill="' + l1 + '"/>' +
+             '<ellipse cx="' + cx + '" cy="62" rx="15" ry="8"  fill="' + l2 + '"/>' +
+             '<ellipse cx="' + cx + '" cy="51" rx="12" ry="7"  fill="' + l1 + '"/>' +
+             '<ellipse cx="' + cx + '" cy="41" rx="9"  ry="7"  fill="' + l3 + '"/>';
+    }
+    if (variant === 4) { // Full circle
+      return '<rect x="' + (cx-4) + '" y="68" width="8" height="32" rx="2" fill="' + t + '"/>' +
+             '<circle cx="' + cx + '"      cy="54" r="21" fill="' + l1 + '"/>' +
+             '<circle cx="' + (cx-12) + '" cy="61" r="13" fill="' + l2 + '"/>' +
+             '<circle cx="' + (cx+12) + '" cy="61" r="13" fill="' + l2 + '"/>' +
+             '<circle cx="' + cx + '"      cy="40" r="14" fill="' + l3 + '"/>';
+    }
+    // variant 5: Young sapling
+    return '<line x1="' + cx + '" y1="100" x2="' + cx + '" y2="75" stroke="' + t + '" stroke-width="5" stroke-linecap="round"/>' +
+           '<line x1="' + cx + '" y1="87" x2="' + (cx-10) + '" y2="81" stroke="' + t + '" stroke-width="3" stroke-linecap="round"/>' +
+           '<line x1="' + cx + '" y1="82" x2="' + (cx+10) + '" y2="76" stroke="' + t + '" stroke-width="3" stroke-linecap="round"/>' +
+           '<ellipse cx="' + cx + '"      cy="68" rx="12" ry="9" fill="' + l1 + '"/>' +
+           '<ellipse cx="' + (cx-10) + '" cy="77" rx="9"  ry="8" fill="' + l2 + '"/>' +
+           '<ellipse cx="' + (cx+10) + '" cy="74" rx="9"  ry="8" fill="' + l3 + '"/>';
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // Enter key (Ctrl/Cmd+Enter in textarea)
+  document.getElementById('gratitude-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) plantTree();
+  });
+
+  init();
+</script>
+
+</body>
+</html>

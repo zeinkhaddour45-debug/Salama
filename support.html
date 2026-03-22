@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find Support Near You | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:       #f5f0e8;
+      --cream-dark:  #ece5d8;
+      --sage:        #7d9e75;
+      --sage-light:  #adc4a6;
+      --sage-muted:  #c8d9c2;
+      --olive:       #4a6640;
+      --olive-dark:  #374f31;
+      --text:        #2a2722;
+      --text-mid:    #5a5650;
+      --text-light:  #8a8680;
+      --white:       #ffffff;
+      --urgent:      #8b3a3a;
+      --urgent-light:#f5ebe8;
+      --urgent-mid:  #c0392b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Film grain */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+
+    /* Nav */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 48px;
+      background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--olive-dark);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .nav-back {
+      font-size: 13px;
+      color: var(--text-mid);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+
+    /* Hero */
+    .hero {
+      padding: 148px 48px 36px;
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 5.5vw, 60px);
+      font-weight: 700;
+      line-height: 1.12;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    .hero-title em { font-style: italic; color: var(--olive); }
+    .hero-sub {
+      font-size: 17px;
+      color: var(--text-mid);
+      line-height: 1.75;
+      max-width: 540px;
+      margin: 0 auto 40px;
+    }
+
+    /* Jump links */
+    .jump-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 0;
+    }
+    .jump-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 20px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      border: 1.5px solid var(--cream-dark);
+      color: var(--text-mid);
+      background: rgba(255,255,255,0.6);
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .jump-link:hover {
+      border-color: var(--sage-muted);
+      color: var(--olive);
+      background: rgba(255,255,255,0.9);
+    }
+    .jump-link.urgent {
+      border-color: rgba(139,58,58,0.25);
+      color: var(--urgent);
+      background: var(--urgent-light);
+    }
+    .jump-link.urgent:hover {
+      border-color: rgba(139,58,58,0.5);
+      background: #f0ddd9;
+    }
+    .jump-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--sage);
+      flex-shrink: 0;
+    }
+    .jump-dot.red { background: var(--urgent-mid); }
+
+    /* Page body */
+    .page-body {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 48px 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 80px;
+    }
+
+    /* Section */
+    .support-section {}
+    .support-section-header {
+      margin-bottom: 28px;
+    }
+    .support-section-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .support-section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .support-section-desc {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 1.7;
+      max-width: 620px;
+    }
+
+    /* Cards grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    /* Support card */
+    .support-card {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.75);
+      border-radius: 20px;
+      padding: 28px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+    .support-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.08);
+      border-color: rgba(125,158,117,0.35);
+    }
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .card-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .card-tag {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 100px;
+      background: var(--sage-muted);
+      color: var(--olive-dark);
+    }
+    .card-desc {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.65;
+      flex: 1;
+    }
+    .card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 4px;
+    }
+    .card-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-light);
+    }
+    .card-meta-item svg {
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+    .card-meta-item a {
+      color: var(--olive);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .card-meta-item a:hover { color: var(--olive-dark); text-decoration: underline; }
+    .card-meta-item span { color: var(--text-mid); }
+
+    /* Coming soon block */
+    .coming-soon-block {
+      grid-column: 1 / -1;
+      border: 1.5px dashed var(--sage-muted);
+      border-radius: 20px;
+      padding: 36px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(200,217,194,0.1);
+    }
+    .coming-soon-inner {
+      text-align: center;
+      max-width: 480px;
+    }
+    .coming-soon-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--olive);
+      background: var(--sage-muted);
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 14px;
+    }
+    .coming-soon-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .coming-soon-sub {
+      font-size: 13px;
+      color: var(--text-light);
+      line-height: 1.65;
+    }
+    .coming-soon-sub a {
+      color: var(--olive);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .coming-soon-sub a:hover { text-decoration: underline; }
+
+    /* Immediate help section */
+    .urgent-section {
+      background: linear-gradient(135deg, #2d1b1b 0%, #3d2020 60%, #4a2828 100%);
+      border-radius: 28px;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .urgent-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.04) 1px, transparent 0);
+      background-size: 24px 24px;
+      pointer-events: none;
+    }
+    .urgent-section::after {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(192,57,43,0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .urgent-header {
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+    .urgent-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(192,100,100,0.85);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .urgent-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.95);
+      margin-bottom: 10px;
+    }
+    .urgent-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.7;
+      max-width: 560px;
+    }
+    .urgent-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+    .urgent-card {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 24px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .urgent-card:hover {
+      background: rgba(255,255,255,0.11);
+      border-color: rgba(255,255,255,0.22);
+    }
+    .urgent-card-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.92);
+    }
+    .urgent-card-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.6;
+      flex: 1;
+    }
+    .urgent-card-number {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 600;
+      color: rgba(255,200,190,0.95);
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .urgent-card-number:hover { color: #fff; }
+    .urgent-card-number svg { opacity: 0.7; }
+    .urgent-card-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,200,190,0.8);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.2s;
+    }
+    .urgent-card-link:hover { color: rgba(255,220,210,0.95); }
+    .pulse-dot {
+      width: 8px; height: 8px;
+      background: #e74c3c;
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse 1.8s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* Fade in */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-in.visible { opacity: 1; transform: none; }
+    .fade-in-delay-1 { transition-delay: 0.1s; }
+    .fade-in-delay-2 { transition-delay: 0.2s; }
+    .fade-in-delay-3 { transition-delay: 0.3s; }
+
+    /* Divider */
+    .section-divider {
+      width: 48px;
+      height: 2px;
+      background: var(--sage-muted);
+      border-radius: 2px;
+      margin: 12px 0 0;
+    }
+
+    /* Footer */
+    .page-footer {
+      text-align: center;
+      padding: 0 48px 60px;
+      font-size: 13px;
+      color: var(--text-light);
+      line-height: 1.8;
+    }
+    .page-footer a {
+      color: var(--olive);
+      text-decoration: none;
+    }
+    .page-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 700px) {
+      nav { padding: 18px 24px; }
+      .hero { padding: 120px 24px 56px; }
+      .page-body { padding: 56px 24px 100px; gap: 60px; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .urgent-cards { grid-template-columns: 1fr; }
+      .urgent-section { padding: 36px 24px; }
+      .page-footer { padding: 0 24px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="14" height="20" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,21 L8,4" stroke="#4a6640" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="#4a6640"/>
+    </svg>
+    SALAMA
+  </a>
+  <a class="nav-back" href="#" onclick="history.back(); return false;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+    </svg>
+    Back
+  </a>
+</nav>
+
+<!-- Hero -->
+<div class="hero fade-in">
+  <p class="section-label">Resources</p>
+  <h1 class="hero-title">Find Support <em>Near You</em></h1>
+  <p class="hero-sub">You don't have to navigate this alone. Below are services available in Lebanon, from campus counseling to crisis lines, all in one place.</p>
+  <div class="jump-links">
+    <a class="jump-link" href="#university">
+      <span class="jump-dot"></span> University Support
+    </a>
+    <a class="jump-link" href="#free">
+      <span class="jump-dot"></span> Free &amp; Low-Cost
+    </a>
+    <a class="jump-link" href="#professional">
+      <span class="jump-dot"></span> Professional Support
+    </a>
+    <a class="jump-link urgent" href="#immediate">
+      <span class="jump-dot red"></span> Immediate Help
+    </a>
+  </div>
+</div>
+
+<!-- Page body -->
+<div class="page-body">
+
+  <!-- University Support -->
+  <div class="support-section fade-in" id="university">
+    <div class="support-section-header">
+      <p class="support-section-label">On Campus</p>
+      <h2 class="support-section-title">University Support</h2>
+      <div class="section-divider"></div>
+      <p class="support-section-desc" style="margin-top: 14px;">Support services available within your campus, offering accessible and confidential care for students.</p>
+    </div>
+    <div class="cards-grid">
+
+      <a class="support-card" href="aub.html">
+        <div class="card-header">
+          <h3 class="card-name">AUB Student Mental Health & Wellbeing</h3>
+          <span class="card-tag">AUB</span>
+        </div>
+        <p class="card-desc">Free, confidential counseling for AUB students. Individual sessions, group therapy, and crisis support available through the Student Affairs office.</p>
+      </a>
+
+      <a class="support-card" href="lau-counseling.html">
+        <div class="card-header">
+          <h3 class="card-name">LAU Counseling Center</h3>
+          <span class="card-tag">LAU</span>
+        </div>
+        <p class="card-desc">Professional counseling services for LAU students on both Beirut and Byblos campuses. Short-term individual therapy and referral support.</p>
+      </a>
+
+      <a class="support-card" href="ndu.html">
+        <div class="card-header">
+          <h3 class="card-name">NDU Psychological Services</h3>
+          <span class="card-tag">NDU</span>
+        </div>
+        <p class="card-desc">Psychological counseling for Notre Dame University students. Offers individual consultations and group support in a safe, confidential environment.</p>
+      </a>
+
+      <a class="support-card" href="usj.html">
+        <div class="card-header">
+          <h3 class="card-name">USJ Student Services</h3>
+          <span class="card-tag">USJ</span>
+        </div>
+        <p class="card-desc">Saint Joseph University's Counseling Office (SAP) supports students experiencing emotional or psychological distress, staffed by qualified psychologists and psychiatrists.</p>
+      </a>
+
+      <div class="coming-soon-block">
+        <div class="coming-soon-inner">
+          <span class="coming-soon-badge">Coming Soon</span>
+          <p class="coming-soon-text">More universities being added</p>
+          <p class="coming-soon-sub">We're working on including more Lebanese universities. Know a campus counseling service we should add? <a href="mailto:hello@salama.com">Let us know.</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Free & Low-Cost -->
+  <div class="support-section fade-in" id="free">
+    <div class="support-section-header">
+      <p class="support-section-label">Accessible Care</p>
+      <h2 class="support-section-title">Free &amp; Low-Cost Support</h2>
+      <div class="section-divider"></div>
+      <p class="support-section-desc" style="margin-top: 14px;">Organizations providing mental health support at little to no cost, making care accessible when you need it most.</p>
+    </div>
+    <div class="cards-grid">
+
+      <a class="support-card" href="embrace.html">
+        <div class="card-header">
+          <h3 class="card-name">Embrace Lebanon</h3>
+          <span class="card-tag">Free</span>
+        </div>
+        <p class="card-desc">Lebanon's leading mental health NGO dedicated to suicide prevention and emotional wellbeing. Offers free counseling, community programs, and a crisis hotline (1564).</p>
+      </a>
+
+      <a class="support-card" href="idraac.html">
+        <div class="card-header">
+          <h3 class="card-name">IDRAAC</h3>
+          <span class="card-tag">Free</span>
+        </div>
+        <p class="card-desc">Institute for Development, Research, Advocacy and Applied Care. A leading mental health NGO in Lebanon offering free psychosocial support, therapy, and public education.</p>
+      </a>
+
+      <a class="support-card" href="restart.html">
+        <div class="card-header">
+          <h3 class="card-name">Restart Center</h3>
+          <span class="card-tag">Low-cost</span>
+        </div>
+        <p class="card-desc">Specializes in supporting survivors of trauma, torture, and displacement. Offers free or sliding-scale psychological therapy and rehabilitation services.</p>
+      </a>
+
+      <a class="support-card" href="mind.html">
+        <div class="card-header">
+          <h3 class="card-name">MIND Clinics</h3>
+          <span class="card-tag">Clinical</span>
+        </div>
+        <p class="card-desc">A multidisciplinary mental health clinic with several locations across Lebanon, offering psychiatric, psychological, and neuropsychological services for all age groups.</p>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Professional Support -->
+  <div class="support-section fade-in" id="professional">
+    <div class="support-section-header">
+      <p class="support-section-label">Ongoing Care</p>
+      <h2 class="support-section-title">Professional Support</h2>
+      <div class="section-divider"></div>
+      <p class="support-section-desc" style="margin-top: 14px;">Connect with licensed professionals and clinics for ongoing, specialized mental health care.</p>
+    </div>
+    <div class="cards-grid">
+
+      <a class="support-card" href="aub-psychiatry.html">
+        <div class="card-header">
+          <h3 class="card-name">AUB Medical Center Psychiatry</h3>
+          <span class="card-tag">Clinical</span>
+        </div>
+        <p class="card-desc">The Department of Psychiatry at AUBMC offers specialist outpatient consultations, emergency psychiatric assessment, and inpatient care. Available to AUB students, faculty, and staff, with referral through UHS or direct contact for those outside the health insurance plan.</p>
+      </a>
+
+      <a class="support-card" href="brainstation.html">
+        <div class="card-header">
+          <h3 class="card-name">Brainstation Psychotherapy &amp; Training</h3>
+          <span class="card-tag">Clinical</span>
+        </div>
+        <p class="card-desc">A Beirut-based psychotherapy center offering individual and group therapy, alongside professional training programs in evidence-based mental health practices.</p>
+      </a>
+
+      <div class="coming-soon-block">
+        <div class="coming-soon-inner">
+          <span class="coming-soon-badge">Coming Soon</span>
+          <p class="coming-soon-text">More professional resources being added</p>
+          <p class="coming-soon-sub">More clinics and licensed providers are being verified and added. Know a resource worth including? <a href="mailto:hello@salama.com">Let us know.</a></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Immediate Help -->
+  <div class="fade-in" id="immediate">
+    <div class="urgent-section">
+      <div class="urgent-header">
+        <p class="urgent-label">Crisis Support</p>
+        <h2 class="urgent-title">Immediate Help</h2>
+        <p class="urgent-desc">If you or someone you know is in crisis, please reach out now. These services are available to support you through the hardest moments.</p>
+      </div>
+      <div class="urgent-cards">
+
+        <div class="urgent-card">
+          <div class="urgent-card-name">Embrace Lebanon</div>
+          <div class="urgent-card-desc">Lebanon's first dedicated suicide prevention hotline. Available daily 3 PM to 11 PM, staffed by trained counselors.</div>
+          <a class="urgent-card-number" href="tel:1564">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5 19.79 19.79 0 0 1 1.61 4.9 2 2 0 0 1 3.6 2.69h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10a16 16 0 0 0 6.09 6.09l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 18z"/></svg>
+            1564
+          </a>
+          <a class="urgent-card-link" href="https://www.embracelebanon.org" target="_blank" rel="noopener">embracelebanon.org →</a>
+        </div>
+
+        <div class="urgent-card">
+          <div class="urgent-card-name">IDRAAC Crisis Line</div>
+          <div class="urgent-card-desc">The IDRAAC helpline connects you with a counselor for immediate emotional support and guidance to appropriate services.</div>
+          <a class="urgent-card-number" href="tel:0121222">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5 19.79 19.79 0 0 1 1.61 4.9 2 2 0 0 1 3.6 2.69h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10a16 16 0 0 0 6.09 6.09l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 18z"/></svg>
+            01 202 220
+          </a>
+          <a class="urgent-card-link" href="https://www.idraac.org" target="_blank" rel="noopener">idraac.org →</a>
+        </div>
+
+        <div class="urgent-card">
+          <div class="urgent-card-name">Lebanese Red Cross</div>
+          <div class="urgent-card-desc">For medical emergencies and immediate physical safety. The Red Cross also provides first psychological aid in crisis situations.</div>
+          <a class="urgent-card-number" href="tel:140">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5 19.79 19.79 0 0 1 1.61 4.9 2 2 0 0 1 3.6 2.69h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10a16 16 0 0 0 6.09 6.09l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 18z"/></svg>
+            140
+          </a>
+          <a class="urgent-card-link" href="https://www.redcross.org.lb" target="_blank" rel="noopener">redcross.org.lb →</a>
+        </div>
+
+        <div class="urgent-card">
+          <div class="urgent-card-name">General Emergency</div>
+          <div class="urgent-card-desc">For any life-threatening emergency in Lebanon. Do not hesitate to call if you or someone else is in immediate danger.</div>
+          <a class="urgent-card-number" href="tel:112">
+            <span class="pulse-dot"></span>
+            112
+          </a>
+          <span style="font-size: 12px; color: rgba(255,255,255,0.4);">Available 24/7</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer note -->
+<p class="page-footer">
+  This information is maintained by the Salama team. If you notice an outdated listing or would like to suggest a resource, <a href="mailto:hello@salama.com">get in touch</a>.
+</p>
+
+<script>
+  // Fade in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

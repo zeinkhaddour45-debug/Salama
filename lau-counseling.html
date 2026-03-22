@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Counseling Services | LAU | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --cream-dark: #ece5d8; --sage: #7d9e75; --sage-light: #adc4a6;
+      --sage-muted: #c8d9c2; --olive: #4a6640; --olive-dark: #374f31;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680; --white: #ffffff;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+
+    /* Nav */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 48px; background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700;
+      color: var(--olive-dark); text-decoration: none; letter-spacing: 0.04em;
+      display: inline-flex; align-items: center; gap: 9px;
+    }
+    .nav-back {
+      font-size: 13px; color: var(--text-mid); text-decoration: none;
+      display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+
+    /* Hero */
+    .hero {
+      padding: 148px 48px 24px;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 20px;
+    }
+    .hero-eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sage); }
+    .hero-title-row {
+      display: flex; align-items: center; gap: 18px; margin-bottom: 18px;
+    }
+    .lau-logo-badge {
+      flex-shrink: 0; width: 72px; height: 50px; border-radius: 8px; overflow: hidden;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 0;
+    }
+    .hero-title em { font-style: italic; color: var(--olive); }
+    .hero-tag {
+      display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+      text-transform: uppercase; padding: 4px 11px; border-radius: 100px;
+      background: rgba(90,86,80,0.1); color: var(--text-mid); margin-bottom: 20px;
+    }
+    .hero-sub {
+      font-size: 17px; color: var(--text-mid); line-height: 1.75; max-width: 600px;
+    }
+
+    /* Page body */
+    .page-body {
+      max-width: 820px; margin: 0 auto; padding: 48px 48px 120px;
+      display: flex; flex-direction: column; gap: 40px;
+    }
+
+    /* Section */
+    .section-label {
+      font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 6px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif; font-size: 24px;
+      font-weight: 600; color: var(--text); margin-bottom: 16px;
+    }
+    .section-divider {
+      width: 40px; height: 2px; background: var(--sage-muted);
+      border-radius: 2px; margin-bottom: 20px;
+    }
+
+    /* Info card */
+    .info-card {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.75);
+      border-radius: 20px; padding: 32px;
+    }
+    .info-body {
+      font-size: 15px; color: var(--text-mid); line-height: 1.8;
+    }
+    .info-body p + p { margin-top: 14px; }
+
+    /* Service list */
+    .service-list {
+      list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 4px;
+    }
+    .service-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 15px; color: var(--text-mid); line-height: 1.6;
+    }
+    .service-list li::before {
+      content: '';
+      flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--sage); margin-top: 8px;
+    }
+
+    /* Seek help grid */
+    .seek-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;
+    }
+    .seek-item {
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(255,255,255,0.75);
+      border-radius: 14px; padding: 14px 18px;
+      font-size: 14px; color: var(--text-mid); line-height: 1.5;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .seek-item::before {
+      content: '';
+      flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--sage-light); margin-top: 6px;
+    }
+
+    /* Guarantee list */
+    .guarantee-list {
+      list-style: none; display: flex; flex-direction: column; gap: 12px;
+    }
+    .guarantee-list li {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 15px; color: var(--text-mid); line-height: 1.65;
+    }
+    .guarantee-check {
+      flex-shrink: 0; width: 20px; height: 20px;
+      background: rgba(125,158,117,0.15); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px;
+    }
+    .guarantee-check svg { color: var(--olive); }
+
+    /* Nav card (internal link) */
+    .nav-card {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.75);
+      border-radius: 20px; padding: 28px 32px;
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      text-decoration: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .nav-card:hover {
+      border-color: rgba(125,158,117,0.4);
+      box-shadow: 0 4px 20px rgba(74,102,64,0.08);
+    }
+    .nav-card-label {
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 6px;
+    }
+    .nav-card-title {
+      font-family: 'Playfair Display', serif; font-size: 18px;
+      font-weight: 600; color: var(--text);
+    }
+    .nav-card-sub {
+      font-size: 13px; color: var(--text-light); margin-top: 4px;
+    }
+    .nav-card-arrow { flex-shrink: 0; color: var(--olive); opacity: 0.7; }
+
+    /* External link card */
+    .ext-link-card {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.75);
+      border-radius: 20px; padding: 28px 32px;
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      text-decoration: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .ext-link-card:hover {
+      border-color: rgba(125,158,117,0.4);
+      box-shadow: 0 4px 20px rgba(74,102,64,0.08);
+    }
+    .ext-link-card-label {
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 6px;
+    }
+    .ext-link-card-title {
+      font-family: 'Playfair Display', serif; font-size: 18px;
+      font-weight: 600; color: var(--text);
+    }
+    .ext-link-card-url {
+      font-size: 12px; color: var(--text-light); margin-top: 4px;
+    }
+    .ext-link-card-arrow { flex-shrink: 0; color: var(--olive); opacity: 0.7; }
+
+    /* Campus contact block */
+    .campus-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;
+    }
+    .campus-block {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.75);
+      border-radius: 18px; padding: 24px 26px;
+    }
+    .campus-name {
+      font-family: 'Playfair Display', serif; font-size: 16px;
+      font-weight: 600; color: var(--text); margin-bottom: 4px;
+    }
+    .campus-tel {
+      font-size: 13px; color: var(--sage); font-weight: 500; margin-bottom: 14px;
+    }
+    .campus-contacts {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .campus-contact {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+      font-size: 13.5px; color: var(--text-mid); line-height: 1.4;
+    }
+    .campus-contact-name { flex: 1; }
+    .campus-ext {
+      flex-shrink: 0; font-size: 12px; color: var(--text-light);
+      background: rgba(200,217,194,0.25); border-radius: 6px;
+      padding: 2px 8px; font-weight: 500;
+    }
+
+    /* Note box */
+    .note-box {
+      font-size: 13px; color: var(--text-light); line-height: 1.7;
+      padding: 14px 18px; background: rgba(200,217,194,0.18);
+      border-left: 3px solid var(--sage-muted); border-radius: 0 10px 10px 0;
+    }
+
+    /* Fade in */
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: none; }
+    .fade-in-delay-1 { transition-delay: 0.08s; }
+    .fade-in-delay-2 { transition-delay: 0.16s; }
+    .fade-in-delay-3 { transition-delay: 0.24s; }
+    .fade-in-delay-4 { transition-delay: 0.32s; }
+
+    /* Footer */
+    .page-footer {
+      text-align: center; padding: 0 48px 60px;
+      font-size: 13px; color: var(--text-light); line-height: 1.8;
+    }
+    .page-footer a { color: var(--olive); text-decoration: none; }
+    .page-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 700px) {
+      nav { padding: 18px 24px; }
+      .hero { padding: 120px 24px 24px; }
+      .page-body { padding: 32px 24px 100px; }
+      .page-footer { padding: 0 24px 48px; }
+      .seek-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="14" height="20" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,21 L8,4" stroke="#4a6640" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="#4a6640" opacity="0.8"/>
+      <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="#4a6640"/>
+    </svg>
+    SALAMA
+  </a>
+  <a class="nav-back" href="#" onclick="history.back(); return false;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+    </svg>
+    Back
+  </a>
+</nav>
+
+<!-- Hero -->
+<div class="hero fade-in">
+  <div class="hero-eyebrow">
+    <span class="hero-eyebrow-dot"></span>
+    LAU · Student Support
+  </div>
+  <div class="hero-title-row">
+    <div class="lau-logo-badge">
+      <svg width="72" height="50" viewBox="0 0 80 56" xmlns="http://www.w3.org/2000/svg">
+        <!-- Green arch background -->
+        <path d="M1,56 L1,20 Q1,3 40,3 Q79,3 79,20 L79,56 Z" fill="#296048"/>
+        <!-- Sail -->
+        <path d="M26,48 L28,13 L60,41 Z" fill="white"/>
+        <!-- Mast -->
+        <line x1="28" y1="13" x2="28" y2="48" stroke="white" stroke-width="1.4"/>
+        <!-- Hull -->
+        <path d="M12,46 Q44,53 70,46" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Oars -->
+        <line x1="16" y1="47" x2="16" y2="53" stroke="white" stroke-width="1.3"/>
+        <line x1="22" y1="48" x2="22" y2="54" stroke="white" stroke-width="1.3"/>
+        <line x1="28" y1="49" x2="28" y2="55" stroke="white" stroke-width="1.3"/>
+        <line x1="34" y1="49" x2="34" y2="55" stroke="white" stroke-width="1.3"/>
+        <line x1="40" y1="50" x2="40" y2="55" stroke="white" stroke-width="1.3"/>
+        <line x1="46" y1="49" x2="46" y2="55" stroke="white" stroke-width="1.3"/>
+        <line x1="52" y1="49" x2="52" y2="55" stroke="white" stroke-width="1.3"/>
+        <line x1="58" y1="48" x2="58" y2="54" stroke="white" stroke-width="1.3"/>
+        <line x1="64" y1="47" x2="64" y2="53" stroke="white" stroke-width="1.3"/>
+        <!-- Warrior with spear (left) -->
+        <circle cx="19" cy="35" r="2.3" fill="white"/>
+        <line x1="19" y1="37" x2="19" y2="46" stroke="white" stroke-width="1.2"/>
+        <line x1="19" y1="39" x2="16" y2="35" stroke="white" stroke-width="1.2"/>
+        <line x1="15" y1="27" x2="17" y2="35" stroke="white" stroke-width="1.3"/>
+        <path d="M14,27 L15,24 L17,27 Z" fill="white"/>
+        <!-- Horse prow (right) -->
+        <path d="M63,42 Q69,38 71,43 Q69,47 65,47" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1 class="hero-title">Counseling <em>Services</em></h1>
+  </div>
+  <span class="hero-tag">Free · Confidential · Students</span>
+  <p class="hero-sub">Confidential, free counseling for all LAU students, from the transition into university through to graduation. Professional support for academic and personal challenges, on both campuses.</p>
+</div>
+
+<!-- Content -->
+<div class="page-body">
+
+  <!-- About -->
+  <div class="fade-in fade-in-delay-1">
+    <p class="section-label">About</p>
+    <h2 class="section-title">What LAU Counseling Offers</h2>
+    <div class="section-divider"></div>
+    <div class="info-card">
+      <div class="info-body">
+        <p>LAU Counseling is there from the moment you step into university, helping you manage the emotional weight of the school-to-college transition, and continues to support you throughout your academic years. It equips you with essential tools to effectively manage and maintain your mental health.</p>
+        <p>Sessions are strictly confidential and free of charge for all currently enrolled students. They are typically scheduled once a week and may extend over several weeks, depending on the objectives you set together with your counselor.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- When to seek help -->
+  <div class="fade-in fade-in-delay-2">
+    <p class="section-label">Self-Awareness</p>
+    <h2 class="section-title">When Should You Seek Help?</h2>
+    <div class="section-divider"></div>
+    <div class="seek-grid">
+      <div class="seek-item">Feeling overwhelmed or unable to manage your emotions</div>
+      <div class="seek-item">Anxiety, fear, or persistent anger affecting your daily life</div>
+      <div class="seek-item">Having suicidal thoughts or feelings of hopelessness</div>
+      <div class="seek-item">Exposure to physical, sexual, or emotional abuse</div>
+      <div class="seek-item">Difficulty sleeping or experiencing appetite problems</div>
+      <div class="seek-item">Significant or unexplained changes in mood</div>
+      <div class="seek-item">Relationship difficulties or grief after a loss</div>
+      <div class="seek-item">A decline in academic performance or difficulty concentrating</div>
+    </div>
+  </div>
+
+  <!-- Contact info -->
+  <div class="fade-in fade-in-delay-3">
+    <p class="section-label">Contact</p>
+    <h2 class="section-title">Get in Touch</h2>
+    <div class="section-divider"></div>
+    <div class="campus-grid">
+      <div class="campus-block">
+        <p class="campus-name">Beirut Campus</p>
+        <p class="campus-tel">Tel: +961 1 78 64 64</p>
+        <div class="campus-contacts">
+          <div class="campus-contact">
+            <span class="campus-contact-name">Mr. Maher El Helou</span>
+            <span class="campus-ext">ext. 1705</span>
+          </div>
+          <div class="campus-contact">
+            <span class="campus-contact-name">Ms. Nour Wakim</span>
+            <span class="campus-ext">ext. 1635</span>
+          </div>
+        </div>
+      </div>
+      <div class="campus-block">
+        <p class="campus-name">Byblos Campus</p>
+        <p class="campus-tel">Tel: +961 9 457 262</p>
+        <div class="campus-contacts">
+          <div class="campus-contact">
+            <span class="campus-contact-name">Ms. Anny Ghanem</span>
+            <span class="campus-ext">ext. 2938</span>
+          </div>
+          <div class="campus-contact">
+            <span class="campus-contact-name">Dr. Joumana Haddad</span>
+            <span class="campus-ext">ext. 2413</span>
+          </div>
+          <div class="campus-contact">
+            <span class="campus-contact-name">Ms. Tala AlNoweisser</span>
+            <span class="campus-ext">ext. 2057</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Services -->
+  <div class="fade-in fade-in-delay-3">
+    <p class="section-label">Services</p>
+    <h2 class="section-title">What's Available</h2>
+    <div class="section-divider"></div>
+    <div class="info-card">
+      <ul class="service-list">
+        <li>Short-term individual counseling sessions</li>
+        <li>General consultation and intake assessment</li>
+        <li>Group counseling</li>
+        <li>Guidance to develop academic and study skills</li>
+        <li>Career and vocational counseling</li>
+        <li>Crisis intervention and emergency support</li>
+        <li>On- and off-campus referrals to specialist professionals (psychotherapists, psychiatrists) when needed</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="fade-in fade-in-delay-4">
+    <p class="section-label">Process</p>
+    <h2 class="section-title">How Your Counselor Can Help</h2>
+    <div class="section-divider"></div>
+    <div class="info-card">
+      <div class="info-body">
+        <p>Together with your counselor, you will go over the challenges impacting your daily life and productivity. Your counselor will help you better understand your situation and explore healthier, more effective ways to manage your stressors.</p>
+        <p>The counselor will help you identify the main objectives for your sessions, which will be evaluated and adjusted on an ongoing basis as you make progress.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guarantees -->
+  <div class="fade-in">
+    <p class="section-label">Confidentiality</p>
+    <h2 class="section-title">What LAU Counseling Guarantees</h2>
+    <div class="section-divider"></div>
+    <div class="info-card">
+      <ul class="guarantee-list">
+        <li>
+          <span class="guarantee-check">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          A safe space to disclose and discuss sensitive issues openly
+        </li>
+        <li>
+          <span class="guarantee-check">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          Trusted, open-minded, and professional support from qualified counselors
+        </li>
+        <li>
+          <span class="guarantee-check">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          Practical tools and support to overcome distress and build resilience
+        </li>
+        <li>
+          <span class="guarantee-check">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          Full confidentiality: nothing discussed will appear on your university records or transcripts, unless a risk of self-harm or harm to others is identified
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Guidelines & Tips -->
+  <div class="fade-in">
+    <p class="section-label">Prepare</p>
+    <h2 class="section-title">Guidelines &amp; Tips</h2>
+    <div class="section-divider"></div>
+    <a class="nav-card" href="lau-counseling-tips.html">
+      <div>
+        <p class="nav-card-label">Before &amp; During Counseling</p>
+        <p class="nav-card-title">How to Make the Most of Your Sessions</p>
+        <p class="nav-card-sub">Practical guidance on preparing for your first appointment and getting the most out of each session.</p>
+      </div>
+      <svg class="nav-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+
+  <!-- LAU Counseling Resources -->
+  <div class="fade-in">
+    <p class="section-label">From LAU Counseling Centre</p>
+    <h2 class="section-title">Resources &amp; Guides</h2>
+    <div class="section-divider"></div>
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <a class="ext-link-card" href="https://prezi.com/view/lig0bG8QNccmZzTm1A13/" target="_blank" rel="noopener">
+        <div class="ext-link-card-text">
+          <p class="ext-link-card-label">Presentation</p>
+          <p class="ext-link-card-title">Surviving and Thriving in War Time</p>
+          <p class="ext-link-card-url">prezi.com · LAU Counseling Centre</p>
+        </div>
+        <svg class="ext-link-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+      </a>
+      <a class="ext-link-card" href="https://www.lau.edu.lb/experience/counseling/response-recent-unrest.php" target="_blank" rel="noopener">
+        <div class="ext-link-card-text">
+          <p class="ext-link-card-label">Article</p>
+          <p class="ext-link-card-title">In Response to the Recent Unrest</p>
+          <p class="ext-link-card-url">lau.edu.lb · Counseling Centre</p>
+        </div>
+        <svg class="ext-link-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+      </a>
+      <a class="ext-link-card" href="https://www.youtube.com/watch?v=XLJT9jsHLxE" target="_blank" rel="noopener">
+        <div class="ext-link-card-text">
+          <p class="ext-link-card-label">Video</p>
+          <p class="ext-link-card-title">Counselling in a Nutshell</p>
+          <p class="ext-link-card-url">youtube.com · LAU Counseling Centre</p>
+        </div>
+        <svg class="ext-link-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- Official website -->
+  <div class="fade-in">
+    <p class="section-label">Official Resource</p>
+    <h2 class="section-title">LAU Counseling Website</h2>
+    <div class="section-divider"></div>
+    <a class="ext-link-card" href="https://www.lau.edu.lb/experience/counseling/" target="_blank" rel="noopener">
+      <div>
+        <p class="ext-link-card-label">Official LAU Page</p>
+        <p class="ext-link-card-title">LAU Counseling Center</p>
+        <p class="ext-link-card-url">lau.edu.lb · Student Experience</p>
+      </div>
+      <svg class="ext-link-card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+    </a>
+  </div>
+
+  <!-- Note -->
+  <p class="note-box fade-in">
+    Service details and availability may change. For the most current information, visit the official LAU Counseling website or contact the center directly.
+  </p>
+
+</div>
+
+<!-- Footer -->
+<p class="page-footer">
+  This page is part of the Salama resource directory. Information is provided for awareness purposes only.
+</p>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

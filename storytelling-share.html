@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Share Your Story | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --cream-dark: #ece5d8; --sage: #7d9e75;
+      --sage-muted: #c8d9c2; --olive: #4a6640; --olive-dark: #374f31;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680; --white: #ffffff;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245,240,232,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; letter-spacing: 3px; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 9px; }
+    .nav-back { font-size: 14px; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+    .leaf { position: fixed; pointer-events: none; opacity: 0.18; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 220px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 190px; transform: rotate(158deg); }
+    .page {
+      min-height: 100vh; padding: 110px 24px 80px;
+      background: radial-gradient(ellipse 800px 600px at 10% 10%, rgba(125,158,117,0.22) 0%, transparent 65%), radial-gradient(ellipse 600px 500px at 90% 85%, rgba(157,180,150,0.18) 0%, transparent 65%), var(--cream);
+    }
+    .wrap { max-width: 680px; margin: 0 auto; position: relative; z-index: 1; }
+    .safe-notice {
+      display: flex; align-items: flex-start; gap: 14px;
+      background: rgba(125,158,117,0.14); border: 1px solid rgba(125,158,117,0.3);
+      border-radius: 16px; padding: 16px 20px; margin-bottom: 40px;
+    }
+    .safe-notice p { font-size: 13px; color: var(--olive-dark); line-height: 1.6; }
+    .safe-notice strong { font-weight: 600; }
+    .header { margin-bottom: 36px; }
+    .header-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 10px; }
+    .header-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 5vw, 46px); font-weight: 600; color: var(--text); line-height: 1.15; margin-bottom: 10px; }
+    .header-title em { font-style: italic; color: var(--olive); }
+    .header-sub { font-size: 14px; color: var(--text-mid); line-height: 1.7; }
+    .card { background: rgba(255,255,255,0.55); border: 1px solid rgba(125,158,117,0.22); border-radius: 22px; padding: 32px; backdrop-filter: blur(8px); }
+    .form-field { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--olive); margin-bottom: 8px; }
+    .form-input, .form-textarea {
+      width: 100%; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text);
+      background: rgba(245,240,232,0.7); border: 1.5px solid rgba(125,158,117,0.25);
+      border-radius: 12px; padding: 13px 16px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; resize: none;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(125,158,117,0.12); }
+    .form-textarea { min-height: 160px; line-height: 1.7; }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-light); }
+    .mood-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .mood-tag { padding: 7px 16px; border-radius: 100px; border: 1.5px solid rgba(125,158,117,0.3); background: transparent; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-mid); cursor: pointer; transition: all 0.2s; }
+    .mood-tag:hover { border-color: var(--sage); color: var(--olive); }
+    .mood-tag.active { background: var(--olive); border-color: var(--olive); color: var(--white); }
+    .identity-toggle { display: flex; gap: 10px; }
+    .identity-btn { flex: 1; padding: 11px; border-radius: 12px; border: 1.5px solid rgba(125,158,117,0.3); background: transparent; font-family: 'Inter', sans-serif; font-size: 13.5px; color: var(--text-mid); cursor: pointer; transition: all 0.2s; text-align: center; }
+    .identity-btn:hover { border-color: var(--sage); color: var(--olive); }
+    .identity-btn.active { background: rgba(125,158,117,0.15); border-color: var(--sage); color: var(--olive-dark); font-weight: 500; }
+    .form-tagline { font-size: 13px; font-style: italic; color: var(--text-light); text-align: center; margin-bottom: 20px; }
+    .btn-submit { width: 100%; background: var(--olive); color: var(--white); font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; padding: 15px; border: none; border-radius: 14px; cursor: pointer; transition: background 0.2s, transform 0.15s; }
+    .btn-submit:hover { background: var(--olive-dark); transform: translateY(-1px); }
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--olive-dark); color: var(--white); padding: 14px 28px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 9000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 600px) { nav { padding: 18px 24px; } .card { padding: 22px 18px; } }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <a class="nav-back" href="storytelling.html">← Storytelling</a>
+  </nav>
+
+  <div class="page">
+    <div class="wrap">
+
+      <div class="safe-notice">
+        <span style="font-size:18px; flex-shrink:0; margin-top:1px;">🌿</span>
+        <p><strong>This is a safe and respectful space.</strong> Please be kind and mindful when sharing. Every story here comes from a real person who chose to be vulnerable.</p>
+      </div>
+
+      <div class="header">
+        <p class="header-label">✍️ Share Your Story</p>
+        <h1 class="header-title">Write what's on<br>your <em>heart.</em></h1>
+        <p class="header-sub">Your story might be exactly what someone else needs to hear.</p>
+      </div>
+
+      <div class="card">
+
+        <div class="form-field">
+          <label class="form-label">Post as</label>
+          <div class="identity-toggle">
+            <button class="identity-btn active" id="id-anon" onclick="setIdentity('anonymous')">🤍 Anonymous</button>
+            <button class="identity-btn" id="id-name" onclick="setIdentity('named')">🌿 With my name</button>
+          </div>
+          <input class="form-input" id="name-input" type="text" placeholder="Your name (optional)" style="display:none; margin-top:10px;" />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="story-title">Title <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-light);font-size:11px;">(optional)</span></label>
+          <input class="form-input" id="story-title" type="text" placeholder="Give your story a title…" />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="story-body">Your story / thoughts / poem / letter</label>
+          <textarea class="form-textarea" id="story-body" placeholder="Write freely. There's no right or wrong way to share…"></textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Mood tag <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-light);font-size:11px;">(optional)</span></label>
+          <div class="mood-tags">
+            <button class="mood-tag" onclick="toggleMood(this)">healing</button>
+            <button class="mood-tag" onclick="toggleMood(this)">lost</button>
+            <button class="mood-tag" onclick="toggleMood(this)">grateful</button>
+            <button class="mood-tag" onclick="toggleMood(this)">hopeful</button>
+            <button class="mood-tag" onclick="toggleMood(this)">anxious</button>
+            <button class="mood-tag" onclick="toggleMood(this)">at peace</button>
+            <button class="mood-tag" onclick="toggleMood(this)">reflective</button>
+          </div>
+        </div>
+
+        <p class="form-tagline">"Your story might be exactly what someone else needs to hear."</p>
+        <button class="btn-submit" onclick="submitStory()">Share your story →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let identity = 'anonymous';
+    let selectedMood = '';
+
+    function setIdentity(type) {
+      identity = type;
+      document.getElementById('id-anon').classList.toggle('active', type === 'anonymous');
+      document.getElementById('id-name').classList.toggle('active', type === 'named');
+      document.getElementById('name-input').style.display = type === 'named' ? 'block' : 'none';
+    }
+
+    function toggleMood(btn) {
+      const tags = document.querySelectorAll('.mood-tag');
+      const isActive = btn.classList.contains('active');
+      tags.forEach(t => t.classList.remove('active'));
+      if (!isActive) { btn.classList.add('active'); selectedMood = btn.textContent; }
+      else selectedMood = '';
+    }
+
+    const BANNED = [
+      'fuck','shit','bitch','asshole','bastard','cunt','dick','pussy','faggot','fag',
+      'nigger','nigga','retard','whore','slut','motherfucker','motherfucking','fucker',
+      'ass','damn','hell','piss','cock','wanker','twat','bullshit','crap','idiot',
+      'stupid','dumb','ugly','loser','hate you','kill yourself','kys','go die',
+      'worthless','pathetic','disgusting','trash','garbage','piece of shit','prick',
+      'arsehole','arse','bollocks','tosser'
+    ];
+
+    function containsBannedWord(text) {
+      const lower = text.toLowerCase().replace(/[^a-z\s]/g, ' ');
+      const words = lower.split(/\s+/);
+      return BANNED.some(bad => words.includes(bad) || lower.includes(bad));
+    }
+
+    function submitStory() {
+      const body = document.getElementById('story-body').value.trim();
+      if (!body) { showToast('Please write something before sharing 🌿'); return; }
+
+      const title = document.getElementById('story-title').value.trim();
+      if (containsBannedWord(body) || containsBannedWord(title)) {
+        showToast('⚠️ This is a safe space   please keep your words kind and respectful.');
+        document.getElementById('story-body').style.borderColor = '#c0392b';
+        setTimeout(() => { document.getElementById('story-body').style.borderColor = ''; }, 2500);
+        return;
+      }
+
+      const name = document.getElementById('name-input').value.trim();
+
+      const story = {
+        id: Date.now(),
+        body,
+        title: title || null,
+        mood: selectedMood || null,
+        is_anonymous: identity === 'anonymous',
+        author_name: identity === 'named' && name ? name : null,
+        created_at: new Date().toISOString()
+      };
+
+      const existing = JSON.parse(localStorage.getItem('salama_stories') || '[]');
+      existing.unshift(story);
+      localStorage.setItem('salama_stories', JSON.stringify(existing));
+
+      showToast('Your story has been shared 🌿 Taking you to the community…');
+      setTimeout(() => { window.location.href = 'storytelling-read.html'; }, 1800);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
+  </script>
+</body>
+</html>

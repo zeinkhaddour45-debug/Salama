@@ -345,6 +345,32 @@
       match: ['what is salama', 'about salama', 'about', 'what is this'],
       reply: "Salama سلامة is a mental wellness platform for Lebanon. It offers journaling, mood check-ins, breathing exercises, storytelling, and a directory of local mental health resources — all in a calm, private space."
     },
+    // ── Interactive experiences ───────────────────────────────────────────────
+    {
+      match: ['body scan', 'body-scan', 'body tension', 'tight muscles', 'muscle tension', 'jaw tension', 'shoulder tension', 'chest tension', 'physical tension', 'scan my body', 'tense body'],
+      reply: "The Body Scan exercise lets you tap the areas where you feel physical tension — jaw, shoulders, chest — and get a gentle release cue for each one. It's a great way to check in with your body.",
+      quick: ['Try body scan now']
+    },
+    {
+      match: ['gratitude', 'grateful', 'thankful', 'gratitude forest', 'appreciate', 'appreciation', 'count my blessings', 'what i am grateful for'],
+      reply: "Salama's Gratitude Forest lets you write what you're grateful for and watch a new tree grow. Come back each day and build a forest that's entirely your own — it's a beautiful members-only experience.",
+      quick: ['Try Gratitude Forest', 'Go to Interactive']
+    },
+    {
+      match: ['intention', 'set intention', 'power of intention', 'word for today', 'daily word', 'mantra', 'affirmation', 'set a word', 'my intention'],
+      reply: "The Power of Intention lets you set a word or phrase to carry with you. Salama will save it and frame it so you can revisit it whenever you need a reminder. It's a members-only experience.",
+      quick: ['Set my intention', 'Go to Interactive']
+    },
+    {
+      match: ['letting go', 'let go', 'let it go', 'move on', 'release', 'cannot let go', "can't let go", 'holding on', 'letting go exercise', 'release something'],
+      reply: "Salama's Letting Go exercise invites you to write down a habit or thought that no longer serves you — then watch the leaves gently carry it away. A quiet, grounding way to release what weighs on you.",
+      quick: ['Try letting go now', 'Go to Interactive']
+    },
+    {
+      match: ['interactive', 'exercises', 'activities', 'try an exercise', 'something to try', 'mind exercises', 'mental exercises', 'explore interactive', 'what can i do', 'what can i try', 'something calming', 'calm my mind'],
+      reply: "Salama's Interactive section has mindful experiences designed to help you feel lighter: Breathe With Me, Body Scan, Grounding, Gratitude Forest, Power of Intention, and Letting Go.",
+      quick: ['Try breathing', 'Try body scan now', 'Try grounding', 'Go to Interactive']
+    },
     // ── Educational resources ─────────────────────────────────────────────────
     {
       match: ['what is anxiety', 'understand anxiety', 'learn about anxiety', 'read about anxiety'],
@@ -509,6 +535,11 @@
     'Try active recall': 'study-recall.html',
     'Try spaced repetition': 'study-spaced.html',
     'Try Brain Reset': 'study-reset.html',
+    'Try body scan now': 'body-scan.html',
+    'Try Gratitude Forest': 'gratitude.html',
+    'Set my intention': 'intention.html',
+    'Try letting go now': 'letting-go.html',
+    'Go to Interactive': 'interactive.html',
   };
 
   function getBotReply(text) {

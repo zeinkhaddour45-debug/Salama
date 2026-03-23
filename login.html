@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NF4MW01NNJ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NF4MW01NNJ');
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign In | Salama</title>
@@ -268,26 +276,11 @@
       text-underline-offset: 3px;
     }
 
-    /* REMEMBER ME / FORGOT */
-    .remember-row {
+    /* FORGOT */
+    .forgot-row {
       flex-direction: row;
       align-items: center;
-      justify-content: space-between;
-    }
-    .remember-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--text-mid);
-      cursor: pointer;
-      user-select: none;
-    }
-    .remember-label input[type="checkbox"] {
-      width: 15px;
-      height: 15px;
-      accent-color: var(--olive);
-      cursor: pointer;
+      justify-content: flex-end;
     }
     .forgot-link {
       background: none;
@@ -410,11 +403,7 @@
             <label class="form-label" for="signin-password">Password</label>
             <input class="form-input" type="password" id="signin-password" placeholder="••••••••" required autocomplete="current-password" />
           </div>
-          <div class="form-group remember-row">
-            <label class="remember-label">
-              <input type="checkbox" id="remember-me" checked />
-              Remember me
-            </label>
+          <div class="form-group forgot-row">
             <button type="button" class="forgot-link" id="forgot-btn" onclick="handleForgotPassword()">Forgot password?</button>
           </div>
           <button class="btn-submit" type="submit" id="signin-btn">Sign In</button>
@@ -457,6 +446,27 @@
         <button class="btn-ghost-link" onclick="showTab('signin'); document.getElementById('success-state').classList.remove('visible'); document.getElementById('auth-ui').style.display = '';">Back</button>
       </div>
 
+      <!-- Reset password state (shown after clicking email reset link) -->
+      <div class="success-state" id="reset-state">
+        <div class="success-icon">🔑</div>
+        <h2 class="success-title">Set a new password</h2>
+        <p class="success-body" style="margin-bottom:24px;">Choose a strong new password for your account.</p>
+        <form onsubmit="handleResetPassword(event)" style="text-align:left;">
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label" for="reset-password">New password</label>
+            <input class="form-input" type="password" id="reset-password" placeholder="Min 8 chars + 1 number" required minlength="8" autocomplete="new-password" oninput="updatePasswordStrength(this.value)" />
+            <div class="pw-strength"><div class="pw-strength-bar" id="pw-bar-reset"></div></div>
+            <p class="pw-strength-hint" id="pw-hint-reset"></p>
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label" for="reset-password-confirm">Confirm password</label>
+            <input class="form-input" type="password" id="reset-password-confirm" placeholder="Repeat your new password" required minlength="8" autocomplete="new-password" />
+          </div>
+          <button class="btn-submit" type="submit" id="reset-btn">Update Password</button>
+        </form>
+        <p class="auth-message" id="reset-message"></p>
+      </div>
+
     </div>
   </div>
 
@@ -467,12 +477,14 @@
 
     let _activeClient = null;
 
-    // Create a Supabase client using either localStorage (persistent) or sessionStorage (tab-only)
-    function makeClient(useSessionStorage) {
+    // Always use localStorage so login persists across browser sessions
+    function makeClient() {
       return createClient(SUPABASE_URL, SUPABASE_KEY, {
-        auth: { persistSession: true, storage: useSessionStorage ? sessionStorage : localStorage }
+        auth: { persistSession: true, storage: localStorage }
       });
     }
+
+    const db = makeClient();
 
     function safeRedirect() {
       const raw = new URLSearchParams(window.location.search).get('redirect') || '';
@@ -480,26 +492,36 @@
       return 'index.html';
     }
 
-    // On page load: check both storages for an existing session
+    // On page load: check for password reset link OR existing session
     (async function init() {
-      const persistDb = makeClient(false);
-      const { data: { session } } = await persistDb.auth.getSession();
-      if (session) { showLoggedIn(session, persistDb); return; }
+      // Supabase puts recovery tokens in the URL hash
+      const hash = window.location.hash;
+      if (hash.includes('type=recovery')) {
+        // Let Supabase pick up the token from the hash
+        const { data: { session } } = await db.auth.getSession();
+        if (session) {
+          _activeClient = db;
+          document.getElementById('auth-ui').style.display = 'none';
+          document.getElementById('reset-state').classList.add('visible');
+          // Clean the hash from the URL without reloading
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+          return;
+        }
+      }
 
-      const tempDb = makeClient(true);
-      const { data: { session: tempSession } } = await tempDb.auth.getSession();
-      if (tempSession) { showLoggedIn(tempSession, tempDb); }
+      const { data: { session } } = await db.auth.getSession();
+      if (session) { showLoggedIn(session); }
     })();
 
-    function showLoggedIn(session, client) {
-      _activeClient = client;
+    function showLoggedIn(session) {
+      _activeClient = db;
       document.getElementById('auth-ui').style.display = 'none';
       document.getElementById('logged-in-state').classList.add('visible');
       document.getElementById('logged-in-email').textContent = session.user.email;
     }
 
     async function handleSignOut() {
-      if (_activeClient) await _activeClient.auth.signOut();
+      await db.auth.signOut();
       _activeClient = null;
       document.getElementById('logged-in-state').classList.remove('visible');
       document.getElementById('auth-ui').style.display = '';
@@ -541,38 +563,14 @@
       return null;
     }
 
-    function updatePasswordStrength(password) {
-      const bar = document.getElementById('pw-bar');
-      const hint = document.getElementById('pw-hint');
-      if (!bar) return;
-      if (!password) { bar.style.width = '0%'; hint.textContent = ''; return; }
-
-      let score = 0;
-      if (password.length >= 8) score++;
-      if (/\d/.test(password)) score++;
-      if (/[A-Z]/.test(password)) score++;
-      if (/[^a-zA-Z0-9]/.test(password)) score++;
-
-      const colors = ['#c0392b', '#e67e22', '#7d9e75', '#4a6640'];
-      const labels = ['Too weak', 'Weak', 'Good', 'Strong'];
-      const widths  = ['25%', '50%', '75%', '100%'];
-      const i = Math.max(0, score - 1);
-      bar.style.width = widths[i];
-      bar.style.background = colors[i];
-      hint.textContent = labels[i];
-      hint.style.color = colors[i];
-    }
-
     async function handleSignIn(e) {
       e.preventDefault();
       const email = document.getElementById('signin-email').value.trim();
       const password = document.getElementById('signin-password').value;
-      const rememberMe = document.getElementById('remember-me').checked;
       setLoading('signin-btn', true);
       hideMessage();
 
-      const client = makeClient(!rememberMe); // session-only storage if not remembering
-      const { error } = await client.auth.signInWithPassword({ email, password });
+      const { error } = await db.auth.signInWithPassword({ email, password });
       setLoading('signin-btn', false);
 
       if (error) { showMessage(error.message, 'error'); return; }
@@ -590,8 +588,7 @@
       setLoading('signup-btn', true);
       hideMessage();
 
-      const client = makeClient(false);
-      const { data, error } = await client.auth.signUp({ email, password });
+      const { data, error } = await db.auth.signUp({ email, password });
       setLoading('signup-btn', false);
 
       if (error) { showMessage(error.message, 'error'); return; }
@@ -610,8 +607,7 @@
       btn.textContent = 'Sending…';
       btn.disabled = true;
 
-      const client = makeClient(false);
-      const { error } = await client.auth.resetPasswordForEmail(email, {
+      const { error } = await db.auth.resetPasswordForEmail(email, {
         redirectTo: 'https://www.salamaworld.com/login.html'
       });
 
@@ -620,6 +616,56 @@
 
       if (error) { showMessage(error.message, 'error'); return; }
       showMessage('Password reset email sent! Check your inbox.', 'success');
+    }
+
+    async function handleResetPassword(e) {
+      e.preventDefault();
+      const password = document.getElementById('reset-password').value;
+      const confirm = document.getElementById('reset-password-confirm').value;
+      const msgEl = document.getElementById('reset-message');
+
+      const pwError = validatePassword(password);
+      if (pwError) { msgEl.textContent = pwError; msgEl.className = 'auth-message error'; return; }
+      if (password !== confirm) { msgEl.textContent = 'Passwords do not match.'; msgEl.className = 'auth-message error'; return; }
+
+      const btn = document.getElementById('reset-btn');
+      btn.disabled = true;
+      btn.textContent = 'Updating…';
+
+      const { error } = await db.auth.updateUser({ password });
+      btn.disabled = false;
+      btn.textContent = 'Update Password';
+
+      if (error) { msgEl.textContent = error.message; msgEl.className = 'auth-message error'; return; }
+
+      msgEl.textContent = 'Password updated! Signing you in…';
+      msgEl.className = 'auth-message success';
+      setTimeout(() => { window.location.href = 'index.html'; }, 1800);
+    }
+
+    function updatePasswordStrength(password) {
+      // Update both strength bars (signup and reset forms)
+      ['pw-bar', 'pw-bar-reset'].forEach(barId => {
+        const bar = document.getElementById(barId);
+        const hintId = barId === 'pw-bar' ? 'pw-hint' : 'pw-hint-reset';
+        const hint = document.getElementById(hintId);
+        if (!bar) return;
+        if (!password) { bar.style.width = '0%'; if (hint) hint.textContent = ''; return; }
+
+        let score = 0;
+        if (password.length >= 8) score++;
+        if (/\d/.test(password)) score++;
+        if (/[A-Z]/.test(password)) score++;
+        if (/[^a-zA-Z0-9]/.test(password)) score++;
+
+        const colors = ['#c0392b', '#e67e22', '#7d9e75', '#4a6640'];
+        const labels = ['Too weak', 'Weak', 'Good', 'Strong'];
+        const widths  = ['25%', '50%', '75%', '100%'];
+        const i = Math.max(0, score - 1);
+        bar.style.width = widths[i];
+        bar.style.background = colors[i];
+        if (hint) { hint.textContent = labels[i]; hint.style.color = colors[i]; }
+      });
     }
   </script>
 

@@ -1,607 +1,588 @@
-/**
- * Salama AI Chat Widget
- * Expandable bottom-right chat that uses Claude API to guide users around the platform.
- *
- * To enable real AI responses:
- *   Replace ANTHROPIC_API_KEY below with your actual key from console.anthropic.com
- *   (or proxy the request through a small backend to keep the key server-side)
- */
-
-const ANTHROPIC_API_KEY = 'YOUR_ANTHROPIC_API_KEY_HERE';
-
-const SALAMA_SYSTEM_PROMPT = `You are Salama's friendly mental health support assistant, embedded in the Salama platform   a safe digital space for Lebanese students and the wider community to learn, share, and find support on their mental health journey.
-
-Your role is to warmly guide users to the right part of the website and provide brief, supportive context. Keep responses short (2–4 sentences max). Be warm, calm, and empathetic.
-
-Pages on the platform:
-- Home (index.html): Landing page with mission, services overview, and community stories.
-- Daily Check-In (checkin.html): Users pick an emotion, rate intensity (members), and get coping resources.
-- Journaling (journaling.html): Private journal entries for members to reflect and track thoughts over time.
-- Login / Sign Up (login.html): Create an account or sign in to unlock member features like intensity tracking and journal entries.
-
-If someone asks about anxiety, stress, sadness, or any difficult emotion   acknowledge it with empathy first, then suggest the Daily Check-In as a first step.
-If someone asks about journaling or writing   point them to the Journaling page.
-If someone asks about signing up or membership   point them to the Login page.
-If someone is not sure where to start   suggest the Daily Check-In.
-
-Always end with a gentle invitation to explore. Never provide medical diagnoses or clinical advice. If someone is in crisis, encourage them to reach out to a trusted person or mental health professional.`;
-
 (function () {
-  // ── CSS ────────────────────────────────────────────────
+  // ── Styles ──────────────────────────────────────────────────────────────────
   const style = document.createElement('style');
   style.textContent = `
-    /* ─── Chat Widget ──────────────────────────────────── */
-    #salama-chat-widget {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      z-index: 9000;
-      font-family: 'Inter', sans-serif;
-    }
-
-    /* Toggle button */
     #salama-chat-toggle {
-      width: 58px;
-      height: 58px;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 10000;
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #4a6640, #374f31);
+      background: #4a6640;
       border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 6px 24px rgba(74,102,64,0.42), 0 2px 8px rgba(0,0,0,0.18);
-      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s ease;
-      position: relative;
-      z-index: 2;
+      box-shadow: 0 4px 20px rgba(74,102,64,0.38);
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      font-family: 'Inter', sans-serif;
     }
     #salama-chat-toggle:hover {
-      transform: scale(1.1);
-      box-shadow: 0 10px 32px rgba(74,102,64,0.52), 0 4px 12px rgba(0,0,0,0.2);
+      background: #374f31;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(74,102,64,0.48);
     }
-    #salama-chat-toggle svg {
-      width: 26px;
-      height: 26px;
-      transition: opacity 0.2s, transform 0.2s;
-    }
-    #salama-chat-toggle .icon-chat { position: absolute; }
-    #salama-chat-toggle .icon-close {
-      position: absolute;
-      opacity: 0;
-      transform: rotate(-45deg);
-    }
-    #salama-chat-widget.open #salama-chat-toggle .icon-chat {
-      opacity: 0;
-      transform: rotate(45deg);
-    }
-    #salama-chat-widget.open #salama-chat-toggle .icon-close {
-      opacity: 1;
-      transform: rotate(0deg);
-    }
+    #salama-chat-toggle svg { display: block; }
 
-    /* Unread dot */
-    #salama-chat-dot {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #e05c5c;
-      border: 2px solid #fff;
-      display: none;
-      animation: chat-dot-pulse 2s infinite;
-    }
-    @keyframes chat-dot-pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.25); }
-    }
-
-    /* Chat panel */
-    #salama-chat-panel {
-      position: absolute;
-      bottom: calc(100% + 14px);
-      right: 0;
-      width: 360px;
-      max-height: 520px;
-      background: #f8f5ef;
+    #salama-chat-window {
+      position: fixed;
+      bottom: 92px;
+      right: 24px;
+      z-index: 10000;
+      width: 370px;
+      height: 560px;
+      max-height: calc(100vh - 120px);
+      background: rgba(245, 240, 232, 0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(200,217,194,0.55);
       border-radius: 24px;
-      box-shadow:
-        0 24px 64px rgba(0,0,0,0.14),
-        0 4px 16px rgba(0,0,0,0.08),
-        0 0 0 1px rgba(255,255,255,0.7);
+      box-shadow: 0 20px 60px rgba(74,102,64,0.14);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(12px) scale(0.96);
+      font-family: 'Inter', sans-serif;
       transform-origin: bottom right;
-      transition: opacity 0.25s ease, transform 0.25s cubic-bezier(.34,1.2,.64,1);
+      transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
     }
-    #salama-chat-widget.open #salama-chat-panel {
-      opacity: 1;
-      pointer-events: auto;
-      transform: translateY(0) scale(1);
+    #salama-chat-window.sc-hidden {
+      opacity: 0;
+      transform: scale(0.93) translateY(10px);
+      visibility: hidden;
+      pointer-events: none;
     }
 
-    /* Panel header */
+    @media (max-width: 480px) {
+      #salama-chat-window {
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+        bottom: 0;
+        right: 0;
+      }
+    }
+
     #salama-chat-header {
-      background: linear-gradient(135deg, #4a6640, #374f31);
-      padding: 18px 20px 16px;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid rgba(200,217,194,0.5);
       display: flex;
       align-items: center;
       gap: 12px;
       flex-shrink: 0;
     }
-    .chat-header-avatar {
+    .sc-avatar {
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.18);
+      background: #4a6640;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
       flex-shrink: 0;
-      border: 1.5px solid rgba(255,255,255,0.28);
     }
-    .chat-header-info h3 {
-      color: #fff;
+    .sc-header-text { flex: 1; }
+    .sc-header-name {
       font-size: 15px;
       font-weight: 600;
-      margin: 0 0 2px;
-      letter-spacing: 0.2px;
+      color: #2a2722;
+      font-family: 'Playfair Display', serif;
     }
-    .chat-header-info p {
-      color: rgba(255,255,255,0.7);
+    .sc-header-status {
       font-size: 12px;
-      margin: 0;
+      color: #7d9e75;
       display: flex;
       align-items: center;
       gap: 5px;
+      margin-top: 2px;
     }
-    .chat-status-dot {
+    .sc-status-dot {
       width: 7px;
       height: 7px;
+      background: #7d9e75;
       border-radius: 50%;
-      background: #7ece76;
-      display: inline-block;
     }
+    #salama-chat-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #8a8680;
+      padding: 4px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s, background 0.2s;
+    }
+    #salama-chat-close:hover { color: #2a2722; background: rgba(0,0,0,0.05); }
 
-    /* Messages area */
     #salama-chat-messages {
       flex: 1;
       overflow-y: auto;
-      padding: 16px 16px 8px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       scroll-behavior: smooth;
     }
     #salama-chat-messages::-webkit-scrollbar { width: 4px; }
     #salama-chat-messages::-webkit-scrollbar-track { background: transparent; }
-    #salama-chat-messages::-webkit-scrollbar-thumb { background: rgba(74,102,64,0.2); border-radius: 2px; }
+    #salama-chat-messages::-webkit-scrollbar-thumb { background: rgba(125,158,117,0.3); border-radius: 4px; }
 
-    /* Bubbles */
-    .chat-bubble {
-      max-width: 82%;
+    .sc-bubble-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .sc-bubble-row.sc-user { flex-direction: row-reverse; }
+
+    .sc-bubble-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #4a6640;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .sc-bubble-avatar.sc-user-av { background: #c8d9c2; }
+
+    .sc-bubble {
+      max-width: 78%;
       padding: 10px 14px;
       border-radius: 18px;
       font-size: 13.5px;
-      line-height: 1.55;
-      animation: bubble-in 0.22s ease;
-    }
-    @keyframes bubble-in {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .chat-bubble.ai {
-      background: #fff;
+      line-height: 1.6;
       color: #2a2722;
-      border-bottom-left-radius: 5px;
-      align-self: flex-start;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
     }
-    .chat-bubble.user {
-      background: linear-gradient(135deg, #4a6640, #374f31);
+    .sc-bubble.sc-bot {
+      background: rgba(200,217,194,0.45);
+      border-bottom-left-radius: 4px;
+    }
+    .sc-bubble.sc-user-msg {
+      background: #4a6640;
       color: #fff;
-      border-bottom-right-radius: 5px;
-      align-self: flex-end;
+      border-bottom-right-radius: 4px;
     }
-    .chat-bubble a {
-      color: #4a6640;
-      font-weight: 600;
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-    .chat-bubble.ai a { color: #4a6640; }
-    .chat-bubble.user a { color: rgba(255,255,255,0.9); }
 
-    /* Typing indicator */
-    .chat-typing {
+    .sc-typing {
       display: flex;
       align-items: center;
       gap: 4px;
       padding: 10px 14px;
-      background: #fff;
-      border-radius: 18px;
-      border-bottom-left-radius: 5px;
-      align-self: flex-start;
-      width: fit-content;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-      animation: bubble-in 0.22s ease;
     }
-    .chat-typing span {
+    .sc-typing span {
       width: 6px;
       height: 6px;
-      border-radius: 50%;
       background: #7d9e75;
-      animation: typing-bounce 1.2s infinite;
+      border-radius: 50%;
+      animation: sc-bounce 1.2s infinite;
     }
-    .chat-typing span:nth-child(2) { animation-delay: 0.15s; }
-    .chat-typing span:nth-child(3) { animation-delay: 0.3s; }
-    @keyframes typing-bounce {
-      0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-5px); }
+    .sc-typing span:nth-child(2) { animation-delay: 0.15s; }
+    .sc-typing span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes sc-bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-5px); }
     }
 
-    /* Quick replies */
-    #salama-chat-quick {
-      padding: 0 16px 10px;
+    #salama-quick-replies {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 7px;
+      padding: 0 16px 10px;
+      flex-shrink: 0;
     }
-    .chat-quick-btn {
-      background: rgba(125,158,117,0.12);
-      border: 1px solid rgba(74,102,64,0.22);
+    .sc-quick-btn {
+      background: none;
+      border: 1.5px solid rgba(74,102,64,0.35);
       color: #4a6640;
       font-size: 12px;
-      font-weight: 500;
+      font-family: 'Inter', sans-serif;
       padding: 6px 12px;
       border-radius: 100px;
       cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-      font-family: 'Inter', sans-serif;
+      transition: background 0.15s, border-color 0.15s;
       white-space: nowrap;
     }
-    .chat-quick-btn:hover {
-      background: rgba(74,102,64,0.14);
+    .sc-quick-btn:hover {
+      background: rgba(74,102,64,0.08);
       border-color: #4a6640;
     }
 
-    /* Input area */
     #salama-chat-footer {
-      padding: 12px 14px;
-      border-top: 1px solid rgba(0,0,0,0.06);
-      display: flex;
-      gap: 8px;
-      align-items: flex-end;
-      background: #f8f5ef;
+      padding: 10px 14px 14px;
+      border-top: 1px solid rgba(200,217,194,0.5);
       flex-shrink: 0;
+    }
+    #salama-chat-form {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      background: rgba(200,217,194,0.2);
+      border: 1.5px solid rgba(200,217,194,0.6);
+      border-radius: 16px;
+      padding: 6px 6px 6px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    #salama-chat-form:focus-within {
+      border-color: #4a6640;
+      box-shadow: 0 0 0 3px rgba(74,102,64,0.08);
     }
     #salama-chat-input {
       flex: 1;
-      border: 1.5px solid rgba(74,102,64,0.22);
-      border-radius: 14px;
-      padding: 9px 13px;
-      font-size: 13.5px;
+      border: none;
+      background: transparent;
       font-family: 'Inter', sans-serif;
-      background: #fff;
+      font-size: 14px;
       color: #2a2722;
       resize: none;
       outline: none;
-      line-height: 1.45;
-      max-height: 90px;
-      min-height: 38px;
-      overflow-y: auto;
-      transition: border-color 0.2s;
+      max-height: 100px;
+      line-height: 1.5;
+      padding: 4px 0;
     }
-    #salama-chat-input:focus {
-      border-color: #4a6640;
-    }
-    #salama-chat-input::placeholder { color: #a8a4a0; }
+    #salama-chat-input::placeholder { color: #8a8680; }
     #salama-chat-send {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #4a6640, #374f31);
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: #4a6640;
       border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      transition: opacity 0.2s, transform 0.15s;
+      transition: background 0.2s;
     }
-    #salama-chat-send:hover { opacity: 0.9; transform: scale(1.05); }
-    #salama-chat-send:active { transform: scale(0.95); }
-    #salama-chat-send svg { width: 16px; height: 16px; }
-    #salama-chat-send:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-
-    /* Mobile full-screen */
-    @media (max-width: 480px) {
-      #salama-chat-panel {
-        position: fixed;
-        inset: 0;
-        bottom: 0;
-        right: 0;
-        width: 100%;
-        max-height: 100%;
-        border-radius: 0;
-        transform-origin: bottom center;
-      }
-      #salama-chat-widget {
-        bottom: 20px;
-        right: 20px;
-      }
-    }
+    #salama-chat-send:hover { background: #374f31; }
+    #salama-chat-send:disabled { background: #c8d9c2; cursor: not-allowed; }
   `;
   document.head.appendChild(style);
 
-  // ── HTML ───────────────────────────────────────────────
-  const widget = document.createElement('div');
-  widget.id = 'salama-chat-widget';
-  widget.innerHTML = `
-    <div id="salama-chat-panel" role="dialog" aria-label="Salama AI assistant">
-      <div id="salama-chat-header">
-        <div class="chat-header-avatar">🌿</div>
-        <div class="chat-header-info">
-          <h3>Salama Assistant</h3>
-          <p><span class="chat-status-dot"></span> Here to help you find your way</p>
-        </div>
-      </div>
-
-      <div id="salama-chat-messages"></div>
-
-      <div id="salama-chat-quick"></div>
-
-      <div id="salama-chat-footer">
-        <textarea
-          id="salama-chat-input"
-          placeholder="Ask me anything…"
-          rows="1"
-          aria-label="Type a message"
-        ></textarea>
-        <button id="salama-chat-send" aria-label="Send message" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"/>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <button id="salama-chat-toggle" aria-label="Open Salama assistant">
-      <div id="salama-chat-dot"></div>
-      <!-- Chat icon -->
-      <svg class="icon-chat" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-      </svg>
-      <!-- Close icon -->
-      <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
-        <line x1="18" y1="6" x2="6" y2="18"/>
-        <line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
-  `;
-  document.body.appendChild(widget);
-
-  // ── State ──────────────────────────────────────────────
-  const messagesEl  = document.getElementById('salama-chat-messages');
-  const inputEl     = document.getElementById('salama-chat-input');
-  const sendBtn     = document.getElementById('salama-chat-send');
-  const quickEl     = document.getElementById('salama-chat-quick');
-  const toggleBtn   = document.getElementById('salama-chat-toggle');
-  const dot         = document.getElementById('salama-chat-dot');
-
-  let isOpen       = false;
-  let isLoading    = false;
-  let hasOpened    = false;
-  const history    = []; // {role, content}
-
-  const QUICK_REPLIES = [
-    'Where do I start?',
-    'I\'m feeling anxious',
-    'How do I join?',
-    'What is the daily check-in?',
+  // ── Responses ────────────────────────────────────────────────────────────────
+  const responses = [
+    {
+      match: ['hello', 'hi', 'hey', 'salam', 'marhaba'],
+      reply: "Hello 🌿 I'm the Salama Assistant. I'm here to help you find support, explore resources, or just have a gentle conversation. What's on your mind?"
+    },
+    {
+      match: ['anxious', 'anxiety', 'worried', 'stress', 'stressed', 'overwhelmed', 'panic'],
+      reply: "Anxiety can feel really overwhelming. Salama has breathing exercises and grounding techniques that can help you right now. Would you like to try one?",
+      quick: ['Try breathing', 'Try grounding', 'Find support']
+    },
+    {
+      match: ['sad', 'depressed', 'depression', 'empty', 'hopeless', 'crying', 'lonely', 'down'],
+      reply: "I'm sorry you're feeling this way — you're not alone in this. Salama has a private journal space and a daily check-in to help you process your feelings. Would either of those help right now?",
+      quick: ['Open journal', 'Do a check-in', 'Find support']
+    },
+    {
+      match: ['breathe', 'breathing', 'breath', 'calm', 'relax', 'try breathing'],
+      reply: "Salama has several breathing exercises — 4-6 for calm, 4-7-8 for sleep, and 5-5 box breathing for focus. Head to the breathing hub to try one.",
+      quick: ['Go to breathing hub', 'Try 4-6 breathing', 'Try 4-7-8 breathing']
+    },
+    {
+      match: ['grounding', 'try grounding', 'ground'],
+      reply: "Grounding exercises help you reconnect with the present moment when anxiety feels overwhelming. Salama has a guided grounding exercise waiting for you.",
+      quick: ['Try grounding now']
+    },
+    {
+      match: ['journal', 'journaling', 'write', 'diary', 'open journal'],
+      reply: "Your Salama journal is completely private — only you can see it. It's a safe space to process your thoughts freely. You'll need to sign in to access it.",
+      quick: ['Sign in to journal']
+    },
+    {
+      match: ['check-in', 'checkin', 'check in', 'mood', 'do a check-in'],
+      reply: "A daily check-in helps you tune into how you're feeling and build emotional awareness over time. It only takes a minute.",
+      quick: ['Do a check-in now']
+    },
+    {
+      match: ['help', 'support', 'crisis', 'emergency', 'suicide', 'harm', 'hurt myself', 'find support'],
+      reply: "If you're in crisis or need immediate support, please reach out to a professional right away.\n\n📞 Embrace Lebanon: 1564 (free, 24/7)\n\nSalama also has a full directory of mental health resources in Lebanon.",
+      quick: ['Find all resources']
+    },
+    {
+      match: ['therapist', 'psychiatrist', 'counselor', 'doctor', 'professional', 'therapy', 'find professionals'],
+      reply: "Salama has a directory of mental health professionals and clinics in Lebanon — including MIND, Restart, IDRAAC, and university counseling centers.",
+      quick: ['Explore resources']
+    },
+    {
+      match: ['aub', 'aub resources'],
+      reply: "AUB has student counseling services and accessible mental health support. Salama has a dedicated page with everything you need.",
+      quick: ['Go to AUB page']
+    },
+    {
+      match: ['lau', 'lau resources'],
+      reply: "LAU offers counseling and mental health support for its students. Check Salama's LAU resources page for details.",
+      quick: ['Go to LAU page']
+    },
+    {
+      match: ['usj', 'usj resources'],
+      reply: "USJ has psychiatric and counseling services for students. Find the details on Salama.",
+      quick: ['Go to USJ page']
+    },
+    {
+      match: ['ndu', 'ndu resources'],
+      reply: "NDU offers student mental health support. Find details on Salama's NDU page.",
+      quick: ['Go to NDU page']
+    },
+    {
+      match: ['university', 'student', 'campus', 'uni'],
+      reply: "Salama has dedicated pages for AUB, LAU, USJ, and NDU counseling services. Which university are you at?",
+      quick: ['AUB', 'LAU', 'USJ', 'NDU']
+    },
+    {
+      match: ['story', 'stories', 'community', 'experience', 'share', 'read stories'],
+      reply: "Salama has a community space where people share their experiences with mental health and with Salama. You can read others' stories or share your own anonymously.",
+      quick: ['Read community stories', 'Share my story']
+    },
+    {
+      match: ['what is salama', 'about salama', 'about', 'what is this'],
+      reply: "Salama سلامة is a mental wellness platform for Lebanon. It offers journaling, mood check-ins, breathing exercises, storytelling, and a directory of local mental health resources — all in a calm, private space."
+    },
+    {
+      match: ['thank', 'thanks', 'shukran', 'merci'],
+      reply: "You're welcome 🌿 Take care of yourself. I'm always here if you need anything."
+    },
+    {
+      match: ['bye', 'goodbye', 'see you', 'later'],
+      reply: "Take care of yourself 🌿 Salama is always here whenever you need it."
+    }
   ];
 
-  const RULE_BASED_RESPONSES = {
-    // fallback when API key is not set
-    patterns: [
-      {
-        match: /\b(start|begin|new here|first time|not sure)\b/i,
-        reply: 'Welcome to Salama! 🌿 A great first step is the <a href="checkin.html">Daily Check-In</a>   it only takes a minute and helps you tune into how you\'re feeling right now.',
-      },
-      {
-        match: /\b(anxi|stress|overwhelm|nervous|worry|worried)\b/i,
-        reply: 'I hear you   that sounds really tough. A gentle first step is our <a href="checkin.html">Daily Check-In</a>, where you can name what you\'re feeling and find calming resources tailored to you. 💚',
-      },
-      {
-        match: /\b(sad|depress|unhappy|down|hopeless|lonely|alone)\b/i,
-        reply: 'You\'re not alone in feeling this way, and it takes courage to reach out. Try the <a href="checkin.html">Daily Check-In</a> to explore your emotions, or write your thoughts in the <a href="journaling.html">Journal</a>.',
-      },
-      {
-        match: /\b(journal|write|diary|reflect|writing)\b/i,
-        reply: 'Journaling is a beautiful practice. Head to the <a href="journaling.html">Journaling page</a> to write freely and track your thoughts over time   it\'s private and just for you.',
-      },
-      {
-        match: /\b(sign up|join|register|member|account|create)\b/i,
-        reply: 'Joining Salama is free and takes 30 seconds! 🌱 Head to <a href="login.html?tab=signup">Sign Up</a> to unlock member features like intensity tracking and your personal journal.',
-      },
-      {
-        match: /\b(login|log in|sign in|password)\b/i,
-        reply: 'You can sign in from the <a href="login.html">Login page</a>. Once signed in you\'ll have access to your journal and check-in history.',
-      },
-      {
-        match: /\b(check.?in|check in|emotion|feeling|mood)\b/i,
-        reply: 'The <a href="checkin.html">Daily Check-In</a> lets you pick an emotion, rate its intensity (for members), and discover grounding resources. It\'s a small act of self-care that adds up! ✨',
-      },
-      {
-        match: /\b(resource|help|support|professional|crisis|therapist)\b/i,
-        reply: 'If you\'re looking for professional support, the Daily Check-In ends with resources tailored to what you\'re feeling. For immediate help, please reach out to a trusted person or local mental health line.',
-      },
-      {
-        match: /\b(what is|what's|about|salama|platform)\b/i,
-        reply: 'Salama is a safe digital space for Lebanese students and the wider community to learn, share, and find support on their mental health journey   stigma-free. 🌿 Explore our <a href="index.html#services">services</a> to see everything we offer.',
-      },
-    ],
-    default: 'I\'m here to help you find your way around Salama! You can start with the <a href="checkin.html">Daily Check-In</a>, explore <a href="journaling.html">Journaling</a>, or <a href="login.html?tab=signup">join the community</a>. What would you like to explore?',
+  const initialQuickReplies = [
+    { label: "I'm feeling anxious", msg: "I'm feeling anxious" },
+    { label: "I need support", msg: "I need support" },
+    { label: "Try a breathing exercise", msg: "breathing exercise" },
+    { label: "Find resources", msg: "find support resources" },
+  ];
+
+  const linkMap = {
+    'Go to breathing hub': 'breathing-hub.html',
+    'Try 4-6 breathing': 'breathing-46.html',
+    'Try 4-7-8 breathing': 'breathing-478.html',
+    'Try grounding now': 'grounding.html',
+    'Try grounding': 'grounding.html',
+    'Do a check-in now': 'checkin.html',
+    'Do a check-in': 'checkin.html',
+    'Sign in to journal': 'login.html',
+    'Open journal': 'login.html',
+    'Find all resources': 'support.html',
+    'Explore resources': 'support.html',
+    'Find support': 'support.html',
+    'Go to AUB page': 'aub.html',
+    'AUB': 'aub.html',
+    'Go to LAU page': 'lau-counseling.html',
+    'LAU': 'lau-counseling.html',
+    'Go to USJ page': 'usj.html',
+    'USJ': 'usj.html',
+    'Go to NDU page': 'ndu.html',
+    'NDU': 'ndu.html',
+    'Read community stories': 'salama-stories.html',
+    'Share my story': 'salama-stories-share.html',
   };
 
-  // ── Helpers ────────────────────────────────────────────
-  function addBubble(content, role) {
+  function getBotReply(text) {
+    const lower = text.toLowerCase();
+    for (const r of responses) {
+      if (r.match.some(k => lower.includes(k))) return r;
+    }
+    return {
+      reply: "I'm not sure I fully understood that, but I'm here to help. You can ask me about breathing exercises, journaling, check-ins, mental health resources in Lebanon, or anything else on your mind."
+    };
+  }
+
+  // ── Build DOM ─────────────────────────────────────────────────────────────────
+  const leafSVG = `<svg width="13" height="18" viewBox="0 0 16 22" fill="none">
+    <path d="M8,21 L8,4" stroke="rgba(255,255,255,0.5)" stroke-width="1.1" stroke-linecap="round"/>
+    <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(255,255,255,0.9)"/>
+    <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(255,255,255,0.9)"/>
+    <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="#fff"/>
+  </svg>`;
+
+  const userIconSVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a6640" stroke-width="2" stroke-linecap="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  </svg>`;
+
+  const toggleBtn = document.createElement('button');
+  toggleBtn.id = 'salama-chat-toggle';
+  toggleBtn.setAttribute('aria-label', 'Open Salama Assistant');
+  toggleBtn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+
+  const chatWindow = document.createElement('div');
+  chatWindow.id = 'salama-chat-window';
+  chatWindow.classList.add('sc-hidden');
+  chatWindow.innerHTML = `
+    <div id="salama-chat-header">
+      <div class="sc-avatar">${leafSVG}</div>
+      <div class="sc-header-text">
+        <div class="sc-header-name">Salama Assistant</div>
+        <div class="sc-header-status"><span class="sc-status-dot"></span> Here to help</div>
+      </div>
+      <button id="salama-chat-close" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="salama-chat-messages"></div>
+    <div id="salama-quick-replies"></div>
+    <div id="salama-chat-footer">
+      <form id="salama-chat-form" autocomplete="off">
+        <textarea id="salama-chat-input" placeholder="Type a message…" rows="1"></textarea>
+        <button id="salama-chat-send" type="submit" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </form>
+    </div>`;
+
+  document.body.appendChild(toggleBtn);
+  document.body.appendChild(chatWindow);
+
+  // ── Refs ──────────────────────────────────────────────────────────────────────
+  const messagesEl = document.getElementById('salama-chat-messages');
+  const quickRepliesEl = document.getElementById('salama-quick-replies');
+  const inputEl = document.getElementById('salama-chat-input');
+  const sendBtn = document.getElementById('salama-chat-send');
+  const form = document.getElementById('salama-chat-form');
+
+  let isOpen = false;
+  let botTyping = false;
+
+  // ── Helpers ───────────────────────────────────────────────────────────────────
+  function makeBotAvatar() {
     const el = document.createElement('div');
-    el.className = `chat-bubble ${role}`;
-    el.innerHTML = content;
-    messagesEl.appendChild(el);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    el.className = 'sc-bubble-avatar';
+    el.innerHTML = leafSVG;
     return el;
   }
 
-  function showTyping() {
+  function makeUserAvatar() {
     const el = document.createElement('div');
-    el.className = 'chat-typing';
-    el.id = 'chat-typing-indicator';
-    el.innerHTML = '<span></span><span></span><span></span>';
-    messagesEl.appendChild(el);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    el.className = 'sc-bubble-avatar sc-user-av';
+    el.innerHTML = userIconSVG;
+    return el;
+  }
+
+  function addMessage(text, sender) {
+    const row = document.createElement('div');
+    row.className = 'sc-bubble-row' + (sender === 'user' ? ' sc-user' : '');
+    const bubble = document.createElement('div');
+    bubble.className = 'sc-bubble ' + (sender === 'user' ? 'sc-user-msg' : 'sc-bot');
+    bubble.textContent = text;
+    if (sender === 'user') {
+      row.appendChild(bubble);
+      row.appendChild(makeUserAvatar());
+    } else {
+      row.appendChild(makeBotAvatar());
+      row.appendChild(bubble);
+    }
+    messagesEl.appendChild(row);
+    scrollBottom();
+  }
+
+  function addTyping() {
+    const row = document.createElement('div');
+    row.className = 'sc-bubble-row';
+    row.id = 'sc-typing-row';
+    row.appendChild(makeBotAvatar());
+    const bubble = document.createElement('div');
+    bubble.className = 'sc-bubble sc-bot sc-typing';
+    bubble.innerHTML = '<span></span><span></span><span></span>';
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
+    scrollBottom();
   }
 
   function removeTyping() {
-    const el = document.getElementById('chat-typing-indicator');
+    const el = document.getElementById('sc-typing-row');
     if (el) el.remove();
   }
 
   function setQuickReplies(replies) {
-    quickEl.innerHTML = '';
-    replies.forEach(function (text) {
+    quickRepliesEl.innerHTML = '';
+    if (!replies || !replies.length) return;
+    replies.forEach(label => {
       const btn = document.createElement('button');
-      btn.className = 'chat-quick-btn';
-      btn.textContent = text;
-      btn.onclick = function () {
-        quickEl.innerHTML = '';
-        sendMessage(text);
-      };
-      quickEl.appendChild(btn);
+      btn.className = 'sc-quick-btn';
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        if (linkMap[label]) {
+          window.location.href = linkMap[label];
+        } else {
+          handleUserMessage(label);
+        }
+      });
+      quickRepliesEl.appendChild(btn);
     });
   }
 
-  function ruleBasedReply(text) {
-    for (const item of RULE_BASED_RESPONSES.patterns) {
-      if (item.match.test(text)) return item.reply;
-    }
-    return RULE_BASED_RESPONSES.default;
+  function scrollBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  async function callClaude(userMessage) {
-    history.push({ role: 'user', content: userMessage });
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 300,
-        system: SALAMA_SYSTEM_PROMPT,
-        messages: history,
-      }),
-    });
-
-    if (!response.ok) throw new Error('API error ' + response.status);
-    const data = await response.json();
-    const reply = data.content[0].text;
-    history.push({ role: 'assistant', content: reply });
-    return reply;
-  }
-
-  async function sendMessage(text) {
-    text = (text || inputEl.value).trim();
-    if (!text || isLoading) return;
-
+  function handleUserMessage(text) {
+    if (!text.trim() || botTyping) return;
+    setQuickReplies([]);
+    addMessage(text, 'user');
     inputEl.value = '';
     inputEl.style.height = '';
     sendBtn.disabled = true;
-    isLoading = true;
-    quickEl.innerHTML = '';
-
-    addBubble(escapeHtml(text), 'user');
-
-    showTyping();
-
-    let reply;
-    try {
-      if (ANTHROPIC_API_KEY && ANTHROPIC_API_KEY !== 'YOUR_ANTHROPIC_API_KEY_HERE') {
-        reply = await callClaude(text);
-      } else {
-        // Simulate a short delay for the typing indicator
-        await new Promise(function (r) { setTimeout(r, 700 + Math.random() * 400); });
-        reply = ruleBasedReply(text);
-        history.push({ role: 'user', content: text });
-        history.push({ role: 'assistant', content: reply });
-      }
-    } catch (err) {
-      reply = 'Sorry, I\'m having trouble connecting right now. You can explore <a href="checkin.html">Check-In</a> or <a href="journaling.html">Journaling</a> directly. 🌿';
-    }
-
-    removeTyping();
-    addBubble(reply, 'ai');
-    isLoading = false;
-    sendBtn.disabled = !inputEl.value.trim();
+    botTyping = true;
+    addTyping();
+    const result = getBotReply(text);
+    const delay = 700 + Math.min(result.reply.length * 10, 1400);
+    setTimeout(() => {
+      removeTyping();
+      addMessage(result.reply, 'bot');
+      setQuickReplies(result.quick || []);
+      botTyping = false;
+      sendBtn.disabled = false;
+    }, delay);
   }
 
-  function escapeHtml(str) {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-
-  // ── Events ─────────────────────────────────────────────
-  toggleBtn.addEventListener('click', function () {
+  function toggle() {
     isOpen = !isOpen;
-    widget.classList.toggle('open', isOpen);
+    chatWindow.classList.toggle('sc-hidden', !isOpen);
+    toggleBtn.innerHTML = isOpen
+      ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+      : `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+    if (isOpen) { setTimeout(() => inputEl.focus(), 250); scrollBottom(); }
+  }
 
-    if (isOpen && !hasOpened) {
-      hasOpened = true;
-      dot.style.display = 'none';
-      // Welcome message
-      setTimeout(function () {
-        addBubble('Hello! 🌿 I\'m here to help you find what you\'re looking for on Salama. Whether you want to check in with your emotions, write in your journal, or just explore   I\'ve got you.', 'ai');
-        setTimeout(function () { setQuickReplies(QUICK_REPLIES); }, 200);
-      }, 100);
-    }
+  // ── Events ────────────────────────────────────────────────────────────────────
+  toggleBtn.addEventListener('click', toggle);
+  document.getElementById('salama-chat-close').addEventListener('click', toggle);
 
-    if (isOpen) {
-      setTimeout(function () { inputEl.focus(); }, 300);
-    }
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    handleUserMessage(inputEl.value.trim());
   });
 
-  inputEl.addEventListener('input', function () {
-    sendBtn.disabled = !this.value.trim() || isLoading;
-    // Auto-resize
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 90) + 'px';
-  });
-
-  inputEl.addEventListener('keydown', function (e) {
+  inputEl.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      handleUserMessage(inputEl.value.trim());
     }
   });
 
-  sendBtn.addEventListener('click', function () { sendMessage(); });
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px';
+  });
 
-  // Show unread dot after 4s to draw attention
-  setTimeout(function () {
-    if (!isOpen) dot.style.display = 'block';
-  }, 4000);
+  // ── Welcome ───────────────────────────────────────────────────────────────────
+  setTimeout(() => {
+    addMessage("Hi 🌿 I'm the Salama Assistant. How are you feeling today?", 'bot');
+    setQuickReplies(initialQuickReplies.map(q => q.label));
+    // Wire initial quick replies to their messages
+    const btns = quickRepliesEl.querySelectorAll('.sc-quick-btn');
+    btns.forEach((btn, i) => {
+      btn.addEventListener('click', () => handleUserMessage(initialQuickReplies[i].msg), { once: true });
+    });
+  }, 350);
+
 })();

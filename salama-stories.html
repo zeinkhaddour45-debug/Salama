@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salama Community Stories</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --cream-dark: #ece5d8; --sage: #7d9e75;
+      --olive: #4a6640; --olive-dark: #374f31;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680;
+      --line: #e4dbd0; --paper: #fdfbf7;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245,240,232,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; letter-spacing: 3px; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 9px; }
+    .nav-back { font-size: 14px; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-share-btn {
+      font-size: 13px; font-family: 'Inter', sans-serif; font-weight: 500;
+      color: var(--olive); background: rgba(74,102,64,0.1);
+      border: 1.5px solid rgba(74,102,64,0.25); border-radius: 100px;
+      padding: 7px 16px; text-decoration: none; transition: all 0.2s;
+    }
+    .nav-share-btn:hover { background: rgba(74,102,64,0.16); border-color: var(--olive); }
+    .leaf { position: fixed; pointer-events: none; opacity: 0.15; z-index: 0; }
+    .leaf-1 { top: 15%; left: -20px; width: 200px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 170px; transform: rotate(158deg); }
+    .page {
+      min-height: 100vh; padding: 110px 24px 80px;
+      background: radial-gradient(ellipse 800px 600px at 10% 10%, rgba(125,158,117,0.2) 0%, transparent 65%),
+                  radial-gradient(ellipse 600px 500px at 90% 85%, rgba(157,180,150,0.16) 0%, transparent 65%),
+                  var(--cream);
+    }
+    .wrap { max-width: 680px; margin: 0 auto; position: relative; z-index: 1; }
+
+    /* Header */
+    .header { margin-bottom: 36px; }
+    .header-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 12px; }
+    .header-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 5vw, 46px); font-weight: 600; color: var(--text); line-height: 1.15; margin-bottom: 10px; }
+    .header-title em { font-style: italic; color: var(--olive); }
+    .header-sub { font-size: 14px; color: var(--text-mid); line-height: 1.7; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 60px 24px; color: var(--text-light); font-style: italic; font-size: 14px; }
+    .empty-state a { color: var(--olive); text-decoration: none; }
+
+    /* Story cards */
+    .stories-feed { display: flex; flex-direction: column; gap: 16px; }
+    .story-card {
+      background: rgba(253,251,247,0.85);
+      border: 1.5px solid rgba(74,102,64,0.15);
+      border-radius: 20px; padding: 24px 26px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .story-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.06); }
+    .story-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .story-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(125,158,117,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--olive); font-weight: 600; flex-shrink: 0;
+    }
+    .story-author { font-size: 13px; font-weight: 600; color: var(--text); }
+    .story-identity-tag {
+      display: inline-block; font-size: 11px; padding: 3px 10px;
+      border-radius: 100px; background: rgba(125,158,117,0.15);
+      color: var(--olive); font-weight: 500; margin-left: 6px;
+    }
+    .story-date { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+    .story-body { font-size: 14px; color: var(--text-mid); line-height: 1.8; margin-bottom: 18px; white-space: pre-wrap; }
+    .story-reactions { display: flex; gap: 10px; }
+    .reaction-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 100px;
+      border: 1.5px solid rgba(125,158,117,0.25);
+      background: rgba(255,255,255,0.5);
+      font-family: 'Inter', sans-serif; font-size: 12.5px; color: var(--text-mid);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .reaction-btn:hover { border-color: var(--sage); color: var(--olive); background: rgba(125,158,117,0.1); }
+    .reaction-btn.reacted { background: rgba(125,158,117,0.15); border-color: var(--sage); color: var(--olive-dark); }
+    .reaction-count { font-weight: 600; }
+
+    /* Admin */
+    .admin-bar { display:none; position:fixed; bottom:0; left:0; right:0; z-index:200; background:rgba(42,39,34,0.96); backdrop-filter:blur(10px); padding:10px 24px; align-items:center; gap:12px; }
+    .admin-bar.visible { display:flex; }
+    .admin-bar-label { font-size:13px; font-weight:600; color:#f5f0e8; margin-right:auto; }
+    .admin-bar span { font-size:12px; color:rgba(255,255,255,0.5); letter-spacing:0.5px; }
+    .admin-exit { background:none; border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.6); font-family:'Inter',sans-serif; font-size:12px; padding:6px 14px; border-radius:100px; cursor:pointer; transition:all 0.2s; }
+    .admin-exit:hover { border-color:rgba(255,255,255,0.5); color:#fff; }
+    body.admin-mode .story-card { padding-top: 48px; }
+    .admin-btn-delete { position:absolute; top:14px; right:14px; background:#c0392b; border:none; color:#fff; font-size:12px; font-weight:600; padding:5px 12px; border-radius:100px; cursor:pointer; opacity:0; transition:opacity 0.2s; font-family:'Inter',sans-serif; }
+    body.admin-mode .story-card:hover .admin-btn-delete { opacity:1; }
+
+    @media (max-width: 640px) {
+      nav { padding: 18px 24px; }
+      .nav-share-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <div class="nav-right">
+      <a class="nav-share-btn" href="salama-stories-share.html">+ Share yours</a>
+      <a class="nav-back" href="index.html">← Back to Home</a>
+      <button id="owner-btn" onclick="promptOwner()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-light);padding:4px 8px;user-select:none;" title="">·</button>
+    </div>
+  </nav>
+
+  <div class="admin-bar" id="admin-bar">
+    <div class="admin-bar-label">🛡 Owner mode</div>
+    <span>Hover any story to remove it</span>
+    <button class="admin-exit" onclick="exitAdmin()">Exit</button>
+  </div>
+
+  <div class="page">
+    <div class="wrap">
+
+      <div class="header">
+        <p class="header-label">Community Stories</p>
+        <h1 class="header-title">Salama,<br>in <em>your words.</em></h1>
+        <p class="header-sub">Real experiences from real people. Every story here was shared to let someone else know they're not alone.</p>
+      </div>
+
+      <div class="stories-feed" id="stories-feed">
+
+        <div class="story-card" data-id="p1">
+          <div class="story-meta">
+            <div class="story-avatar">🤍</div>
+            <div>
+              <span class="story-author" style="font-style:italic;color:var(--text-light);font-weight:400;">Anonymous</span>
+              <span class="story-identity-tag">AUB Student</span>
+              <div class="story-date">Beirut</div>
+            </div>
+          </div>
+          <p class="story-body">Salama made me realize I wasn't alone in what I was going through. Reading other people's stories gave me the courage to talk about my own.</p>
+        </div>
+
+        <div class="story-card" data-id="p2">
+          <div class="story-meta">
+            <div class="story-avatar">🤍</div>
+            <div>
+              <span class="story-author" style="font-style:italic;color:var(--text-light);font-weight:400;">Anonymous</span>
+              <span class="story-identity-tag">Community Member</span>
+            </div>
+          </div>
+          <p class="story-body">The daily check-ins helped me build a habit of checking in with myself. It's such a small thing, but it changed how I relate to my emotions.</p>
+        </div>
+
+        <div class="story-card" data-id="p3">
+          <div class="story-meta">
+            <div class="story-avatar">N</div>
+            <div>
+              <span class="story-author">Nour</span>
+              <span class="story-identity-tag">LAU Student</span>
+            </div>
+          </div>
+          <p class="story-body">I came across Salama during finals week when everything felt like too much. The breathing exercises genuinely got me through some of my hardest nights. I didn't expect a website to actually help, but it did.</p>
+        </div>
+
+        <div class="story-card" data-id="p4">
+          <div class="story-meta">
+            <div class="story-avatar">🤍</div>
+            <div>
+              <span class="story-author" style="font-style:italic;color:var(--text-light);font-weight:400;">Anonymous</span>
+              <span class="story-identity-tag">Community Member</span>
+            </div>
+          </div>
+          <p class="story-body">What I love most is that Salama doesn't feel clinical. It feels like someone actually thought about what it means to struggle in this part of the world. That matters more than I can say.</p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const OWNER_PASS = 'salama-owner';
+    const reactions = JSON.parse(localStorage.getItem('salama_com_reactions') || '{}');
+    const reacted   = JSON.parse(localStorage.getItem('salama_com_reacted')   || '{}');
+
+    function saveReactions() {
+      localStorage.setItem('salama_com_reactions', JSON.stringify(reactions));
+      localStorage.setItem('salama_com_reacted',   JSON.stringify(reacted));
+    }
+
+    function react(btn) {
+      const card = btn.closest('[data-id]');
+      const storyId = card.dataset.id;
+      const type = btn.dataset.reaction;
+      const key = storyId + '_' + type;
+      const countEl = btn.querySelector('.reaction-count');
+      const base = parseInt(countEl.dataset.base ?? countEl.textContent);
+      countEl.dataset.base = base;
+      if (reacted[key]) {
+        reacted[key] = false;
+        reactions[key] = (reactions[key] || 1) - 1;
+        btn.classList.remove('reacted');
+      } else {
+        reacted[key] = true;
+        reactions[key] = (reactions[key] || 0) + 1;
+        btn.classList.add('reacted');
+        btn.animate([{transform:'scale(1)'},{transform:'scale(1.15)'},{transform:'scale(1)'}], {duration:250,easing:'ease-out'});
+      }
+      countEl.textContent = base + (reactions[key] || 0);
+      saveReactions();
+    }
+
+    function applyReactions(card) {
+      const storyId = card.dataset.id;
+      card.querySelectorAll('.reaction-btn').forEach(btn => {
+        const type = btn.dataset.reaction;
+        const key = storyId + '_' + type;
+        const countEl = btn.querySelector('.reaction-count');
+        const base = parseInt(countEl.textContent);
+        countEl.dataset.base = base;
+        countEl.textContent = base + (reactions[key] || 0);
+        if (reacted[key]) btn.classList.add('reacted');
+      });
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function formatDate(iso) {
+      return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function avatarChar(s) {
+      if (s.is_anonymous || !s.author_name) return '🤍';
+      return s.author_name[0].toUpperCase();
+    }
+
+    function renderStory(s, feed, prepend) {
+      const card = document.createElement('div');
+      card.className = 'story-card';
+      card.dataset.id = 'c' + s.id;
+
+      const displayName = (s.is_anonymous || !s.author_name) ? '' : escHtml(s.author_name);
+      const authorLine = displayName
+        ? `<span class="story-author">${displayName}</span><span class="story-identity-tag">${escHtml(s.identity)}</span>`
+        : `<span class="story-author" style="font-style:italic;color:var(--text-light);font-weight:400;">Anonymous</span><span class="story-identity-tag">${escHtml(s.identity)}</span>`;
+
+      card.innerHTML = `
+        <div class="story-meta">
+          <div class="story-avatar">${avatarChar(s)}</div>
+          <div>
+            <div>${authorLine}</div>
+            <div class="story-date">${formatDate(s.created_at)}</div>
+          </div>
+        </div>
+        <p class="story-body">${escHtml(s.body)}</p>`;
+
+      if (prepend) feed.insertBefore(card, feed.firstChild);
+      else feed.appendChild(card);
+      if (document.body.classList.contains('admin-mode')) addAdminButton(card);
+    }
+
+    function addAdminButton(card) {
+      const del = document.createElement('button');
+      del.className = 'admin-btn-delete';
+      del.textContent = 'Remove';
+      del.onclick = () => adminDelete(card);
+      card.appendChild(del);
+    }
+
+    function adminDelete(card) {
+      const id = card.dataset.id;
+      if (!confirm('Remove this story?')) return;
+      if (id.startsWith('p')) {
+        // hardcoded card — hide via localStorage
+        const hidden = JSON.parse(localStorage.getItem('salama_com_hidden') || '[]');
+        hidden.push(id);
+        localStorage.setItem('salama_com_hidden', JSON.stringify(hidden));
+      } else {
+        const rawId = parseInt(id.replace('c', ''));
+        let stories = JSON.parse(localStorage.getItem('salama_community') || '[]');
+        stories = stories.filter(s => s.id !== rawId);
+        localStorage.setItem('salama_community', JSON.stringify(stories));
+      }
+      card.remove();
+      if (!document.querySelector('.story-card')) showEmpty();
+    }
+
+    function showEmpty() {
+      const feed = document.getElementById('stories-feed');
+      feed.innerHTML = `<div class="empty-state">No stories yet. <a href="salama-stories-share.html">Be the first to share yours.</a></div>`;
+    }
+
+    function enterAdmin() {
+      document.body.classList.add('admin-mode');
+      document.getElementById('admin-bar').classList.add('visible');
+      document.querySelectorAll('.story-card[data-id]').forEach(addAdminButton);
+    }
+
+    function exitAdmin() {
+      document.body.classList.remove('admin-mode');
+      document.getElementById('admin-bar').classList.remove('visible');
+      document.querySelectorAll('.admin-btn-delete').forEach(b => b.remove());
+    }
+
+    function promptOwner() {
+      const pass = prompt('Enter owner password:');
+      if (pass === OWNER_PASS) enterAdmin();
+      else if (pass !== null) alert('Incorrect password.');
+    }
+
+    function loadStories() {
+      // hide any admin-removed hardcoded cards
+      const hidden = JSON.parse(localStorage.getItem('salama_com_hidden') || '[]');
+      hidden.forEach(id => { const el = document.querySelector(`[data-id="${id}"]`); if (el) el.remove(); });
+
+      // apply reactions to hardcoded cards
+      document.querySelectorAll('.story-card[data-id]').forEach(applyReactions);
+
+      const feed = document.getElementById('stories-feed');
+      const stories = JSON.parse(localStorage.getItem('salama_community') || '[]');
+      [...stories].reverse().forEach(s => renderStory(s, feed, true));
+    }
+
+    loadStories();
+  </script>
+</body>
+</html>

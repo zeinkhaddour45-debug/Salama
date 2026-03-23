@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study + Reset Cycle | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #f5f0e8;
+      --cream-dark: #ece5d8;
+      --sage:       #7d9e75;
+      --sage-light: #c8d9c2;
+      --sage-mid:   #adc4a6;
+      --olive:      #4a6640;
+      --olive-dark: #374f31;
+      --text:       #2a2722;
+      --text-mid:   #5a5650;
+      --text-light: #8a8680;
+      --line:       #e4dbd0;
+      --paper:      #fdfbf7;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    .leaf { position: fixed; pointer-events: none; opacity: 0.15; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 200px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 180px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 120px; transform: rotate(38deg); }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 600; letter-spacing: 3px;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-back { font-size: 13px; color: var(--text-light); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+
+    .page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      padding: 110px 24px 80px;
+      display: flex; flex-direction: column; align-items: center; gap: 28px;
+    }
+
+    .page-header { text-align: center; max-width: 560px; }
+    .page-eyebrow {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 14px;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 4vw, 42px); font-weight: 500; line-height: 1.2;
+      color: var(--text); margin-bottom: 12px;
+    }
+    .page-title em { font-style: italic; color: var(--olive); }
+    .page-subtitle { font-size: 14px; color: var(--text-mid); line-height: 1.85; }
+
+    /* ─── CARD ─── */
+    .card {
+      width: min(620px, 100%);
+      background: rgba(255,252,248,0.92);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: 0 12px 40px rgba(60,50,40,0.07), 0 2px 0 rgba(255,255,255,0.9) inset;
+      backdrop-filter: blur(8px);
+      padding: 40px;
+    }
+
+    .section-label {
+      font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--text-light); font-weight: 600; margin-bottom: 12px;
+    }
+
+    /* ─── PRESET PILLS ─── */
+    .pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      padding: 8px 18px;
+      background: var(--cream); border: 1.5px solid var(--line); border-radius: 99px;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--text-mid); cursor: pointer; transition: all 0.18s;
+    }
+    .pill:hover { border-color: var(--sage-mid); color: var(--text); }
+    .pill.active {
+      background: var(--olive); border-color: var(--olive); color: white;
+    }
+
+    /* Custom input */
+    .custom-input-wrap {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px;
+      background: var(--cream); border: 1.5px solid var(--line); border-radius: 99px;
+      transition: border-color 0.2s;
+    }
+    .custom-input-wrap:focus-within { border-color: var(--sage-mid); }
+    .custom-input-wrap input {
+      width: 40px; border: none; background: transparent; outline: none;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--text); text-align: center;
+    }
+    .custom-input-wrap span { font-size: 12px; color: var(--text-light); }
+
+    /* Breathing style toggle */
+    .breath-toggle { display: flex; gap: 0; border: 1.5px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .breath-opt {
+      flex: 1; padding: 11px 14px; text-align: center;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--text-mid); cursor: pointer; transition: all 0.18s;
+      border: none; background: var(--cream);
+    }
+    .breath-opt:not(:last-child) { border-right: 1.5px solid var(--line); }
+    .breath-opt.active { background: var(--olive); color: white; }
+    .breath-opt-sub { font-size: 10px; font-weight: 400; display: block; margin-top: 2px; opacity: 0.75; }
+
+    /* ─── BUTTONS ─── */
+    .btn-primary {
+      width: 100%; padding: 16px;
+      background: var(--olive); color: white;
+      border: none; border-radius: 14px;
+      font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
+    }
+    .btn-primary:hover { background: var(--olive-dark); transform: translateY(-1px); }
+    .btn-primary:active { transform: none; }
+
+    .btn-row { display: flex; gap: 10px; }
+    .btn-ghost {
+      flex: 1; padding: 13px;
+      background: transparent; border: 1.5px solid var(--line); border-radius: 12px;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--text-mid); cursor: pointer; transition: all 0.18s;
+    }
+    .btn-ghost:hover { border-color: var(--sage-mid); color: var(--text); }
+    .btn-break {
+      flex: 2; padding: 13px;
+      background: var(--olive); color: white; border: none; border-radius: 12px;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.18s;
+    }
+    .btn-break:hover { background: var(--olive-dark); }
+
+    .divider { height: 1px; background: var(--line); margin: 4px 0; }
+
+    /* ─── STUDY TIMER ─── */
+    .cycle-eyebrow {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; text-align: center;
+    }
+
+    .timer-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+      position: relative;
+    }
+
+    /* SVG ring */
+    .timer-ring-svg {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .ring-track { fill: none; stroke: var(--line); stroke-width: 3; }
+    .ring-fill  {
+      fill: none; stroke: var(--sage); stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 502; stroke-dashoffset: 0;
+      transform: rotate(-90deg); transform-origin: 50% 50%;
+      transition: stroke-dashoffset 1s linear;
+    }
+
+    .timer-display {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(52px, 10vw, 72px); font-weight: 500;
+      color: var(--text); letter-spacing: -2px; line-height: 1;
+      position: relative; z-index: 1;
+      width: 180px; height: 180px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .timer-status {
+      font-size: 13px; color: var(--text-light); font-weight: 500; text-align: center;
+    }
+
+    /* Cycle dots */
+    .cycle-dots {
+      display: flex; gap: 8px; justify-content: center;
+    }
+    .cycle-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--line); transition: background 0.3s;
+    }
+    .cycle-dot.done { background: var(--sage); }
+    .cycle-dot.active { background: var(--olive); }
+
+    /* ─── BREATHING BREAK ─── */
+    .break-eyebrow {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage-mid); font-weight: 600; text-align: center;
+    }
+
+    .breath-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 24px;
+    }
+
+    .breath-circle-outer {
+      width: 180px; height: 180px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .breath-ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      border: 2px solid rgba(125,158,117,0.25);
+      transition: transform 0.1s linear;
+    }
+    .breath-circle {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%,
+        rgba(125,158,117,0.35) 0%,
+        rgba(74,102,64,0.2) 60%,
+        rgba(74,102,64,0.08) 100%);
+      border: 1.5px solid rgba(125,158,117,0.4);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px;
+      transition: transform 0.1s linear;
+    }
+    .breath-phase-name {
+      font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      font-weight: 700; color: var(--olive); transition: opacity 0.3s;
+    }
+    .breath-phase-count {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 500; color: var(--olive-dark);
+      line-height: 1;
+    }
+
+    .break-time-remaining {
+      font-size: 12.5px; color: var(--text-light); text-align: center;
+    }
+    .break-time-remaining strong {
+      font-size: 15px; color: var(--text-mid); font-weight: 600;
+      font-family: 'Playfair Display', serif;
+    }
+
+    /* ─── DONE ─── */
+    .done-icon {
+      font-size: 44px; text-align: center;
+    }
+    .done-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 500; color: var(--text);
+      text-align: center; line-height: 1.3;
+    }
+    .done-title em { font-style: italic; color: var(--olive); }
+    .done-subtitle { font-size: 14px; color: var(--text-mid); text-align: center; line-height: 1.7; }
+
+    .stats-row {
+      display: flex; gap: 0;
+      border: 1.5px solid var(--line); border-radius: 16px; overflow: hidden;
+    }
+    .stat-box {
+      flex: 1; padding: 18px 14px; text-align: center;
+    }
+    .stat-box:not(:last-child) { border-right: 1px solid var(--line); }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 500; color: var(--olive); line-height: 1;
+    }
+    .stat-label { font-size: 11px; color: var(--text-light); font-weight: 600; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* ─── FADE ─── */
+    .fade-in {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .fade-in.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      .card { padding: 28px 20px; }
+      .breath-toggle { flex-direction: column; }
+      .breath-opt:not(:last-child) { border-right: none; border-bottom: 1.5px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+
+  <nav>
+    <a href="index.html" class="nav-logo">SALAMA</a>
+    <a href="study.html" class="nav-back">← Back to Study</a>
+  </nav>
+
+  <main class="page">
+
+    <header class="page-header fade-in">
+      <p class="page-eyebrow">Study Tools</p>
+      <h1 class="page-title">Study + <em>Reset</em> Cycle</h1>
+      <p class="page-subtitle">Study for a focused block. When the timer ends, breathe intentionally, then go again. A calm mind focuses better.</p>
+    </header>
+
+    <div class="card fade-in">
+
+      <!-- ── SETUP ── -->
+      <div id="phaseSetup" style="display:flex; flex-direction:column; gap:24px;">
+
+        <div>
+          <p class="section-label">Study block</p>
+          <div class="pill-group">
+            <button class="pill" onclick="selectStudy(15, this)">15 min</button>
+            <button class="pill active" onclick="selectStudy(25, this)">25 min</button>
+            <button class="pill" onclick="selectStudy(45, this)">45 min</button>
+            <div class="custom-input-wrap">
+              <input type="number" id="customStudy" min="1" max="120" placeholder=""
+                oninput="selectCustomStudy(this)" />
+              <span>min</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p class="section-label">Break length</p>
+          <div class="pill-group">
+            <button class="pill" onclick="selectBreak(3, this)">3 min</button>
+            <button class="pill active" onclick="selectBreak(5, this)">5 min</button>
+            <button class="pill" onclick="selectBreak(10, this)">10 min</button>
+            <div class="custom-input-wrap">
+              <input type="number" id="customBreak" min="1" max="30" placeholder=""
+                oninput="selectCustomBreak(this)" />
+              <span>min</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p class="section-label">Breathing style</p>
+          <div class="breath-toggle">
+            <button class="breath-opt active" onclick="selectBreath('box', this)">
+              Box Breathing
+              <span class="breath-opt-sub">4 · 4 · 4 · 4</span>
+            </button>
+            <button class="breath-opt" onclick="selectBreath('478', this)">
+              4-7-8
+              <span class="breath-opt-sub">Inhale · Hold · Exhale</span>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="startSession()">Start Session →</button>
+      </div>
+
+      <!-- ── STUDYING ── -->
+      <div id="phaseStudy" style="display:none; flex-direction:column; align-items:center; gap:24px;">
+
+        <p class="cycle-eyebrow" id="studyCycleLabel">Cycle 1: Studying</p>
+
+        <div class="timer-wrap">
+          <svg class="timer-ring-svg" width="200" height="200" viewBox="0 0 200 200">
+            <circle class="ring-track" cx="100" cy="100" r="90"/>
+            <circle class="ring-fill" id="studyRingFill" cx="100" cy="100" r="80"/>
+          </svg>
+          <div class="timer-display" id="studyTimerDisplay">25:00</div>
+        </div>
+
+        <p class="timer-status" id="studyStatusText">Stay focused. You've got this.</p>
+
+        <div class="cycle-dots" id="cycleDots"></div>
+
+        <div class="btn-row" style="width:100%;">
+          <button class="btn-ghost" onclick="endSession()">End session</button>
+          <button class="btn-break" onclick="goToBreak()">Take break now →</button>
+        </div>
+      </div>
+
+      <!-- ── BREAK ── -->
+      <div id="phaseBreak" style="display:none; flex-direction:column; align-items:center; gap:24px;">
+
+        <p class="break-eyebrow">Break: Breathe</p>
+
+        <div class="breath-wrap">
+          <div class="breath-circle-outer">
+            <div class="breath-ring" id="breathRing"></div>
+            <div class="breath-circle" id="breathCircle">
+              <span class="breath-phase-name" id="breathPhaseName">Inhale</span>
+              <span class="breath-phase-count" id="breathPhaseCount">4</span>
+            </div>
+          </div>
+
+          <div class="break-time-remaining">
+            Break ends in <strong id="breakTimerDisplay">5:00</strong>
+          </div>
+        </div>
+
+        <div class="btn-row" style="width:100%;">
+          <button class="btn-ghost" onclick="endSession()">End session</button>
+          <button class="btn-break" onclick="skipBreak()">Skip break →</button>
+        </div>
+      </div>
+
+      <!-- ── DONE ── -->
+      <div id="phaseDone" style="display:none; flex-direction:column; align-items:center; gap:24px; text-align:center;">
+
+        <div class="done-icon">🌿</div>
+        <div>
+          <p class="done-title">Session <em>complete</em></p>
+          <p class="done-subtitle" style="margin-top:8px;">You showed up, you focused, you breathed.<br>That matters.</p>
+        </div>
+
+        <div class="stats-row" style="width:100%;">
+          <div class="stat-box">
+            <div class="stat-num" id="statCycles">0</div>
+            <div class="stat-label">Cycles</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="statMinutes">0</div>
+            <div class="stat-label">Min studied</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="statBreaths">0</div>
+            <div class="stat-label">Breaths taken</div>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="resetToSetup()">Study again →</button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // ─── STATE ────────────────────────────────────────────────────────
+    let studyMins    = 25;
+    let breakMins    = 5;
+    let breathStyle  = 'box';   // 'box' | '478'
+    let cycleCount   = 0;
+    let totalBreaths = 0;
+    let totalStudySecs = 0;
+
+    // Timer internals
+    let studySecsLeft  = 0;
+    let studySecsTotal = 0;
+    let breakSecsLeft  = 0;
+    let studyInterval  = null;
+    let breakInterval  = null;
+    let breathRAF      = null;
+
+    // Breathing
+    let breathPhaseIdx   = 0;
+    let breathPhaseStart = 0;   // performance.now() when phase started
+
+    const BOX_PHASES = [
+      { name: 'Inhale',  secs: 4 },
+      { name: 'Hold',    secs: 4 },
+      { name: 'Exhale',  secs: 4 },
+      { name: 'Hold',    secs: 4 },
+    ];
+    const F478_PHASES = [
+      { name: 'Inhale',  secs: 4 },
+      { name: 'Hold',    secs: 7 },
+      { name: 'Exhale',  secs: 8 },
+    ];
+
+    function getPhases() {
+      return breathStyle === 'box' ? BOX_PHASES : F478_PHASES;
+    }
+
+    // Ring circumference for r=80 → 2π×80 ≈ 502.65
+    const RING_CIRC = 2 * Math.PI * 80;
+
+    // ─── SETUP SELECTIONS ────────────────────────────────────────────
+    function selectStudy(mins, btn) {
+      studyMins = mins;
+      document.getElementById('customStudy').value = '';
+      document.querySelectorAll('.pill-group')[0].querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    function selectCustomStudy(input) {
+      const val = parseInt(input.value);
+      if (!val || val < 1) return;
+      studyMins = val;
+      document.querySelectorAll('.pill-group')[0].querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    }
+
+    function selectBreak(mins, btn) {
+      breakMins = mins;
+      document.getElementById('customBreak').value = '';
+      document.querySelectorAll('.pill-group')[1].querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    function selectCustomBreak(input) {
+      const val = parseInt(input.value);
+      if (!val || val < 1) return;
+      breakMins = val;
+      document.querySelectorAll('.pill-group')[1].querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    }
+
+    function selectBreath(style, btn) {
+      breathStyle = style;
+      document.querySelectorAll('.breath-opt').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    // ─── START SESSION ───────────────────────────────────────────────
+    function startSession() {
+      cycleCount       = 0;
+      totalBreaths     = 0;
+      totalStudySecs   = 0;
+      startStudyCycle();
+    }
+
+    // ─── STUDY CYCLE ─────────────────────────────────────────────────
+    function startStudyCycle() {
+      cycleCount++;
+      studySecsTotal = studyMins * 60;
+      studySecsLeft  = studySecsTotal;
+
+      document.getElementById('studyCycleLabel').textContent =
+        'Cycle ' + cycleCount + ': Studying';
+      updateStudyDisplay();
+      updateStudyRing();
+      updateCycleDots();
+
+      setPhase('phaseStudy');
+      clearInterval(studyInterval);
+      studyInterval = setInterval(() => {
+        studySecsLeft--;
+        totalStudySecs++;
+        updateStudyDisplay();
+        updateStudyRing();
+        if (studySecsLeft <= 0) {
+          clearInterval(studyInterval);
+          goToBreak();
+        }
+      }, 1000);
+    }
+
+    function updateStudyDisplay() {
+      document.getElementById('studyTimerDisplay').textContent = formatTime(studySecsLeft);
+      const pct = studySecsLeft / studySecsTotal;
+      const tip = pct > 0.6 ? 'Stay focused. You\'ve got this.' :
+                  pct > 0.3 ? 'Halfway there. Keep going.' :
+                              'Almost done. Final push.';
+      document.getElementById('studyStatusText').textContent = tip;
+    }
+
+    function updateStudyRing() {
+      const pct    = studySecsLeft / studySecsTotal;
+      const offset = RING_CIRC * (1 - pct);
+      document.getElementById('studyRingFill').style.strokeDashoffset = offset;
+    }
+
+    function updateCycleDots() {
+      const dotsEl = document.getElementById('cycleDots');
+      dotsEl.innerHTML = '';
+      for (let i = 1; i <= cycleCount; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'cycle-dot ' + (i < cycleCount ? 'done' : 'active');
+        dotsEl.appendChild(dot);
+      }
+    }
+
+    // ─── BREAK ───────────────────────────────────────────────────────
+    function goToBreak() {
+      clearInterval(studyInterval);
+      breakSecsLeft = breakMins * 60;
+      breathPhaseIdx   = 0;
+      breathPhaseStart = performance.now();
+
+      updateBreakDisplay();
+      setPhase('phaseBreak');
+      startBreathing();
+
+      clearInterval(breakInterval);
+      breakInterval = setInterval(() => {
+        breakSecsLeft--;
+        updateBreakDisplay();
+        if (breakSecsLeft <= 0) {
+          clearInterval(breakInterval);
+          endBreak();
+        }
+      }, 1000);
+    }
+
+    function updateBreakDisplay() {
+      document.getElementById('breakTimerDisplay').textContent = formatTime(breakSecsLeft);
+    }
+
+    function skipBreak() {
+      clearInterval(breakInterval);
+      cancelAnimationFrame(breathRAF);
+      endBreak();
+    }
+
+    function endBreak() {
+      cancelAnimationFrame(breathRAF);
+      startStudyCycle();
+    }
+
+    // ─── BREATHING ANIMATION ─────────────────────────────────────────
+    function startBreathing() {
+      breathPhaseIdx   = 0;
+      breathPhaseStart = performance.now();
+      animateBreath();
+    }
+
+    function animateBreath() {
+      const now    = performance.now();
+      const phases = getPhases();
+      const phase  = phases[breathPhaseIdx];
+      const elapsed = (now - breathPhaseStart) / 1000;  // seconds into this phase
+      const t      = Math.min(elapsed / phase.secs, 1); // 0→1 progress
+
+      // Compute scale
+      let scale;
+      const name = phase.name;
+      if (name === 'Inhale')       scale = 0.6 + 0.4 * easeInOut(t);
+      else if (name === 'Exhale')  scale = 1.0 - 0.4 * easeInOut(t);
+      else                         scale = name === 'Hold' && breathPhaseIdx === 1 ? 1.0 : 0.6;
+
+      document.getElementById('breathCircle').style.transform = `scale(${scale})`;
+      document.getElementById('breathRing').style.transform   = `scale(${0.85 + 0.2 * scale})`;
+
+      // Countdown inside circle
+      const secsLeft = Math.ceil(phase.secs - elapsed);
+      document.getElementById('breathPhaseCount').textContent = Math.max(secsLeft, 1);
+      document.getElementById('breathPhaseName').textContent  = phase.name;
+
+      // Advance phase
+      if (t >= 1) {
+        totalBreaths++;
+        breathPhaseIdx   = (breathPhaseIdx + 1) % phases.length;
+        breathPhaseStart = now;
+      }
+
+      breathRAF = requestAnimationFrame(animateBreath);
+    }
+
+    function easeInOut(t) {
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+
+    // ─── END SESSION ─────────────────────────────────────────────────
+    function endSession() {
+      clearInterval(studyInterval);
+      clearInterval(breakInterval);
+      cancelAnimationFrame(breathRAF);
+
+      document.getElementById('statCycles').textContent  = cycleCount;
+      document.getElementById('statMinutes').textContent = Math.round(totalStudySecs / 60);
+      document.getElementById('statBreaths').textContent = totalBreaths;
+
+      setPhase('phaseDone');
+    }
+
+    function resetToSetup() {
+      setPhase('phaseSetup');
+    }
+
+    // ─── UTILS ───────────────────────────────────────────────────────
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return m + ':' + String(s).padStart(2, '0');
+    }
+
+    function setPhase(id) {
+      ['phaseSetup','phaseStudy','phaseBreak','phaseDone'].forEach(p => {
+        const el = document.getElementById(p);
+        el.style.display = (p === id) ? 'flex' : 'none';
+        if (p === id) el.style.flexDirection = 'column';
+      });
+    }
+
+    // ─── FADE IN ─────────────────────────────────────────────────────
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

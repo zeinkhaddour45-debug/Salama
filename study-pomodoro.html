@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Companion | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #f5f0e8;
+      --cream-dark: #ece5d8;
+      --sage:       #7d9e75;
+      --sage-light: #c8d9c2;
+      --sage-mid:   #adc4a6;
+      --olive:      #4a6640;
+      --olive-dark: #374f31;
+      --text:       #2a2722;
+      --text-mid:   #5a5650;
+      --text-light: #8a8680;
+      --line:       #e4dbd0;
+      --desk:       #e7dccf;
+      --paper:      #fdfbf7;
+      --tea:        #d4bfa0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Film grain */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    /* Leaf decorations */
+    .leaf { position: fixed; pointer-events: none; opacity: 0.15; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 200px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 180px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 120px; transform: rotate(38deg); }
+
+    /* Nav */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245, 240, 232, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .nav-back {
+      font-size: 13px;
+      color: var(--text-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+
+    /* Page */
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      padding: 110px 24px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .page-header {
+      text-align: center;
+      max-width: 580px;
+    }
+    .page-eyebrow {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(30px, 4vw, 46px);
+      font-weight: 500;
+      line-height: 1.18;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+    .page-title em { font-style: italic; color: var(--olive); }
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.85;
+    }
+    .page-subtitle strong { color: var(--text); font-weight: 500; }
+
+    /* Card */
+    .card {
+      width: min(1040px, 100%);
+      background: rgba(255, 252, 248, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      box-shadow: 0 12px 40px rgba(60,50,40,0.07), 0 2px 0 rgba(255,255,255,0.9) inset;
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+    }
+
+    /* Scene panel */
+    .scene-panel {
+      min-height: 540px;
+      padding: 32px 24px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(160deg, #f7f2ea 0%, #f2ece0 50%, #ede5d5 100%);
+      border-right: 1px solid var(--line);
+      position: relative;
+      overflow: hidden;
+    }
+    .scene-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,255,255,0.32) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .visual-inner {
+      position: relative;
+      width: min(420px, 100%);
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+    }
+
+    /* Progress ring */
+    .ring {
+      position: absolute;
+      width: 92%;
+      height: 92%;
+      border-radius: 50%;
+      background: conic-gradient(var(--olive) calc(var(--progress, 0) * 1%), rgba(74,102,64,0.1) 0);
+      mask: radial-gradient(circle at center, transparent 70.5%, black 71.5%);
+      -webkit-mask: radial-gradient(circle at center, transparent 70.5%, black 71.5%);
+      transition: background 0.4s linear;
+      opacity: 0.8;
+    }
+    .ring-inner-bg {
+      position: absolute;
+      width: 70%;
+      height: 70%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.65), rgba(245,240,232,0.25));
+    }
+
+    /* Study scene */
+    .study-scene {
+      position: relative;
+      width: 70%;
+      height: 70%;
+    }
+
+    .chair {
+      position: absolute;
+      bottom: 18%;
+      left: 50%;
+      width: 32%;
+      height: 32%;
+      transform: translateX(-50%);
+      border-radius: 18px 18px 8px 8px;
+      border: 2.5px solid rgba(74,102,64,0.16);
+      border-bottom: none;
+    }
+
+    .desk {
+      position: absolute;
+      bottom: 17%;
+      width: 78%;
+      left: 11%;
+      height: 13%;
+      border-radius: 14px 14px 10px 10px;
+      background: linear-gradient(180deg, var(--desk) 0%, #d4c4ae 100%);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.5);
+    }
+    .desk::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 10%;
+      width: 80%;
+      height: 10px;
+      background: rgba(160,130,100,0.18);
+      border-radius: 50%;
+      filter: blur(6px);
+    }
+
+    .book {
+      position: absolute;
+      bottom: 27%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24%;
+      height: 9%;
+      background: var(--paper);
+      border: 1px solid rgba(195,182,165,0.8);
+      border-radius: 5px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: transform 0.5s ease;
+    }
+    .book::before {
+      content: '';
+      position: absolute;
+      top: 22%;
+      left: 10%;
+      width: 80%;
+      height: 1.5px;
+      background: rgba(74,102,64,0.13);
+      box-shadow: 0 6px 0 rgba(74,102,64,0.1), 0 12px 0 rgba(74,102,64,0.07);
+    }
+
+    .tea {
+      position: absolute;
+      bottom: 28%;
+      right: 20%;
+      width: 8%;
+      height: 10%;
+      border-radius: 1px 1px 10px 10px;
+      background: var(--tea);
+      border: 1.5px solid rgba(155,125,95,0.2);
+    }
+    .tea::before {
+      content: '';
+      position: absolute;
+      top: 14%;
+      right: -26%;
+      width: 28%;
+      height: 36%;
+      border: 1.5px solid rgba(155,125,95,0.2);
+      border-left: none;
+      border-radius: 0 999px 999px 0;
+    }
+
+    .steam {
+      position: absolute;
+      bottom: 39%;
+      right: 20.8%;
+      width: 6%;
+      opacity: 0.38;
+    }
+    .steam span {
+      position: absolute;
+      bottom: 0;
+      width: 6px;
+      height: 26px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, transparent, rgba(125,158,117,0.45));
+      animation: steamUp 3.2s ease-in-out infinite;
+    }
+    .steam span:nth-child(1) { left: 0; }
+    .steam span:nth-child(2) { left: 8px; animation-delay: 1.2s; }
+
+    @keyframes steamUp {
+      0%   { transform: translateY(0);                     opacity: 0; }
+      30%  {                                                opacity: 0.5; }
+      100% { transform: translateY(-18px) translateX(3px); opacity: 0; }
+    }
+
+    /* Companion */
+    .companion {
+      position: absolute;
+      bottom: 25%;
+      left: 50%;
+      width: 34%;
+      height: 44%;
+      transform: translateX(-50%);
+    }
+
+    .hair {
+      position: absolute;
+      top: -1%;
+      left: 50%;
+      width: 30%;
+      height: 17%;
+      transform: translateX(-50%);
+      background: #3e2e1e;
+      border-radius: 50% 50% 38% 38%;
+    }
+
+    .head {
+      position: absolute;
+      top: 2%;
+      left: 50%;
+      width: 26%;
+      height: 20%;
+      transform: translateX(-50%);
+      background: linear-gradient(150deg, #ecd4b8, #d4ae8c);
+      border-radius: 50%;
+      box-shadow: inset 0 -3px 6px rgba(0,0,0,0.04);
+    }
+    .head::before {
+      content: '';
+      position: absolute;
+      top: 46%;
+      left: 26%;
+      width: 9px;
+      height: 9px;
+      background: #2e1e12;
+      border-radius: 50%;
+      box-shadow: 15px 0 0 #2e1e12;
+    }
+    .head::after {
+      content: '';
+      position: absolute;
+      bottom: 26%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 34%;
+      height: 4px;
+      border-bottom: 1.5px solid rgba(110,70,40,0.35);
+      border-radius: 0 0 999px 999px;
+    }
+
+    .body-shape {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      width: 38%;
+      height: 34%;
+      transform: translateX(-50%);
+      background: linear-gradient(170deg, var(--sage-light) 0%, var(--sage-mid) 100%);
+      border-radius: 20px 20px 16px 16px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.38);
+    }
+
+    .arm {
+      position: absolute;
+      top: 30%;
+      width: 21%;
+      height: 7%;
+      background: linear-gradient(90deg, #e4c8a8, #ceaa82);
+      border-radius: 999px;
+    }
+    .arm.left  { left: 22%;  transform: rotate(16deg);  transform-origin: left center; }
+    .arm.right { right: 22%; transform: rotate(-16deg); transform-origin: right center; }
+
+    /* Animations */
+    .companion.study .body-shape { animation: bodyBob 2.4s ease-in-out infinite; }
+    .companion.study .arm.left   { animation: writeLeft  1.7s ease-in-out infinite; }
+    .companion.study .arm.right  { animation: writeRight 1.7s ease-in-out infinite; }
+
+    .companion.break .body-shape { animation: relaxBob 3.4s ease-in-out infinite; }
+    .companion.break .arm.left   { transform: rotate(-10deg) translateY(-3px); transition: transform 0.5s ease; }
+    .companion.break .arm.right  { transform: rotate(10deg)  translateY(-3px); transition: transform 0.5s ease; }
+    .companion.break .head       { animation: headTilt 3.4s ease-in-out infinite; }
+
+    @keyframes bodyBob {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(3px); }
+    }
+    @keyframes writeLeft {
+      0%, 100% { transform: rotate(16deg)  translateY(0); }
+      50%       { transform: rotate(26deg)  translateY(3px); }
+    }
+    @keyframes writeRight {
+      0%, 100% { transform: rotate(-16deg) translateY(0); }
+      50%       { transform: rotate(-28deg) translateY(3px); }
+    }
+    @keyframes relaxBob {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(-3px); }
+    }
+    @keyframes headTilt {
+      0%, 100% { transform: translateX(-50%) rotate(0deg); }
+      50%       { transform: translateX(-50%) rotate(-5deg); }
+    }
+
+    /* Scene badge */
+    .scene-badge {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(245,240,232,0.84);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.7);
+      border-radius: 100px;
+      padding: 5px 16px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--olive);
+      white-space: nowrap;
+      z-index: 5;
+    }
+
+    /* Info panel */
+    .info-panel {
+      padding: 40px 36px 36px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .phase-label {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(22px, 2.6vw, 30px);
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+    .phase-label em { font-style: italic; color: var(--olive); }
+
+    .phase-desc {
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.85;
+      min-height: 50px;
+    }
+
+    .timer {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(54px, 6vw, 78px);
+      line-height: 1;
+      color: var(--olive);
+      letter-spacing: -1px;
+      margin: 6px 0 4px;
+    }
+
+    .session-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(74,102,64,0.07);
+      color: var(--olive);
+      border: 1px solid rgba(74,102,64,0.13);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+
+    .cycles {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .cycles-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: transparent;
+      border: 1.5px solid rgba(125,158,117,0.28);
+      transition: background 0.35s ease, transform 0.2s ease, border-color 0.35s ease;
+    }
+    .dot.done {
+      background: var(--olive);
+      border-color: var(--olive);
+      transform: scale(1.1);
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 13px 26px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      letter-spacing: 0.3px;
+    }
+    button:hover  { transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+    .primary {
+      background: var(--olive);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(74,102,64,0.26);
+    }
+    .primary:hover { background: var(--olive-dark); box-shadow: 0 10px 24px rgba(74,102,64,0.34); }
+    .secondary {
+      background: transparent;
+      color: var(--text-mid);
+      border: 1px solid var(--line);
+    }
+    .secondary:hover { border-color: rgba(74,102,64,0.28); color: var(--text); }
+
+    /* Reminder */
+    .reminder {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(125,158,117,0.05);
+      padding: 18px 20px;
+    }
+    .reminder-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      color: var(--olive);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .reminder-text {
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.8;
+    }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      nav { padding: 18px 24px; }
+      .layout { grid-template-columns: 1fr; }
+      .scene-panel { border-right: none; border-bottom: 1px solid var(--line); min-height: 400px; }
+      .info-panel { padding: 28px 24px; }
+    }
+    @media (max-width: 520px) {
+      .page { padding: 96px 12px 48px; }
+      .card { border-radius: 24px; }
+      .timer { font-size: 58px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .companion *, .steam span { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Leaf decorations -->
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 275 C100 275 28 205 28 130 C28 62 64 16 100 16 C136 16 172 62 172 130 C172 205 100 275 100 275Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.32)"/>
+    <path d="M100 275 L100 16" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 85 C82 75 56 83 40 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 85 C118 75 144 83 160 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <!-- Nav -->
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <a class="nav-back" href="study.html">← Back to Study</a>
+  </nav>
+
+  <div class="page">
+
+    <div class="page-header">
+      <p class="page-eyebrow">Study Companion</p>
+      <h1 class="page-title">Focus with <em>intention.</em></h1>
+      <p class="page-subtitle">
+        Study alongside a quiet companion using the <strong>Pomodoro technique</strong>:
+        <strong>25 minutes of focus</strong>, a <strong>5-minute break</strong>,
+        and after 4 sessions, a <strong>15-minute long break</strong>.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="layout">
+
+        <!-- Scene -->
+        <div class="scene-panel">
+          <div class="scene-badge" id="sceneBadge">Ready to study</div>
+          <div class="visual-inner">
+            <div class="ring" id="ring" style="--progress: 0;"></div>
+            <div class="ring-inner-bg"></div>
+            <div class="study-scene">
+              <div class="chair"></div>
+              <div class="desk"></div>
+              <div class="book" id="book"></div>
+              <div class="tea"></div>
+              <div class="steam"><span></span><span></span></div>
+              <div class="companion study" id="companion">
+                <div class="hair"></div>
+                <div class="head"></div>
+                <div class="body-shape"></div>
+                <div class="arm left"></div>
+                <div class="arm right"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timer & info -->
+        <div class="info-panel">
+          <div>
+            <div class="phase-label" id="phaseLabel">Ready to <em>focus</em></div>
+            <p class="phase-desc" id="phaseDesc">Press start to begin a 25-minute focus session. Your companion will study with you.</p>
+            <div class="timer" id="timerDisplay">25:00</div>
+            <div class="session-pills">
+              <div class="pill" id="sessionTypePill">Focus Session</div>
+              <div class="pill" id="sessionCountPill">Session 1 of 4</div>
+            </div>
+            <div class="cycles">
+              <span class="cycles-label">Sessions</span>
+              <div class="dot" data-cycle="1"></div>
+              <div class="dot" data-cycle="2"></div>
+              <div class="dot" data-cycle="3"></div>
+              <div class="dot" data-cycle="4"></div>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="primary"   id="startBtn">Begin</button>
+            <button class="secondary" id="pauseBtn">Pause</button>
+            <button class="secondary" id="resetBtn">Reset</button>
+            <button class="secondary" id="skipBtn">Skip</button>
+          </div>
+
+          <div class="reminder">
+            <p class="reminder-title">A gentle reminder</p>
+            <p class="reminder-text" id="miniText">You do not need to do everything at once. Stay with this one session.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const FOCUS_MINUTES              = 25;
+    const SHORT_BREAK_MINUTES        = 5;
+    const LONG_BREAK_MINUTES         = 15;
+    const SESSIONS_UNTIL_LONG_BREAK  = 4;
+
+    const phaseLabel       = document.getElementById("phaseLabel");
+    const phaseDesc        = document.getElementById("phaseDesc");
+    const timerDisplay     = document.getElementById("timerDisplay");
+    const sessionTypePill  = document.getElementById("sessionTypePill");
+    const sessionCountPill = document.getElementById("sessionCountPill");
+    const miniText         = document.getElementById("miniText");
+    const ring             = document.getElementById("ring");
+    const companion        = document.getElementById("companion");
+    const book             = document.getElementById("book");
+    const sceneBadge       = document.getElementById("sceneBadge");
+    const cycleDots        = Array.from(document.querySelectorAll(".dot"));
+    const startBtn         = document.getElementById("startBtn");
+    const pauseBtn         = document.getElementById("pauseBtn");
+    const resetBtn         = document.getElementById("resetBtn");
+    const skipBtn          = document.getElementById("skipBtn");
+
+    let mode                    = "focus";
+    let sessionNumber           = 1;
+    let completedFocusSessions  = 0;
+    let timeLeft                = FOCUS_MINUTES * 60;
+    let totalTime               = FOCUS_MINUTES * 60;
+    let timer                   = null;
+    let isRunning               = false;
+
+    function formatTime(s) {
+      return `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+    }
+    function getModeLabel() {
+      return mode === "focus" ? "Focus Session" : mode === "shortBreak" ? "Short Break" : "Long Break";
+    }
+    function updateDots() {
+      cycleDots.forEach((d,i) => d.classList.toggle("done", i < completedFocusSessions % SESSIONS_UNTIL_LONG_BREAK));
+    }
+    function applyCompanionState() {
+      companion.classList.remove("study","break");
+      if (mode === "focus") {
+        companion.classList.add("study");
+        book.style.transform = "translateX(-50%) scale(1)";
+        sceneBadge.textContent = isRunning ? "Focusing" : "Ready to study";
+      } else {
+        companion.classList.add("break");
+        book.style.transform = "translateX(-50%) scale(0.97) rotate(-1.5deg)";
+        sceneBadge.textContent = mode === "longBreak" ? "Long break" : "Short break";
+      }
+    }
+    function updateUI() {
+      timerDisplay.textContent   = formatTime(timeLeft);
+      sessionTypePill.textContent = getModeLabel();
+      if (mode === "focus") {
+        phaseLabel.innerHTML       = "Focus with <em>intention</em>";
+        phaseDesc.textContent      = "Your companion is studying alongside you. Stay with one task at a time.";
+        sessionCountPill.textContent = `Session ${sessionNumber} of 4`;
+        miniText.textContent       = "Progress does not have to be loud. This quiet effort still counts.";
+      } else if (mode === "shortBreak") {
+        phaseLabel.innerHTML       = "A moment to <em>breathe</em>";
+        phaseDesc.textContent      = "Step back for five minutes. Rest your eyes, stretch, or simply be still.";
+        sessionCountPill.textContent = `Completed ${completedFocusSessions} of 4`;
+        miniText.textContent       = "Breaks are part of studying well. Rest is not falling behind.";
+      } else {
+        phaseLabel.innerHTML       = "A longer <em>rest</em>";
+        phaseDesc.textContent      = "You completed four focus sessions. Take a longer pause and return gently.";
+        sessionCountPill.textContent = "Completed 4 of 4";
+        miniText.textContent       = "You have done enough for now. Let this longer pause restore you.";
+      }
+      const pct = ((totalTime - timeLeft) / totalTime) * 100;
+      ring.style.setProperty("--progress", Math.max(0, Math.min(100, pct)).toFixed(2));
+      updateDots();
+      applyCompanionState();
+    }
+    function setMode(m) {
+      mode = m;
+      totalTime = mode === "focus" ? FOCUS_MINUTES*60 : mode === "shortBreak" ? SHORT_BREAK_MINUTES*60 : LONG_BREAK_MINUTES*60;
+      timeLeft  = totalTime;
+      updateUI();
+    }
+    function handlePhaseComplete() {
+      if (mode === "focus") {
+        completedFocusSessions++;
+        if (completedFocusSessions % SESSIONS_UNTIL_LONG_BREAK === 0) { sessionNumber = 4; setMode("longBreak"); }
+        else setMode("shortBreak");
+      } else {
+        if (mode === "longBreak") { sessionNumber = 1; completedFocusSessions = 0; }
+        else sessionNumber = (completedFocusSessions % SESSIONS_UNTIL_LONG_BREAK) + 1;
+        setMode("focus");
+      }
+    }
+    function tick() {
+      if (!isRunning) return;
+      timeLeft--;
+      if (timeLeft <= 0) handlePhaseComplete();
+      else updateUI();
+    }
+    function startTimer() {
+      if (isRunning) return;
+      isRunning = true;
+      if (timer) clearInterval(timer);
+      timer = setInterval(tick, 1000);
+      updateUI();
+    }
+    function pauseTimer() {
+      isRunning = false;
+      clearInterval(timer);
+      sceneBadge.textContent = "Paused";
+    }
+    function resetAll() {
+      pauseTimer();
+      mode = "focus"; sessionNumber = 1; completedFocusSessions = 0;
+      totalTime = FOCUS_MINUTES * 60; timeLeft = totalTime;
+      updateUI();
+    }
+
+    startBtn.addEventListener("click", startTimer);
+    pauseBtn.addEventListener("click", pauseTimer);
+    resetBtn.addEventListener("click", resetAll);
+    skipBtn.addEventListener("click",  () => { handlePhaseComplete(); updateUI(); });
+
+    updateUI();
+  </script>
+</body>
+</html>

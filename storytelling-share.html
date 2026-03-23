@@ -73,6 +73,18 @@
     .form-tagline { font-size: 13px; font-style: italic; color: var(--text-light); text-align: center; margin-bottom: 20px; }
     .btn-submit { width: 100%; background: var(--olive); color: var(--white); font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; padding: 15px; border: none; border-radius: 14px; cursor: pointer; transition: background 0.2s, transform 0.15s; }
     .btn-submit:hover { background: var(--olive-dark); transform: translateY(-1px); }
+    .prompts-hint { margin-bottom: 24px; }
+    .prompts-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); font-weight: 600; margin-bottom: 10px; }
+    .prompts-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .prompt-chip {
+      padding: 8px 16px; border-radius: 100px;
+      border: 1.5px solid rgba(74,102,64,0.22);
+      background: rgba(253,251,247,0.85);
+      font-size: 13px; color: var(--text-mid);
+      cursor: pointer; transition: all 0.2s;
+      font-style: italic;
+    }
+    .prompt-chip:hover { border-color: var(--sage); color: var(--olive); background: rgba(125,158,117,0.08); }
     .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--olive-dark); color: var(--white); padding: 14px 28px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 9000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; white-space: nowrap; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     @media (max-width: 600px) { nav { padding: 18px 24px; } .card { padding: 22px 18px; } }
@@ -107,7 +119,7 @@
       </svg>
       SALAMA
     </a>
-    <a class="nav-back" href="storytelling.html">← Storytelling</a>
+    <a class="nav-back" href="index.html">← Back to Home</a>
   </nav>
 
   <div class="page">
@@ -119,9 +131,19 @@
       </div>
 
       <div class="header">
-        <p class="header-label">✍️ Share Your Story</p>
-        <h1 class="header-title">Write what's on<br>your <em>heart.</em></h1>
-        <p class="header-sub">Your story might be exactly what someone else needs to hear.</p>
+        <p class="header-label">✍️ Share Your Experience</p>
+        <h1 class="header-title">How has <em>Salama</em><br>been for you?</h1>
+        <p class="header-sub">Your experience might be exactly what someone else needs to hear. What brought you here, what helped, what changed — share as much or as little as you'd like.</p>
+      </div>
+
+      <div class="prompts-hint">
+        <p class="prompts-label">Some prompts to get you started</p>
+        <div class="prompts-row">
+          <span class="prompt-chip" onclick="usePrompt(this)">What brought me to Salama…</span>
+          <span class="prompt-chip" onclick="usePrompt(this)">Something that helped me…</span>
+          <span class="prompt-chip" onclick="usePrompt(this)">What I wish I'd known sooner…</span>
+          <span class="prompt-chip" onclick="usePrompt(this)">One thing that changed for me…</span>
+        </div>
       </div>
 
       <div class="card">
@@ -141,24 +163,23 @@
         </div>
 
         <div class="form-field">
-          <label class="form-label" for="story-body">Your story / thoughts / poem / letter</label>
-          <textarea class="form-textarea" id="story-body" placeholder="Write freely. There's no right or wrong way to share…"></textarea>
+          <label class="form-label" for="story-body">Your experience with Salama</label>
+          <textarea class="form-textarea" id="story-body" placeholder="Share your experience. What brought you here? What helped? What would you tell someone just starting out?"></textarea>
         </div>
 
         <div class="form-field">
-          <label class="form-label">Mood tag <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-light);font-size:11px;">(optional)</span></label>
+          <label class="form-label">How you're feeling <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-light);font-size:11px;">(optional)</span></label>
           <div class="mood-tags">
             <button class="mood-tag" onclick="toggleMood(this)">healing</button>
-            <button class="mood-tag" onclick="toggleMood(this)">lost</button>
             <button class="mood-tag" onclick="toggleMood(this)">grateful</button>
             <button class="mood-tag" onclick="toggleMood(this)">hopeful</button>
-            <button class="mood-tag" onclick="toggleMood(this)">anxious</button>
+            <button class="mood-tag" onclick="toggleMood(this)">still finding my way</button>
             <button class="mood-tag" onclick="toggleMood(this)">at peace</button>
             <button class="mood-tag" onclick="toggleMood(this)">reflective</button>
           </div>
         </div>
 
-        <p class="form-tagline">"Your story might be exactly what someone else needs to hear."</p>
+        <p class="form-tagline">"Your words could be the reason someone else keeps going."</p>
         <button class="btn-submit" onclick="submitStory()">Share your story →</button>
       </div>
 
@@ -168,6 +189,14 @@
   <div class="toast" id="toast"></div>
 
   <script>
+    function usePrompt(chip) {
+      const textarea = document.getElementById('story-body');
+      const text = chip.textContent;
+      textarea.value = textarea.value ? textarea.value + '\n\n' + text : text;
+      textarea.focus();
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    }
+
     let identity = 'anonymous';
     let selectedMood = '';
 

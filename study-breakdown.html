@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Break It Down | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #f5f0e8;
+      --cream-dark: #ece5d8;
+      --sage:       #7d9e75;
+      --sage-light: #c8d9c2;
+      --sage-mid:   #adc4a6;
+      --olive:      #4a6640;
+      --olive-dark: #374f31;
+      --text:       #2a2722;
+      --text-mid:   #5a5650;
+      --text-light: #8a8680;
+      --line:       #e4dbd0;
+      --paper:      #fdfbf7;
+      --miss:       #b85c38;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    .leaf { position: fixed; pointer-events: none; opacity: 0.15; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 200px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 180px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 120px; transform: rotate(38deg); }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 600; letter-spacing: 3px;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-back { font-size: 13px; color: var(--text-light); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+
+    .page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      padding: 110px 24px 80px;
+      display: flex; flex-direction: column; align-items: center; gap: 28px;
+    }
+
+    .page-header { text-align: center; max-width: 560px; }
+    .page-eyebrow {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 14px;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 4vw, 42px); font-weight: 500; line-height: 1.2;
+      color: var(--text); margin-bottom: 12px;
+    }
+    .page-title em { font-style: italic; color: var(--olive); }
+    .page-subtitle { font-size: 14px; color: var(--text-mid); line-height: 1.85; }
+
+    /* ─── CARD ─── */
+    .card {
+      width: min(700px, 100%);
+      background: rgba(255,252,248,0.92);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: 0 12px 40px rgba(60,50,40,0.07), 0 2px 0 rgba(255,255,255,0.9) inset;
+      backdrop-filter: blur(8px);
+      padding: 40px;
+    }
+
+    /* ─── STEP BADGE ─── */
+    .step-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px;
+      background: var(--cream);
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      font-size: 11.5px; font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 20px;
+    }
+    .step-badge span { color: var(--olive); }
+
+    .section-label {
+      font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--text-light); font-weight: 600; margin-bottom: 10px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%; padding: 16px 18px;
+      background: var(--cream);
+      border: 1.5px solid var(--line); border-radius: 14px;
+      font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6;
+      color: var(--text); outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus { border-color: var(--sage-mid); }
+    input[type="text"]::placeholder, textarea::placeholder { color: var(--text-light); }
+    textarea { resize: vertical; }
+
+    /* ─── BUTTONS ─── */
+    .btn-primary {
+      width: 100%; padding: 16px;
+      background: var(--olive); color: white;
+      border: none; border-radius: 14px;
+      font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
+    }
+    .btn-primary:hover { background: var(--olive-dark); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled {
+      background: var(--sage-light); cursor: not-allowed; transform: none;
+    }
+
+    .btn-row { display: flex; gap: 10px; }
+    .btn-secondary {
+      flex: 1; padding: 14px;
+      background: transparent; border: 1.5px solid var(--line); border-radius: 12px;
+      font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
+      color: var(--text-mid); cursor: pointer; transition: all 0.18s;
+    }
+    .btn-secondary:hover { border-color: var(--sage-mid); color: var(--text); }
+    .btn-add {
+      flex: 2; padding: 14px;
+      background: var(--olive); color: white; border: none; border-radius: 12px;
+      font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .btn-add:hover { background: var(--olive-dark); }
+    .btn-done-plan {
+      width: 100%; padding: 15px;
+      background: transparent; border: 1.5px solid var(--olive); border-radius: 12px;
+      font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
+      color: var(--olive); cursor: pointer; transition: all 0.18s;
+    }
+    .btn-done-plan:hover { background: var(--olive); color: white; }
+    .btn-done-plan:disabled {
+      border-color: var(--line); color: var(--text-light); cursor: not-allowed;
+    }
+
+    /* ─── TASK DISPLAY ─── */
+    .task-display {
+      padding: 14px 18px;
+      background: rgba(74,102,64,0.06);
+      border: 1px solid rgba(74,102,64,0.18);
+      border-radius: 12px;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .task-display-icon {
+      font-size: 16px; line-height: 1; flex-shrink: 0; margin-top: 1px;
+    }
+    .task-display-text {
+      font-size: 14px; font-weight: 600; color: var(--olive-dark); line-height: 1.5;
+    }
+
+    /* ─── PROMPT BOX ─── */
+    .prompt-box {
+      padding: 18px 20px;
+      background: var(--cream);
+      border: 1.5px solid var(--line);
+      border-radius: 16px;
+      position: relative;
+    }
+    .prompt-num {
+      font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase;
+      font-weight: 700; color: var(--sage); margin-bottom: 8px;
+    }
+    .prompt-question {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px; font-weight: 500; color: var(--text);
+      line-height: 1.5;
+    }
+    .prompt-hint {
+      margin-top: 8px;
+      font-size: 12px; color: var(--text-light); line-height: 1.6;
+    }
+
+    /* ─── STEP INPUT AREA ─── */
+    .step-input-wrap { position: relative; }
+    .step-counter-badge {
+      position: absolute; top: -10px; left: 16px;
+      background: var(--olive); color: white;
+      font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      padding: 3px 10px; border-radius: 99px;
+      text-transform: uppercase;
+    }
+
+    /* ─── STEP LIST ─── */
+    .step-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .step-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 16px;
+      background: var(--cream);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      animation: stepIn 0.35s cubic-bezier(0.4,0,0.2,1) both;
+      position: relative;
+    }
+    @keyframes stepIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+      to   { opacity: 1; transform: none; }
+    }
+    .step-num {
+      width: 24px; height: 24px; flex-shrink: 0;
+      background: var(--olive); color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .step-text {
+      font-size: 13.5px; color: var(--text); line-height: 1.55; flex: 1;
+      padding-top: 2px;
+    }
+    .step-delete {
+      background: none; border: none;
+      color: var(--text-light); cursor: pointer;
+      font-size: 14px; line-height: 1; padding: 2px 4px;
+      border-radius: 4px; transition: color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+    .step-delete:hover { color: var(--miss); background: rgba(184,92,56,0.07); }
+
+    /* Done plan checklist */
+    .plan-step {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 16px;
+      background: var(--cream);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s;
+    }
+    .plan-step:hover { border-color: var(--sage-mid); }
+    .plan-step.checked {
+      background: rgba(125,158,117,0.07);
+      border-color: rgba(125,158,117,0.3);
+    }
+    .plan-step.checked .plan-step-text {
+      color: var(--text-light);
+      text-decoration: line-through;
+      text-decoration-color: var(--sage-mid);
+    }
+    .plan-checkbox {
+      width: 22px; height: 22px; flex-shrink: 0;
+      border: 2px solid var(--line);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.18s;
+      margin-top: 1px;
+    }
+    .plan-step.checked .plan-checkbox {
+      background: var(--sage);
+      border-color: var(--sage);
+    }
+    .plan-checkbox-tick {
+      opacity: 0; color: white; font-size: 12px; font-weight: 700;
+      transition: opacity 0.15s;
+    }
+    .plan-step.checked .plan-checkbox-tick { opacity: 1; }
+    .plan-step-num {
+      font-size: 10.5px; font-weight: 700; color: var(--text-light);
+      min-width: 18px; padding-top: 3px;
+    }
+    .plan-step-text {
+      font-size: 13.5px; color: var(--text); line-height: 1.55; flex: 1;
+      padding-top: 1px; transition: color 0.18s;
+    }
+
+    /* Progress bar */
+    .progress-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .progress-label-row {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .progress-label { font-size: 12px; color: var(--text-light); }
+    .progress-count { font-size: 12px; font-weight: 600; color: var(--olive); }
+    .progress-bar {
+      height: 4px; background: var(--line); border-radius: 99px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--sage);
+      border-radius: 99px;
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* Hint line */
+    .inline-hint {
+      font-size: 12px; color: var(--miss); padding: 0 2px;
+      min-height: 18px;
+      transition: opacity 0.2s;
+    }
+
+    /* Step count display in builder */
+    .steps-so-far-label {
+      font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--text-light); font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .steps-so-far-label .count-badge {
+      background: var(--olive);
+      color: white; font-size: 10px; font-weight: 700;
+      padding: 1px 7px; border-radius: 99px;
+    }
+
+    /* Copy button */
+    .btn-copy {
+      width: 100%; padding: 12px;
+      background: transparent; border: 1.5px solid var(--line); border-radius: 12px;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--text-mid); cursor: pointer; transition: all 0.18s;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .btn-copy:hover { border-color: var(--sage-mid); color: var(--text); }
+    .btn-copy.copied { border-color: var(--sage); color: var(--olive); }
+
+    .divider { height: 1px; background: var(--line); margin: 4px 0; }
+
+    /* Completion celebration */
+    .completion-banner {
+      padding: 16px 20px;
+      background: rgba(125,158,117,0.1);
+      border: 1px solid rgba(125,158,117,0.28);
+      border-radius: 14px;
+      text-align: center;
+    }
+    .completion-banner-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px; font-weight: 500; color: var(--olive-dark);
+      margin-bottom: 4px;
+    }
+    .completion-banner-sub {
+      font-size: 12.5px; color: var(--text-mid);
+    }
+
+    /* Fade in */
+    .fade-in {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .fade-in.visible { opacity: 1; transform: none; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-5px); }
+      40%       { transform: translateX(5px); }
+      60%       { transform: translateX(-3px); }
+      80%       { transform: translateX(3px); }
+    }
+    .shake { animation: shake 0.35s ease; }
+
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      .card { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+
+  <nav>
+    <a href="index.html" class="nav-logo">SALAMA</a>
+    <a href="study.html" class="nav-back">← Back to Study</a>
+  </nav>
+
+  <main class="page">
+
+    <header class="page-header fade-in">
+      <p class="page-eyebrow">Study Tools</p>
+      <h1 class="page-title"><em>Break It Down</em></h1>
+      <p class="page-subtitle">Name your big task. Then we'll walk you through breaking it into small, doable steps, one question at a time.</p>
+    </header>
+
+    <div class="card fade-in">
+
+      <!-- ── PHASE 1: TASK INPUT ── -->
+      <div id="phase1" style="display:flex; flex-direction:column; gap:20px;">
+        <div class="step-badge">Step <span>1 of 2</span>: Name your task</div>
+
+        <div>
+          <p class="section-label">What's the big task?</p>
+          <input type="text" id="taskInput"
+            placeholder="e.g. Write my psychology essay, Study for the biology exam…"
+            maxlength="140"
+            onkeydown="if(event.key==='Enter') startBreakdown()" />
+        </div>
+
+        <button class="btn-primary" onclick="startBreakdown()">Start Breaking It Down →</button>
+      </div>
+
+      <!-- ── PHASE 2: BUILDER ── -->
+      <div id="phase2" style="display:none; flex-direction:column; gap:22px;">
+        <div class="step-badge">Step <span>2 of 2</span>: Build your plan</div>
+
+        <!-- Task reminder -->
+        <div class="task-display">
+          <span class="task-display-icon">📋</span>
+          <span class="task-display-text" id="taskDisplayText"></span>
+        </div>
+
+        <!-- Guided prompt -->
+        <div class="prompt-box">
+          <p class="prompt-num" id="promptNum">Step 1</p>
+          <p class="prompt-question" id="promptQuestion"></p>
+          <p class="prompt-hint" id="promptHint"></p>
+        </div>
+
+        <!-- Step input -->
+        <div>
+          <div class="step-input-wrap">
+            <span class="step-counter-badge" id="stepCounterBadge">Step 1</span>
+            <input type="text" id="stepInput"
+              placeholder="Write your step here…"
+              maxlength="200"
+              style="padding-top: 22px;"
+              onkeydown="if(event.key==='Enter') addStep()" />
+          </div>
+          <p class="inline-hint" id="stepHint" style="margin-top:6px;"></p>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="skipStep()">Skip</button>
+          <button class="btn-add" onclick="addStep()">Add Step →</button>
+        </div>
+
+        <!-- Steps so far -->
+        <div id="stepsSoFarSection" style="display:none; flex-direction:column; gap:12px;">
+          <div class="divider"></div>
+          <div class="steps-so-far-label">
+            Steps so far <span class="count-badge" id="stepsCountBadge">0</span>
+          </div>
+          <div class="step-list" id="stepList"></div>
+          <button class="btn-done-plan" id="donePlanBtn" onclick="showPlan()" disabled>
+            My plan is complete. Show it →
+          </button>
+        </div>
+      </div>
+
+      <!-- ── PHASE 3: PLAN ── -->
+      <div id="phase3" style="display:none; flex-direction:column; gap:22px;">
+
+        <div class="task-display">
+          <span class="task-display-icon">📋</span>
+          <span class="task-display-text" id="planTaskTitle"></span>
+        </div>
+
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-label-row">
+            <span class="progress-label">Progress</span>
+            <span class="progress-count" id="progressCount">0 / 0 done</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="step-list" id="planList"></div>
+
+        <div class="divider"></div>
+
+        <button class="btn-copy" id="copyBtn" onclick="copyPlan()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy plan as text
+        </button>
+
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="goBackToBuilder()">Add more steps</button>
+          <button class="btn-add" onclick="startOver()">Start fresh</button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // ─── STATE ────────────────────────────────────────────────────────
+    let taskText = '';
+    let steps    = [];   // array of { text, checked }
+
+    // ─── PROMPTS ─────────────────────────────────────────────────────
+    const PROMPTS = [
+      {
+        question: "What's the very first physical action you'd need to take?",
+        hint:     "Think of one concrete action: open a file, gather materials, go somewhere. Not 'research', but what exactly would you do?"
+      },
+      {
+        question: "What comes right after that first step?",
+        hint:     "Imagine you've just done step 1. What's the next thing your hands or body would do?"
+      },
+      {
+        question: "Is there anything you'd need to prepare or gather before going further?",
+        hint:     "Materials, information, a quiet space. Anything that needs to be in place?"
+      },
+      {
+        question: "What would you actually do next?",
+        hint:     "Keep it specific. A good step takes under 10–15 minutes and has a clear endpoint."
+      },
+      {
+        question: "What's the step after that?",
+        hint:     "You're building momentum. Keep going. Each step should feel manageable on its own."
+      },
+      {
+        question: "Is there a tricky or unclear part coming up?",
+        hint:     "If something feels fuzzy, break it into smaller pieces now rather than getting stuck later."
+      },
+      {
+        question: "What else needs to happen to finish this task?",
+        hint:     "Think about the end. What's standing between you and 'done'?"
+      },
+      {
+        question: "Any final step that wraps everything up?",
+        hint:     "Review, submit, send, save. What's the last thing that marks this task as complete?"
+      }
+    ];
+
+    function getPrompt(idx) {
+      return PROMPTS[Math.min(idx, PROMPTS.length - 1)];
+    }
+
+    // ─── ESCAPE ───────────────────────────────────────────────────────
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;');
+    }
+
+    // ─── PHASE 1 → 2 ─────────────────────────────────────────────────
+    function startBreakdown() {
+      const val = document.getElementById('taskInput').value.trim();
+      if (!val) {
+        shake(document.getElementById('taskInput'));
+        return;
+      }
+      taskText = val;
+      steps    = [];
+
+      document.getElementById('taskDisplayText').textContent = taskText;
+      updatePrompt();
+      updateStepList();
+      setPhase('phase2');
+      document.getElementById('stepInput').focus();
+    }
+
+    // ─── ADD STEP ────────────────────────────────────────────────────
+    function addStep() {
+      const input = document.getElementById('stepInput');
+      const val   = input.value.trim();
+      if (!val) {
+        shake(input);
+        return;
+      }
+
+      // Hint if step is very long
+      const hint = document.getElementById('stepHint');
+      hint.textContent = '';
+
+      steps.push({ text: val, checked: false });
+      input.value = '';
+
+      updatePrompt();
+      updateStepList();
+      input.focus();
+    }
+
+    // ─── SKIP STEP ───────────────────────────────────────────────────
+    function skipStep() {
+      if (steps.length < 2) {
+        const hint = document.getElementById('stepHint');
+        hint.textContent = 'Add at least one step before skipping.';
+        return;
+      }
+      showPlan();
+    }
+
+    // ─── UPDATE PROMPT ───────────────────────────────────────────────
+    function updatePrompt() {
+      const idx      = steps.length;
+      const p        = getPrompt(idx);
+      const stepNum  = idx + 1;
+
+      document.getElementById('promptNum').textContent      = 'Step ' + stepNum;
+      document.getElementById('promptQuestion').textContent = p.question;
+      document.getElementById('promptHint').textContent     = p.hint;
+      document.getElementById('stepCounterBadge').textContent = 'Step ' + stepNum;
+    }
+
+    // ─── UPDATE STEP LIST ────────────────────────────────────────────
+    function updateStepList() {
+      const listEl   = document.getElementById('stepList');
+      const section  = document.getElementById('stepsSoFarSection');
+      const countBdg = document.getElementById('stepsCountBadge');
+      const doneBtn  = document.getElementById('donePlanBtn');
+
+      listEl.innerHTML = '';
+
+      if (steps.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'flex';
+      countBdg.textContent  = steps.length;
+      doneBtn.disabled      = steps.length < 2;
+
+      steps.forEach((s, i) => {
+        const item = document.createElement('div');
+        item.className = 'step-item';
+        item.innerHTML = `
+          <div class="step-num">${i + 1}</div>
+          <span class="step-text">${escapeHtml(s.text)}</span>
+          <button class="step-delete" onclick="deleteStep(${i})" title="Remove step">✕</button>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    // ─── DELETE STEP ─────────────────────────────────────────────────
+    function deleteStep(idx) {
+      steps.splice(idx, 1);
+      updatePrompt();
+      updateStepList();
+    }
+
+    // ─── SHOW PLAN ───────────────────────────────────────────────────
+    function showPlan() {
+      if (steps.length < 2) return;
+
+      document.getElementById('planTaskTitle').textContent = taskText;
+      renderPlanList();
+      updateProgress();
+      setPhase('phase3');
+    }
+
+    function renderPlanList() {
+      const listEl = document.getElementById('planList');
+      listEl.innerHTML = '';
+      steps.forEach((s, i) => {
+        const item = document.createElement('div');
+        item.className = 'plan-step' + (s.checked ? ' checked' : '');
+        item.id        = 'planStep' + i;
+        item.onclick   = () => toggleStep(i);
+        item.innerHTML = `
+          <div class="plan-checkbox">
+            <span class="plan-checkbox-tick">✓</span>
+          </div>
+          <span class="plan-step-num">${i + 1}.</span>
+          <span class="plan-step-text">${escapeHtml(s.text)}</span>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function toggleStep(idx) {
+      steps[idx].checked = !steps[idx].checked;
+      const el = document.getElementById('planStep' + idx);
+      if (el) el.classList.toggle('checked', steps[idx].checked);
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const done  = steps.filter(s => s.checked).length;
+      const total = steps.length;
+      const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
+
+      document.getElementById('progressCount').textContent = done + ' / ' + total + ' done';
+      document.getElementById('progressFill').style.width  = pct + '%';
+    }
+
+    // ─── COPY PLAN ───────────────────────────────────────────────────
+    function copyPlan() {
+      const lines = ['Task: ' + taskText, ''];
+      steps.forEach((s, i) => {
+        lines.push((i + 1) + '. ' + s.text);
+      });
+      const text = lines.join('\n');
+
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy plan as text`;
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    // ─── BACK TO BUILDER ─────────────────────────────────────────────
+    function goBackToBuilder() {
+      updatePrompt();
+      updateStepList();
+      setPhase('phase2');
+      setTimeout(() => document.getElementById('stepInput').focus(), 50);
+    }
+
+    // ─── START OVER ──────────────────────────────────────────────────
+    function startOver() {
+      taskText = '';
+      steps    = [];
+      document.getElementById('taskInput').value = '';
+      setPhase('phase1');
+      setTimeout(() => document.getElementById('taskInput').focus(), 50);
+    }
+
+    // ─── PHASE SWITCH ────────────────────────────────────────────────
+    function setPhase(id) {
+      ['phase1','phase2','phase3'].forEach(p => {
+        const el = document.getElementById(p);
+        el.style.display = (p === id) ? 'flex' : 'none';
+        if (p === id) el.style.flexDirection = 'column';
+      });
+    }
+
+    // ─── SHAKE ───────────────────────────────────────────────────────
+    function shake(el) {
+      el.classList.remove('shake');
+      void el.offsetWidth;
+      el.classList.add('shake');
+      el.addEventListener('animationend', () => el.classList.remove('shake'), { once: true });
+    }
+
+    // ─── STEP INPUT HINT ─────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      const stepInput = document.getElementById('stepInput');
+      if (stepInput) {
+        stepInput.addEventListener('input', () => {
+          const hint = document.getElementById('stepHint');
+          const val  = stepInput.value.trim();
+          if (val.length > 90) {
+            hint.textContent = 'This step sounds big. Could you split it into two?';
+          } else {
+            hint.textContent = '';
+          }
+        });
+      }
+    });
+
+    // ─── FADE IN ─────────────────────────────────────────────────────
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

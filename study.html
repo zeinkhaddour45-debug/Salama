@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Support & Focus | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:       #f5f0e8;
+      --cream-dark:  #ece5d8;
+      --sage:        #7d9e75;
+      --sage-light:  #adc4a6;
+      --olive:       #4a6640;
+      --olive-dark:  #374f31;
+      --text:        #2a2722;
+      --text-mid:    #5a5650;
+      --text-light:  #8a8680;
+      --white:       #ffffff;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245, 240, 232, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .nav-back {
+      font-size: 14px;
+      color: var(--text-mid);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+
+    .leaf { position: fixed; pointer-events: none; opacity: 0.18; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 220px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 190px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 130px; transform: rotate(38deg); }
+
+    .hero {
+      padding: 148px 60px 60px;
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 600;
+      line-height: 1.12;
+      color: var(--text);
+      margin-bottom: 18px;
+    }
+    .hero-title em { font-style: italic; color: var(--olive); }
+    .hero-sub {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 1.75;
+      max-width: 560px;
+    }
+
+    /* Intro block */
+    .intro-section {
+      padding: 0 60px 60px;
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .intro-card {
+      background: #fff;
+      border: 2px solid rgba(74,102,64,0.2);
+      border-radius: 20px;
+      padding: 40px 48px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .intro-card p {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 1.85;
+      margin-bottom: 16px;
+    }
+    .intro-card p:last-child { margin-bottom: 0; }
+    .intro-card strong { color: var(--olive); font-weight: 600; }
+
+    /* Techniques section */
+    .techniques-section {
+      padding: 0 60px 100px;
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 32px;
+    }
+    .techniques-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .technique-card {
+      background: #fff;
+      border: 2px solid rgba(74,102,64,0.2);
+      border-radius: 16px;
+      padding: 28px 32px;
+      box-shadow: 0 3px 14px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .technique-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.09);
+      border-color: rgba(74,102,64,0.45);
+    }
+    .technique-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .technique-emoji {
+      font-size: 28px;
+      width: 52px;
+      height: 52px;
+      background: rgba(74,102,64,0.07);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .technique-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .technique-steps {
+      list-style: none;
+      margin-bottom: 14px;
+    }
+    .technique-steps li {
+      font-size: 13px;
+      color: var(--text-mid);
+      padding: 4px 0;
+      padding-left: 16px;
+      position: relative;
+      line-height: 1.6;
+    }
+    .technique-steps li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 11px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--sage);
+    }
+    .technique-quote {
+      font-size: 13px;
+      color: var(--olive);
+      font-style: italic;
+      font-weight: 500;
+      border-left: 2.5px solid rgba(74,102,64,0.3);
+      padding-left: 12px;
+      line-height: 1.6;
+    }
+
+    .fade-in { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      nav { padding: 18px 24px; }
+      .hero { padding: 130px 24px 40px; }
+      .intro-section { padding: 0 24px 40px; }
+      .intro-card { padding: 28px 24px; }
+      .techniques-section { padding: 0 24px 80px; }
+      .techniques-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 155 C80 145 44 156 24 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 155 C120 145 156 156 176 180" stroke="#4a6640" stroke-width="1.5" opacity="0.75"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 275 C100 275 28 205 28 130 C28 62 64 16 100 16 C136 16 172 62 172 130 C172 205 100 275 100 275Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.32)"/>
+    <path d="M100 275 L100 16" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 85 C82 75 56 83 40 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 85 C118 75 144 83 160 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <a class="nav-back" href="index.html">← Back to Home</a>
+  </nav>
+
+  <div class="hero fade-in">
+    <p class="hero-label">Study Support & Focus</p>
+    <h1 class="hero-title">Your mind is strong.<br>Give it the <em>care it deserves.</em></h1>
+    <p class="hero-sub">Explore simple, effective study techniques designed to help you focus, stay consistent, and reduce overwhelm while taking care of your mental well-being.</p>
+  </div>
+
+  <section class="intro-section fade-in">
+    <div class="intro-card">
+      <p>Studying can feel heavy. Deadlines stack up, focus slips, and sometimes it is hard to even know where to begin. That pressure is real, and it is okay to feel it.</p>
+      <p>But here is something worth knowing: <strong>how you study matters just as much as how much you study.</strong> Taking care of your mind is not a distraction from your goals. It is the foundation of them.</p>
+      <p>These techniques are not about pushing harder. They are about working with your mind, not against it. Start small. Be patient with yourself. <strong>You can do this.</strong></p>
+    </div>
+  </section>
+
+  <section class="techniques-section">
+    <p class="section-label fade-in">Core Techniques</p>
+    <h2 class="section-title fade-in">Study Techniques & Focus</h2>
+
+    <div class="techniques-grid">
+
+      <a class="technique-card fade-in" href="study-pomodoro.html" style="text-decoration:none;color:inherit;display:block;">
+        <div class="technique-top">
+          <div class="technique-emoji">⏱️</div>
+          <p class="technique-name">Pomodoro Technique</p>
+        </div>
+        <ul class="technique-steps">
+          <li>Study for 25 minutes</li>
+          <li>Take a 5-minute break</li>
+          <li>After 4 cycles, take a longer break</li>
+        </ul>
+        <p class="technique-quote">Focus in short bursts to avoid burnout and keep your mind fresh.</p>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--olive);margin-top:14px;">Start timer <span>→</span></span>
+      </a>
+
+      <a class="technique-card fade-in" href="study-5min.html" style="text-decoration:none;color:inherit;display:block;">
+        <div class="technique-top">
+          <div class="technique-emoji">🧩</div>
+          <p class="technique-name">The 5-Minute Start</p>
+        </div>
+        <ul class="technique-steps">
+          <li>Commit to just 5 minutes of work</li>
+          <li>Once you start, it becomes easier to continue</li>
+        </ul>
+        <p class="technique-quote">Starting is often the hardest part. Make it smaller.</p>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--olive);margin-top:14px;">Start timer <span>→</span></span>
+      </a>
+
+      <a class="technique-card fade-in" href="study-onetask.html" style="text-decoration:none;color:inherit;display:block;">
+        <div class="technique-top">
+          <div class="technique-emoji">🎯</div>
+          <p class="technique-name">One Task Only</p>
+        </div>
+        <ul class="technique-steps">
+          <li>No multitasking</li>
+          <li>Choose ONE thing and do only that</li>
+        </ul>
+        <p class="technique-quote">Clarity reduces overwhelm.</p>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--olive);margin-top:14px;">Clear the noise <span>→</span></span>
+      </a>
+
+      <a class="technique-card fade-in" href="study-recall.html" style="text-decoration:none;color:inherit;display:block;">
+        <div class="technique-top">
+          <div class="technique-emoji">📝</div>
+          <p class="technique-name">Active Recall</p>
+        </div>
+        <ul class="technique-steps">
+          <li>Test yourself instead of rereading</li>
+          <li>Ask yourself questions</li>
+          <li>Write the answers from memory</li>
+        </ul>
+        <p class="technique-quote">Your brain learns better when it actively retrieves information.</p>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--olive);margin-top:14px;">Start quiz <span>→</span></span>
+      </a>
+
+      <a class="technique-card fade-in" href="study-spaced.html" style="text-decoration:none;color:inherit;display:block;">
+        <div class="technique-top">
+          <div class="technique-emoji">🔁</div>
+          <p class="technique-name">Spaced Repetition</p>
+        </div>
+        <ul class="technique-steps">
+          <li>Review material over time instead of cramming</li>
+          <li>Revisit topics after 1 day, 3 days, 1 week</li>
+        </ul>
+        <p class="technique-quote">Repetition over time helps information stick.</p>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--olive);margin-top:14px;">Generate cards <span>→</span></span>
+      </a>
+
+      <a class="technique-card fade-in" href="study-blurting.html" style="text-decoration:none;color:inherit;display:block;">
+        <div class="technique-top">
+          <div class="technique-emoji">🧠</div>
+          <p class="technique-name">Blurting Method</p>
+        </div>
+        <ul class="technique-steps">
+          <li>Read your notes or a topic</li>
+          <li>Close everything</li>
+          <li>Write down everything you remember</li>
+        </ul>
+        <p class="technique-quote">It shows what you truly understand.</p>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--olive);margin-top:14px;">Try it →</span>
+      </a>
+
+      <a href="study-breakdown.html" style="text-decoration:none;color:inherit;" class="technique-card fade-in">
+        <div class="technique-top">
+          <div class="technique-emoji">📋</div>
+          <p class="technique-name">Break It Down</p>
+        </div>
+        <ul class="technique-steps">
+          <li>Take one big task</li>
+          <li>Break it into tiny, specific steps</li>
+          <li>Do just the first step</li>
+        </ul>
+        <p class="technique-quote">Small steps make big tasks manageable.</p>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--olive);margin-top:14px;">Try it →</span>
+      </a>
+
+      <a href="study-reset.html" style="text-decoration:none;color:inherit;" class="technique-card fade-in">
+        <div class="technique-top">
+          <div class="technique-emoji">🧘</div>
+          <p class="technique-name">Study + Reset Cycle</p>
+        </div>
+        <ul class="technique-steps">
+          <li>Study for a focused block</li>
+          <li>Pause and breathe intentionally</li>
+          <li>Then continue</li>
+        </ul>
+        <p class="technique-quote">A calm mind focuses better.</p>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--olive);margin-top:14px;">Try it →</span>
+      </a>
+
+    </div>
+  </section>
+
+  <script>
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blurting Method | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #f5f0e8;
+      --cream-dark: #ece5d8;
+      --sage:       #7d9e75;
+      --sage-light: #c8d9c2;
+      --sage-mid:   #adc4a6;
+      --olive:      #4a6640;
+      --olive-dark: #374f31;
+      --text:       #2a2722;
+      --text-mid:   #5a5650;
+      --text-light: #8a8680;
+      --line:       #e4dbd0;
+      --paper:      #fdfbf7;
+      --miss:       #b85c38;
+      --miss-bg:    rgba(184,92,56,0.07);
+      --miss-border:rgba(184,92,56,0.22);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    .leaf { position: fixed; pointer-events: none; opacity: 0.15; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 200px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 180px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 120px; transform: rotate(38deg); }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 600; letter-spacing: 3px;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-back { font-size: 13px; color: var(--text-light); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+
+    .page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      padding: 110px 24px 80px;
+      display: flex; flex-direction: column; align-items: center; gap: 28px;
+    }
+
+    .page-header { text-align: center; max-width: 560px; }
+    .page-eyebrow {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 14px;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 4vw, 42px); font-weight: 500; line-height: 1.2;
+      color: var(--text); margin-bottom: 12px;
+    }
+    .page-title em { font-style: italic; color: var(--olive); }
+    .page-subtitle { font-size: 14px; color: var(--text-mid); line-height: 1.85; }
+
+    /* ─── CARD ─── */
+    .card {
+      width: min(700px, 100%);
+      background: rgba(255,252,248,0.92);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: 0 12px 40px rgba(60,50,40,0.07), 0 2px 0 rgba(255,255,255,0.9) inset;
+      backdrop-filter: blur(8px);
+      padding: 40px;
+    }
+
+    /* ─── STEP BADGE ─── */
+    .step-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px;
+      background: var(--cream);
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      font-size: 11.5px; font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 20px;
+    }
+    .step-badge span { color: var(--olive); }
+
+    .section-label {
+      font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--text-light); font-weight: 600; margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 100%; padding: 16px 18px;
+      background: var(--cream);
+      border: 1.5px solid var(--line); border-radius: 14px;
+      font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.75;
+      color: var(--text); resize: vertical; outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { border-color: var(--sage-mid); }
+    textarea::placeholder { color: var(--text-light); }
+
+    /* Notes preview (phase 2, read only) */
+    .notes-preview {
+      width: 100%;
+      padding: 16px 18px;
+      background: var(--cream);
+      border: 1.5px solid var(--line); border-radius: 14px;
+      font-size: 13.5px; line-height: 1.75; color: var(--text-mid);
+      max-height: 180px; overflow-y: auto;
+      white-space: pre-wrap;
+      filter: blur(6px);
+      user-select: none;
+      pointer-events: none;
+      transition: filter 0.4s;
+      position: relative;
+    }
+    .notes-preview-wrap {
+      position: relative;
+    }
+    .notes-blur-label {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: var(--text-mid);
+      letter-spacing: 0.5px;
+      pointer-events: none;
+    }
+
+    /* Timer */
+    .timer-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .timer-display {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 500;
+      color: var(--text-light);
+      letter-spacing: 1px;
+      min-width: 56px;
+    }
+    .timer-label { font-size: 12px; color: var(--text-light); }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%; padding: 16px;
+      background: var(--olive); color: white;
+      border: none; border-radius: 14px;
+      font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
+    }
+    .btn-primary:hover { background: var(--olive-dark); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-row { display: flex; gap: 10px; }
+    .btn-secondary {
+      flex: 1; padding: 14px;
+      background: transparent; border: 1.5px solid var(--line); border-radius: 12px;
+      font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
+      color: var(--text-mid); cursor: pointer; transition: all 0.18s;
+    }
+    .btn-secondary:hover { border-color: var(--sage-mid); color: var(--text); }
+    .btn-done {
+      flex: 2; padding: 14px;
+      background: var(--olive); color: white; border: none; border-radius: 12px;
+      font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .btn-done:hover { background: var(--olive-dark); }
+
+    /* ─── RESULTS ─── */
+    .score-ring-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .score-ring {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: conic-gradient(var(--olive) calc(var(--pct, 0) * 1%), rgba(74,102,64,0.1) 0);
+      mask: radial-gradient(circle at center, transparent 68%, black 69%);
+      -webkit-mask: radial-gradient(circle at center, transparent 68%, black 69%);
+      display: grid; place-items: center;
+      transition: background 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+    .score-inner {
+      width: 68%; height: 68%;
+      background: var(--paper);
+      border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .score-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 600; color: var(--olive);
+      line-height: 1;
+    }
+    .score-denom { font-size: 11px; color: var(--text-light); font-weight: 600; }
+    .score-label { font-size: 13px; color: var(--text-mid); font-weight: 500; }
+
+    .results-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .results-col { display: flex; flex-direction: column; gap: 10px; }
+    .results-col-title {
+      font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      font-weight: 600;
+    }
+    .results-col-title.got { color: var(--olive); }
+    .results-col-title.missed { color: var(--miss); }
+
+    .term-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 11px; border-radius: 99px;
+      font-size: 12px; font-weight: 500;
+      animation: chipIn 0.3s cubic-bezier(0.4,0,0.2,1) both;
+    }
+    .chip.got {
+      background: rgba(125,158,117,0.12);
+      border: 1px solid rgba(125,158,117,0.28);
+      color: var(--olive);
+    }
+    .chip.missed {
+      background: var(--miss-bg);
+      border: 1px solid var(--miss-border);
+      color: var(--miss);
+    }
+    @keyframes chipIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Highlighted blurt */
+    .blurt-review {
+      padding: 16px 18px;
+      background: var(--cream);
+      border: 1.5px solid var(--line); border-radius: 14px;
+      font-size: 13.5px; line-height: 1.85; color: var(--text-mid);
+      white-space: pre-wrap;
+    }
+    .blurt-review mark {
+      background: rgba(125,158,117,0.22);
+      color: var(--olive-dark);
+      border-radius: 3px;
+      padding: 0 2px;
+      font-weight: 500;
+    }
+
+    .divider {
+      height: 1px; background: var(--line); margin: 4px 0;
+    }
+
+    /* Empty state */
+    .empty-chips {
+      font-size: 13px; color: var(--text-light); font-style: italic;
+    }
+
+    /* Fade in */
+    .fade-in {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .fade-in.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      .card { padding: 28px 20px; }
+      .results-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+
+  <nav>
+    <a href="index.html" class="nav-logo">SALAMA</a>
+    <a href="study.html" class="nav-back">← Back to Study</a>
+  </nav>
+
+  <main class="page">
+
+    <header class="page-header fade-in">
+      <p class="page-eyebrow">Study Tools</p>
+      <h1 class="page-title">The <em>Blurting</em> Method</h1>
+      <p class="page-subtitle">Paste your notes. Then hide them and write everything you remember.<br>We'll show you what you got and what slipped away.</p>
+    </header>
+
+    <div class="card fade-in">
+
+      <!-- ── PHASE 1: NOTES ── -->
+      <div id="phase1">
+        <div class="step-badge">Step <span>1 of 2</span>: Load your notes</div>
+        <p class="section-label">Your Notes</p>
+        <textarea id="notesInput" rows="10" placeholder="Paste your notes here. Any format works: bullet points, paragraphs, definitions. The more specific, the better your keyword match will be."></textarea>
+        <div style="margin-top: 18px;">
+          <button class="btn-primary" onclick="startBlurt()">Hide Notes & Start Blurting</button>
+        </div>
+      </div>
+
+      <!-- ── PHASE 2: BLURT ── -->
+      <div id="phase2" style="display:none; flex-direction:column; gap:20px;">
+        <div class="step-badge">Step <span>2 of 2</span>: Blurt everything you remember</div>
+
+        <div>
+          <p class="section-label" style="margin-bottom:8px;">Your Notes (hidden)</p>
+          <div class="notes-preview-wrap">
+            <div class="notes-preview" id="notesPreview"></div>
+            <div class="notes-blur-label">Notes are hidden. No peeking.</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <p class="section-label" style="margin-bottom:0;">Write everything you remember</p>
+            <div class="timer-row">
+              <span class="timer-display" id="timerDisplay">0:00</span>
+              <span class="timer-label">elapsed</span>
+            </div>
+          </div>
+          <textarea id="blurtInput" rows="10" placeholder="Don't look back. Just write. Get every concept, term, and idea out of your head, in any order, any wording."></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="backToNotes()">← Start over</button>
+          <button class="btn-done" onclick="showResults()">I'm done, show results</button>
+        </div>
+      </div>
+
+      <!-- ── PHASE 3: RESULTS ── -->
+      <div id="phase3" style="display:none; flex-direction:column; gap:24px;">
+
+        <div class="score-ring-wrap">
+          <div class="score-ring" id="scoreRing">
+            <div class="score-inner">
+              <span class="score-num" id="scoreNum">0</span>
+              <span class="score-denom" id="scoreDenom">of 0</span>
+            </div>
+          </div>
+          <span class="score-label" id="scoreLabel">key terms recalled</span>
+        </div>
+
+        <div class="results-grid">
+          <div class="results-col">
+            <p class="results-col-title got">You got</p>
+            <div class="term-chips" id="gotChips"></div>
+          </div>
+          <div class="results-col">
+            <p class="results-col-title missed">You missed</p>
+            <div class="term-chips" id="missedChips"></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div>
+          <p class="section-label" style="margin-bottom:10px;">Your blurt <span style="color:var(--sage);font-size:10px;letter-spacing:1px;">matched terms highlighted</span></p>
+          <div class="blurt-review" id="blurtReview"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="tryAgain()">Blurt again</button>
+          <button class="btn-done" onclick="backToNotes()">New notes</button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    let notesText = '';
+    let keyTerms  = [];
+    let timerInterval = null;
+    let elapsed = 0;
+
+    // ─── STOP WORDS ──────────────────────────────────────────────────
+    const STOP = new Set(['the','a','an','is','are','was','were','be','been','being',
+      'have','has','had','do','does','did','will','would','could','should','may','might',
+      'shall','can','to','of','in','on','at','by','for','with','about','against',
+      'between','into','through','during','before','after','above','below','from',
+      'up','down','out','off','over','under','again','then','once','and','but','or',
+      'nor','so','yet','both','either','neither','not','only','own','same','than',
+      'too','very','just','as','it','its','this','that','these','those','i','me',
+      'my','we','our','you','your','he','she','they','them','his','her','their',
+      'what','which','who','when','where','why','how','all','each','every','few',
+      'more','most','other','some','such','also','used','use','using','can','like',
+      'one','two','three','four','five','first','second','third','new','many',
+      'often','well','made','make','take','taken','found','called','known']);
+
+    // ─── EXTRACT TERMS ───────────────────────────────────────────────
+    function extractKeyTerms(text) {
+      const terms = [];
+      const seen  = new Set();
+
+      function add(raw) {
+        const t = raw.replace(/\*\*/g,'').replace(/^#+\s*/,'').trim();
+        const key = t.toLowerCase();
+        if (t.length < 3 || seen.has(key) || STOP.has(key)) return;
+        seen.add(key);
+        terms.push(t);
+      }
+
+      // 1. Term: Definition patterns
+      for (const m of text.matchAll(/^[-•*\d.]*\s*([^:\n]{2,50}):/gm)) {
+        const term = m[1].replace(/\*\*/g,'').trim();
+        if (term.split(' ').length <= 6) add(term);
+      }
+
+      // 2. Bold / heading terms
+      for (const m of text.matchAll(/\*\*([^*]{3,50})\*\*/g)) add(m[1]);
+      for (const m of text.matchAll(/^#{1,4}\s+(.+)/gm))       add(m[1]);
+
+      // 3. Capitalised words that aren't sentence starters
+      for (const m of text.matchAll(/(?<!\.\s{0,2})\b([A-Z][a-z]{3,})\b/g)) {
+        if (!STOP.has(m[1].toLowerCase())) add(m[1]);
+      }
+
+      // 4. Repeated meaningful words (≥5 chars, appears 2+ times)
+      const words = text.toLowerCase().match(/\b[a-z]{5,}\b/g) || [];
+      const freq  = {};
+      words.forEach(w => { if (!STOP.has(w)) freq[w] = (freq[w]||0) + 1; });
+      Object.entries(freq)
+        .filter(([,c]) => c >= 2)
+        .sort(([,a],[,b]) => b - a)
+        .slice(0, 15)
+        .forEach(([w]) => add(w));
+
+      return terms.slice(0, 35);
+    }
+
+    // ─── MATCH ───────────────────────────────────────────────────────
+    function matchTerms(blurt, terms) {
+      const b = blurt.toLowerCase();
+      return terms.map(term => {
+        const t = term.toLowerCase();
+        // exact match OR basic suffix strip (plurals, -ing, -ed, -ion)
+        const found =
+          b.includes(t) ||
+          (t.length > 5 && b.includes(t.slice(0, -1))) ||
+          (t.endsWith('s')   && b.includes(t.slice(0, -1))) ||
+          (t.endsWith('es')  && b.includes(t.slice(0, -2))) ||
+          (t.endsWith('ing') && b.includes(t.slice(0, -3))) ||
+          (t.endsWith('ed')  && b.includes(t.slice(0, -2))) ||
+          (t.endsWith('ion') && b.includes(t.slice(0, -3)));
+        return { term, found };
+      });
+    }
+
+    // ─── HIGHLIGHT ───────────────────────────────────────────────────
+    function highlightBlurt(blurt, matched) {
+      let result = escapeHtml(blurt);
+      matched
+        .filter(m => m.found)
+        .sort((a, b) => b.term.length - a.term.length) // longest first to avoid partial overlaps
+        .forEach(({ term }) => {
+          const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const re = new RegExp(`(${escaped})`, 'gi');
+          result = result.replace(re, '<mark>$1</mark>');
+        });
+      return result;
+    }
+
+    // ─── TIMER ───────────────────────────────────────────────────────
+    function startTimer() {
+      elapsed = 0;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        elapsed++;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+
+    function updateTimerDisplay() {
+      const m = Math.floor(elapsed / 60);
+      const s = elapsed % 60;
+      document.getElementById('timerDisplay').textContent =
+        m + ':' + String(s).padStart(2, '0');
+    }
+
+    // ─── PHASES ──────────────────────────────────────────────────────
+    function startBlurt() {
+      const val = document.getElementById('notesInput').value.trim();
+      if (!val) return;
+      notesText = val;
+      keyTerms  = extractKeyTerms(notesText);
+      document.getElementById('notesPreview').textContent = notesText;
+      document.getElementById('blurtInput').value = '';
+      setPhase('phase2');
+      startTimer();
+      document.getElementById('blurtInput').focus();
+    }
+
+    function backToNotes() {
+      stopTimer();
+      setPhase('phase1');
+    }
+
+    function tryAgain() {
+      document.getElementById('blurtInput').value = '';
+      setPhase('phase2');
+      startTimer();
+      document.getElementById('blurtInput').focus();
+    }
+
+    function showResults() {
+      stopTimer();
+      const blurt   = document.getElementById('blurtInput').value.trim();
+      const matched = matchTerms(blurt, keyTerms);
+      const got     = matched.filter(m => m.found);
+      const missed  = matched.filter(m => !m.found);
+      const total   = matched.length;
+      const pct     = total > 0 ? Math.round((got.length / total) * 100) : 0;
+
+      // Score ring
+      document.getElementById('scoreRing').style.setProperty('--pct', pct);
+      document.getElementById('scoreNum').textContent  = got.length;
+      document.getElementById('scoreDenom').textContent = 'of ' + total;
+      document.getElementById('scoreLabel').textContent =
+        pct === 100 ? 'every key term recalled' :
+        pct >= 70   ? 'key terms recalled. Solid.' :
+        pct >= 40   ? 'key terms recalled. Keep going.' :
+                      'key terms recalled. Room to grow.';
+
+      // Chips
+      const gotEl    = document.getElementById('gotChips');
+      const missedEl = document.getElementById('missedChips');
+      gotEl.innerHTML    = '';
+      missedEl.innerHTML = '';
+
+      if (got.length === 0) {
+        gotEl.innerHTML = '<span class="empty-chips">None yet. Give it another try.</span>';
+      } else {
+        got.forEach(({ term }, idx) => {
+          const chip = document.createElement('span');
+          chip.className = 'chip got';
+          chip.style.animationDelay = (idx * 30) + 'ms';
+          chip.textContent = term;
+          gotEl.appendChild(chip);
+        });
+      }
+
+      if (missed.length === 0) {
+        missedEl.innerHTML = '<span class="empty-chips">Nothing missed. Perfect recall!</span>';
+      } else {
+        missed.forEach(({ term }, idx) => {
+          const chip = document.createElement('span');
+          chip.className = 'chip missed';
+          chip.style.animationDelay = (idx * 30) + 'ms';
+          chip.textContent = term;
+          missedEl.appendChild(chip);
+        });
+      }
+
+      // Highlighted blurt
+      document.getElementById('blurtReview').innerHTML =
+        blurt ? highlightBlurt(blurt, matched) : '<em style="color:var(--text-light)">Nothing written.</em>';
+
+      setPhase('phase3');
+    }
+
+    function setPhase(id) {
+      ['phase1','phase2','phase3'].forEach(p => {
+        const el = document.getElementById(p);
+        el.style.display = p === id ? 'flex' : 'none';
+        if (p === id) el.style.flexDirection = 'column';
+      });
+    }
+
+    // ─── UTILS ───────────────────────────────────────────────────────
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;');
+    }
+
+    // ─── FADE IN ─────────────────────────────────────────────────────
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

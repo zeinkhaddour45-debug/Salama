@@ -540,44 +540,48 @@ i<!DOCTYPE html>
       margin: 0 auto 10px;
       padding: 14px 24px;
       text-align: center;
-      background: transparent;
-      border: 1.5px solid var(--cream-dark);
+      background: rgba(253,251,247,0.9);
+      border: 1.5px solid rgba(74,102,64,0.2);
       border-radius: 12px;
       font-family: 'Inter', sans-serif;
       font-size: 14px;
       color: var(--text);
       text-decoration: none;
       cursor: pointer;
-      transition: border-color 0.2s, background 0.2s, color 0.2s;
+      transition: border-color 0.2s, background 0.2s, color 0.2s, box-shadow 0.2s;
+      box-shadow: 0 1px 6px rgba(74,102,64,0.06);
     }
     .resource-btn:hover {
       border-color: var(--sage);
-      background: rgba(125,158,117,0.06);
+      background: rgba(255,255,255,0.95);
       color: var(--olive);
+      box-shadow: 0 4px 14px rgba(74,102,64,0.1);
     }
     .resource-btn-youtube {
       display: flex;
       align-items: center;
       justify-content: center;
-      border-color: rgba(255,0,0,0.2);
+      border-color: rgba(255,0,0,0.3);
       color: var(--text);
     }
     .resource-btn-youtube:hover {
-      border-color: rgba(255,0,0,0.45);
+      border-color: rgba(255,0,0,0.55);
       background: rgba(255,0,0,0.04);
       color: #c00;
+      box-shadow: 0 4px 14px rgba(255,0,0,0.07);
     }
     .resource-btn-internal {
       display: flex;
       align-items: center;
       justify-content: center;
-      border-color: rgba(74,102,64,0.3);
+      border-color: rgba(74,102,64,0.35);
       background: rgba(125,158,117,0.06);
     }
     .resource-btn-internal:hover {
       border-color: var(--olive);
       background: rgba(125,158,117,0.12);
       color: var(--olive-dark);
+      box-shadow: 0 4px 14px rgba(74,102,64,0.1);
     }
     .resource-btn-badge {
       margin-left: 8px;

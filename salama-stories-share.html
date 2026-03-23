@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Share Your Experience | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #f5f0e8; --cream-dark: #ece5d8; --sage: #7d9e75;
+      --olive: #4a6640; --olive-dark: #374f31;
+      --text: #2a2722; --text-mid: #5a5650; --text-light: #8a8680;
+      --line: #e4dbd0; --paper: #fdfbf7;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245,240,232,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; letter-spacing: 3px; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 9px; }
+    .nav-back { font-size: 14px; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+    .leaf { position: fixed; pointer-events: none; opacity: 0.15; z-index: 0; }
+    .leaf-1 { top: 15%; left: -20px; width: 200px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 170px; transform: rotate(158deg); }
+    .page {
+      min-height: 100vh; padding: 110px 24px 80px;
+      background: radial-gradient(ellipse 800px 600px at 10% 10%, rgba(125,158,117,0.2) 0%, transparent 65%),
+                  radial-gradient(ellipse 600px 500px at 90% 85%, rgba(157,180,150,0.16) 0%, transparent 65%),
+                  var(--cream);
+    }
+    .wrap { max-width: 600px; margin: 0 auto; position: relative; z-index: 1; }
+
+    /* Header */
+    .header { margin-bottom: 36px; }
+    .header-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 12px; }
+    .header-title { font-family: 'Playfair Display', serif; font-size: clamp(28px, 5vw, 42px); font-weight: 600; color: var(--text); line-height: 1.15; margin-bottom: 12px; }
+    .header-title em { font-style: italic; color: var(--olive); }
+    .header-sub { font-size: 14px; color: var(--text-mid); line-height: 1.7; }
+
+    /* Form card */
+    .form-card {
+      background: rgba(253,251,247,0.9);
+      border: 1.5px solid rgba(74,102,64,0.18);
+      border-radius: 24px;
+      padding: 32px 36px;
+      box-shadow: 0 4px 24px rgba(74,102,64,0.07);
+    }
+
+    /* Identity selector */
+    .field-label { font-size: 12px; font-weight: 600; letter-spacing: 0.5px; color: var(--text-mid); margin-bottom: 10px; text-transform: uppercase; }
+    .identity-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+    .id-chip {
+      padding: 8px 16px; border-radius: 100px;
+      border: 1.5px solid rgba(74,102,64,0.22);
+      background: transparent;
+      font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-mid);
+      cursor: pointer; transition: all 0.18s;
+    }
+    .id-chip:hover { border-color: var(--sage); color: var(--olive); background: rgba(125,158,117,0.06); }
+    .id-chip.selected { border-color: var(--olive); background: rgba(74,102,64,0.1); color: var(--olive-dark); font-weight: 500; }
+
+    /* Textarea */
+    .field-group { margin-bottom: 24px; }
+    .form-textarea {
+      width: 100%; min-height: 160px; resize: vertical;
+      font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text); line-height: 1.75;
+      background: rgba(245,240,232,0.5);
+      border: 1.5px solid rgba(74,102,64,0.2);
+      border-radius: 14px; padding: 16px 18px;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-textarea:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(125,158,117,0.12); }
+    .form-textarea::placeholder { color: var(--text-light); font-style: italic; }
+
+    /* Name field */
+    .form-input {
+      width: 100%;
+      font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text);
+      background: rgba(245,240,232,0.5);
+      border: 1.5px solid rgba(74,102,64,0.2);
+      border-radius: 14px; padding: 13px 18px;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(125,158,117,0.12); }
+    .form-input::placeholder { color: var(--text-light); font-style: italic; }
+    .field-hint { font-size: 11.5px; color: var(--text-light); margin-top: 6px; font-style: italic; }
+
+    /* Submit */
+    .submit-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+    .submit-btn {
+      background: var(--olive); color: #fff;
+      border: none; border-radius: 100px;
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+      padding: 13px 28px; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .submit-btn:hover { background: var(--olive-dark); transform: translateY(-1px); }
+    .submit-note { font-size: 12px; color: var(--text-light); font-style: italic; }
+
+    /* Error */
+    .error-msg { background: #fff0f0; border: 1px solid rgba(180,60,60,0.25); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #8b2020; margin-bottom: 16px; display: none; }
+    .error-msg.visible { display: block; }
+
+    @media (max-width: 640px) {
+      nav { padding: 18px 24px; }
+      .form-card { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <a class="nav-back" href="index.html">← Back to Home</a>
+  </nav>
+
+  <div class="page">
+    <div class="wrap">
+
+      <div class="header">
+        <p class="header-label">Community Voices</p>
+        <h1 class="header-title">How has <em>Salama</em><br>been for you?</h1>
+        <p class="header-sub">Your honest experience helps us grow and lets others know they're not alone. Share what brought you here, what helped, or what changed.</p>
+      </div>
+
+      <div class="form-card">
+
+        <div class="error-msg" id="error-msg"></div>
+
+        <div class="field-group">
+          <p class="field-label">Who are you?</p>
+          <div class="identity-grid">
+            <button class="id-chip" onclick="selectIdentity(this, 'Anonymous')">Anonymous</button>
+            <button class="id-chip" onclick="selectIdentity(this, 'Community Member')">Community Member</button>
+            <button class="id-chip" onclick="selectIdentity(this, 'AUB Student')">AUB Student</button>
+            <button class="id-chip" onclick="selectIdentity(this, 'LAU Student')">LAU Student</button>
+            <button class="id-chip" onclick="selectIdentity(this, 'USJ Student')">USJ Student</button>
+            <button class="id-chip" onclick="selectIdentity(this, 'NDU Student')">NDU Student</button>
+            <button class="id-chip" onclick="selectIdentity(this, 'Other')">Other</button>
+          </div>
+        </div>
+
+        <div class="field-group" id="name-field" style="display:none;">
+          <p class="field-label">Your name <span style="font-weight:400;text-transform:none;font-style:italic;">(optional)</span></p>
+          <input class="form-input" id="name-input" type="text" placeholder="Leave blank to stay anonymous…" maxlength="40" />
+        </div>
+
+        <div class="field-group">
+          <p class="field-label">Your experience</p>
+          <textarea class="form-textarea" id="story-input" placeholder="What brought you to Salama? What helped? What changed for you…" maxlength="1000"></textarea>
+          <p class="field-hint" id="char-count">0 / 1000</p>
+        </div>
+
+        <div class="submit-row">
+          <button class="submit-btn" onclick="submitStory()">Share with the community</button>
+          <p class="submit-note">Your story will be reviewed before appearing.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let selectedIdentity = null;
+
+    function selectIdentity(chip, value) {
+      document.querySelectorAll('.id-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      selectedIdentity = value;
+      const nameField = document.getElementById('name-field');
+      nameField.style.display = (value === 'Anonymous') ? 'none' : 'block';
+    }
+
+    document.getElementById('story-input').addEventListener('input', function() {
+      document.getElementById('char-count').textContent = this.value.length + ' / 1000';
+    });
+
+    const BANNED = [
+      'fuck','shit','bitch','asshole','bastard','cunt','dick','pussy','nigger','nigga','faggot','fag',
+      'retard','slut','whore','kys','kill yourself','go die','hate you','you should die','worthless piece',
+      'stupid bitch','dumb fuck','idiot','moron','loser','piece of shit'
+    ];
+
+    function containsBanned(text) {
+      const lower = text.toLowerCase();
+      return BANNED.some(w => lower.includes(w));
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.classList.add('visible');
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function hideError() {
+      document.getElementById('error-msg').classList.remove('visible');
+    }
+
+    function submitStory() {
+      hideError();
+      const body = document.getElementById('story-input').value.trim();
+      const name = document.getElementById('name-input') ? document.getElementById('name-input').value.trim() : '';
+
+      if (!selectedIdentity) {
+        showError('Please select who you are before sharing.');
+        return;
+      }
+      if (body.length < 20) {
+        showError('Please write a bit more — at least 20 characters.');
+        return;
+      }
+      if (containsBanned(body) || containsBanned(name)) {
+        showError('Your submission contains language that isn\'t allowed. Please keep it respectful.');
+        return;
+      }
+
+      const stories = JSON.parse(localStorage.getItem('salama_community') || '[]');
+      const story = {
+        id: Date.now(),
+        identity: selectedIdentity,
+        author_name: (selectedIdentity === 'Anonymous') ? '' : name,
+        is_anonymous: selectedIdentity === 'Anonymous',
+        body,
+        created_at: new Date().toISOString()
+      };
+      stories.push(story);
+      localStorage.setItem('salama_community', JSON.stringify(stories));
+      window.location.href = 'salama-stories.html';
+    }
+  </script>
+</body>
+</html>

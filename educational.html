@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Educational Resources | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #f5f0e8;
+      --cream-dark: #ece5d8;
+      --sage:       #7d9e75;
+      --sage-light: #c8d9c2;
+      --sage-mid:   #adc4a6;
+      --olive:      #4a6640;
+      --olive-dark: #374f31;
+      --text:       #2a2722;
+      --text-mid:   #5a5650;
+      --text-light: #8a8680;
+      --line:       #e4dbd0;
+      --paper:      #fdfbf7;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 9999; opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    .leaf { position: fixed; pointer-events: none; opacity: 0.15; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 200px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 180px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 120px; transform: rotate(38deg); }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245,240,232,0.88);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 600; letter-spacing: 3px;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-back { font-size: 13px; color: var(--text-light); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--olive); }
+
+    /* ─── PAGE ─── */
+    .page {
+      position: relative; z-index: 1;
+      padding: 110px 24px 80px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .page-header { text-align: center; max-width: 620px; margin: 0 auto 48px; }
+    .page-eyebrow {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--sage); font-weight: 600; margin-bottom: 14px;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 4vw, 44px); font-weight: 500; line-height: 1.2;
+      color: var(--text); margin-bottom: 14px;
+    }
+    .page-title em { font-style: italic; color: var(--olive); }
+    .page-subtitle { font-size: 14px; color: var(--text-mid); line-height: 1.85; }
+
+    /* ─── SEARCH + FILTER ─── */
+    .controls {
+      display: flex; flex-direction: column; gap: 14px;
+      margin-bottom: 36px;
+    }
+    .search-wrap {
+      position: relative;
+    }
+    .search-icon {
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+      color: var(--text-light); pointer-events: none;
+    }
+    .search-input {
+      width: 100%; padding: 13px 16px 13px 44px;
+      background: var(--paper); border: 1.5px solid var(--line); border-radius: 14px;
+      font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text);
+      outline: none; transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--sage-mid); }
+    .search-input::placeholder { color: var(--text-light); }
+
+    .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-pill {
+      padding: 7px 16px;
+      background: var(--paper); border: 1.5px solid var(--line); border-radius: 99px;
+      font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600;
+      color: var(--text-mid); cursor: pointer; transition: all 0.18s;
+    }
+    .filter-pill:hover { border-color: var(--sage-mid); color: var(--text); }
+    .filter-pill.active { background: var(--olive); border-color: var(--olive); color: white; }
+
+    /* ─── TOPIC GRID ─── */
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 64px;
+    }
+
+    .topic-card {
+      background: rgba(255,252,248,0.92);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 4px 16px rgba(60,50,40,0.05);
+      display: flex; flex-direction: column; gap: 12px;
+      position: relative; overflow: hidden;
+    }
+    .topic-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(125,158,117,0.06) 0%, transparent 60%);
+      opacity: 0; transition: opacity 0.22s;
+    }
+    .topic-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(60,50,40,0.1); border-color: var(--sage-light); }
+    .topic-card:hover::before { opacity: 1; }
+    .topic-card.hidden { display: none; }
+
+    .topic-emoji { font-size: 32px; line-height: 1; }
+    .topic-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px; font-weight: 500; color: var(--text); line-height: 1.3;
+    }
+    .topic-tagline { font-size: 13px; color: var(--text-mid); line-height: 1.6; }
+    .topic-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: auto;
+    }
+    .topic-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .topic-tag {
+      padding: 3px 9px; border-radius: 99px;
+      font-size: 10.5px; font-weight: 600; letter-spacing: 0.3px;
+      background: rgba(125,158,117,0.1); color: var(--olive);
+      border: 1px solid rgba(125,158,117,0.2);
+    }
+    .topic-cta { font-size: 12.5px; font-weight: 600; color: var(--olive); white-space: nowrap; }
+
+    .no-results {
+      grid-column: 1 / -1; text-align: center;
+      padding: 48px 0; color: var(--text-light); font-size: 14px;
+    }
+
+    /* ─── FAQ ─── */
+    .disclaimer {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: #fff8ed;
+      border: 1px solid #e8d9b8;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 36px;
+      color: var(--text-mid);
+      font-size: 0.82rem;
+      line-height: 1.6;
+    }
+    .disclaimer svg { opacity: 0.6; }
+
+    .faq-section { margin-bottom: 48px; }
+    .coming-soon-banner {
+      text-align: center;
+      padding: 20px 24px;
+      margin-bottom: 64px;
+      color: var(--text-light);
+      font-size: 0.85rem;
+      font-style: italic;
+      letter-spacing: 0.02em;
+    }
+    .section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(22px, 3vw, 30px); font-weight: 500; color: var(--text);
+      margin-bottom: 8px;
+    }
+    .section-heading em { font-style: italic; color: var(--olive); }
+    .section-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; line-height: 1.7; }
+
+    .faq-list { display: flex; flex-direction: column; gap: 0; }
+    .faq-item {
+      border-bottom: 1px solid var(--line);
+    }
+    .faq-item:first-child { border-top: 1px solid var(--line); }
+    .faq-btn {
+      width: 100%; padding: 20px 0;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+      background: none; border: none; cursor: pointer; text-align: left;
+    }
+    .faq-question {
+      font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.5;
+    }
+    .faq-chevron {
+      color: var(--olive); flex-shrink: 0; margin-top: 2px;
+      transition: transform 0.25s ease;
+    }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-answer {
+      font-size: 14px; color: var(--text-mid); line-height: 1.85;
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), padding 0.2s;
+    }
+    .faq-item.open .faq-answer { max-height: 400px; padding-bottom: 20px; }
+
+    /* ─── MODAL ─── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(42,39,34,0.5);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: flex-end; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal-sheet {
+      width: 100%; max-width: 780px;
+      max-height: 88vh;
+      background: var(--paper);
+      border-radius: 24px 24px 0 0;
+      overflow-y: auto;
+      transform: translateY(40px);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      position: relative;
+    }
+    .modal-overlay.open .modal-sheet { transform: translateY(0); }
+
+    .modal-handle {
+      width: 40px; height: 4px; background: var(--line);
+      border-radius: 99px; margin: 16px auto 0;
+    }
+
+    .modal-inner { padding: 28px 36px 48px; }
+
+    .modal-header { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 28px; }
+    .modal-emoji { font-size: 44px; line-height: 1; flex-shrink: 0; }
+    .modal-title-wrap { flex: 1; }
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 500; color: var(--text); line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .modal-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .modal-tag {
+      padding: 4px 12px; border-radius: 99px;
+      font-size: 11px; font-weight: 600;
+      background: rgba(125,158,117,0.1); color: var(--olive);
+      border: 1px solid rgba(125,158,117,0.22);
+    }
+
+    .modal-close {
+      position: absolute; top: 20px; right: 20px;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--cream); border: 1px solid var(--line);
+      font-size: 18px; color: var(--text-mid);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .modal-close:hover { background: var(--cream-dark); color: var(--text); }
+
+    .modal-body { display: flex; flex-direction: column; gap: 28px; }
+
+    .modal-section-label {
+      font-size: 10.5px; letter-spacing: 2.5px; text-transform: uppercase;
+      font-weight: 700; color: var(--sage); margin-bottom: 10px;
+    }
+    .modal-text { font-size: 14px; color: var(--text-mid); line-height: 1.85; }
+
+    .modal-list { display: flex; flex-direction: column; gap: 7px; padding-left: 0; }
+    .modal-list li {
+      font-size: 14px; color: var(--text-mid); line-height: 1.7;
+      display: flex; align-items: flex-start; gap: 10px; list-style: none;
+    }
+    .modal-list li::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 50%; background: var(--sage);
+      flex-shrink: 0; margin-top: 8px;
+    }
+
+    .modal-divider { height: 1px; background: var(--line); }
+
+    .modal-links { display: flex; flex-direction: column; gap: 10px; }
+    .resource-link {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 18px;
+      background: var(--cream); border: 1px solid var(--line); border-radius: 12px;
+      text-decoration: none; color: inherit;
+      transition: all 0.18s;
+    }
+    .resource-link:hover { border-color: var(--sage-mid); background: rgba(125,158,117,0.06); transform: translateX(3px); }
+    .resource-link-left { display: flex; flex-direction: column; gap: 3px; }
+    .resource-link-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .resource-link-source { font-size: 11.5px; color: var(--text-light); }
+    .resource-link-arrow { color: var(--olive); font-size: 16px; flex-shrink: 0; }
+
+    /* Fade */
+    .fade-in {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .fade-in.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 700px) {
+      nav { padding: 16px 20px; }
+      .modal-inner { padding: 20px 20px 40px; }
+      .modal-header { flex-direction: column; gap: 12px; }
+      .modal-title { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 340" fill="none"><path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/><path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/></svg>
+
+  <nav>
+    <a href="index.html" class="nav-logo">SALAMA</a>
+    <a href="index.html" class="nav-back">← Back to Home</a>
+  </nav>
+
+  <main class="page">
+
+    <header class="page-header fade-in">
+      <p class="page-eyebrow">Learn</p>
+      <h1 class="page-title"><em>Educational</em> Resources</h1>
+      <p class="page-subtitle">Clear, honest information about mental health topics, written for real people, backed by trusted sources. Find a topic that speaks to where you are.</p>
+    </header>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer fade-in">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <p>This page is for educational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. If you are in distress or crisis, please reach out to a qualified mental health professional or crisis service.</p>
+    </div>
+
+    <!-- Search + Filter -->
+    <div class="controls fade-in">
+      <div class="search-wrap">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" type="text" id="searchInput" placeholder="Search a topic…" oninput="applyFilters()" />
+      </div>
+      <div class="filter-row">
+        <button class="filter-pill active" data-filter="all" onclick="setFilter('all', this)">All</button>
+        <button class="filter-pill" data-filter="understanding" onclick="setFilter('understanding', this)">Understanding</button>
+        <button class="filter-pill" data-filter="coping" onclick="setFilter('coping', this)">Coping</button>
+        <button class="filter-pill" data-filter="supporting" onclick="setFilter('supporting', this)">Supporting Others</button>
+        <button class="filter-pill" data-filter="gethelp" onclick="setFilter('gethelp', this)">Getting Help</button>
+      </div>
+    </div>
+
+    <!-- Topic Cards -->
+    <div class="topic-grid fade-in" id="topicGrid">
+      <div class="no-results" id="noResults" style="display:none;">No topics match your search.</div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq-section fade-in">
+      <h2 class="section-heading">Common <em>Questions</em></h2>
+      <p class="section-sub">Things people wonder about but don't always feel comfortable asking.</p>
+      <div class="faq-list" id="faqList"></div>
+    </div>
+
+    <div class="coming-soon-banner fade-in">
+      <p>More resources coming soon.</p>
+    </div>
+
+  </main>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+    <div class="modal-sheet" id="modalSheet">
+      <div class="modal-handle"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-inner">
+        <div class="modal-header" id="modalHeader"></div>
+        <div class="modal-body" id="modalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─── DATA ─────────────────────────────────────────────────────────
+    const TOPICS = [
+      {
+        id: 'anxiety',
+        emoji: '🌊',
+        name: 'Anxiety',
+        tagline: 'Understanding the worry that won\'t quiet down.',
+        tags: ['understanding', 'coping'],
+        tagLabels: ['Understanding', 'Coping'],
+        what: 'Anxiety is the mind and body\'s natural response to stress or perceived danger. In small doses it\'s useful, sharpening focus and motivating action. When it becomes persistent, overwhelming, or disproportionate to the situation, it can interfere with daily life, relationships, and studies.',
+        feels: [
+          'Constant or hard-to-control worry about everyday things',
+          'Restlessness, feeling on edge, or easily startled',
+          'Physical tension, headaches, or stomach upset',
+          'Difficulty concentrating: the mind goes blank or races',
+          'Avoiding situations that might trigger worry',
+          'Sleep problems, either falling asleep or staying asleep',
+        ],
+        helps: [
+          'Slow, deliberate breathing: even 60 seconds can lower the body\'s stress response',
+          'Grounding techniques: name 5 things you see, 4 you can touch, 3 you hear',
+          'Regular movement: even a short walk shifts anxious energy',
+          'Reducing caffeine and alcohol, which can heighten physical anxiety symptoms',
+          'Writing down worries to get them out of your head',
+          'Talking to a trusted person or a mental health professional',
+        ],
+        links: [
+          { name: 'Anxiety Disorders Overview', source: 'National Institute of Mental Health (NIMH)', url: 'https://www.nimh.nih.gov/health/topics/anxiety-disorders' },
+          { name: 'Anxiety and Panic Attacks', source: 'Mind UK', url: 'https://www.mind.org.uk/information-support/types-of-mental-health-problems/anxiety-and-panic-attacks/' },
+          { name: 'Anxiety: Signs, Symptoms and Causes', source: 'HelpGuide', url: 'https://www.helpguide.org/articles/anxiety/anxiety-disorders-and-anxiety-attacks.htm' },
+          { name: 'Anxiety Disorders', source: 'World Health Organization (WHO)', url: 'https://www.who.int/news-room/fact-sheets/detail/anxiety-disorders' },
+        ],
+      },
+      {
+        id: 'depression',
+        emoji: '🌧️',
+        name: 'Depression',
+        tagline: 'More than sadness: a persistent shift in how everything feels.',
+        tags: ['understanding', 'coping'],
+        tagLabels: ['Understanding', 'Coping'],
+        what: 'Depression is a mood disorder that causes a persistent feeling of sadness, emptiness, and loss of interest. It affects how you think, feel, and handle daily activities. Depression is not a sign of weakness or a character flaw. It\'s a real medical condition that responds to treatment.',
+        feels: [
+          'Persistent sadness, hopelessness, or feeling empty',
+          'Loss of interest or pleasure in things you used to enjoy',
+          'Fatigue and low energy, even after sleeping',
+          'Changes in appetite: eating significantly more or less',
+          'Difficulty thinking clearly, concentrating, or making decisions',
+          'Feelings of worthlessness or excessive guilt',
+          'In more severe cases, thoughts of death or not wanting to be here',
+        ],
+        helps: [
+          'Reach out to one person today: connection is one of the most powerful antidotes',
+          'Gentle movement, even a 10-minute walk, can shift mood chemistry',
+          'Try to maintain a loose routine for sleep, eating, and waking',
+          'Avoid isolating. Depression lies to you about whether others care.',
+          'Professional support, including therapy or medication, can be life-changing',
+          'Be patient with yourself. Recovery is rarely linear.',
+        ],
+        links: [
+          { name: 'Depression: What You Need to Know', source: 'National Institute of Mental Health (NIMH)', url: 'https://www.nimh.nih.gov/health/topics/depression' },
+          { name: 'Depression', source: 'Mind UK', url: 'https://www.mind.org.uk/information-support/types-of-mental-health-problems/depression/' },
+          { name: 'Depression Symptoms and Warning Signs', source: 'HelpGuide', url: 'https://www.helpguide.org/articles/depression/depression-symptoms-and-warning-signs.htm' },
+          { name: 'Depression (Major Depressive Disorder)', source: 'Mayo Clinic', url: 'https://www.mayoclinic.org/diseases-conditions/depression/symptoms-causes/syc-20356007' },
+        ],
+      },
+      {
+        id: 'burnout',
+        emoji: '🔥',
+        name: 'Burnout',
+        tagline: 'When chronic stress empties the tank completely.',
+        tags: ['understanding', 'coping'],
+        tagLabels: ['Understanding', 'Coping'],
+        what: 'Burnout is a state of chronic stress that leads to physical and emotional exhaustion, cynicism, and a sense of ineffectiveness. It\'s common among students facing high academic pressure, and it\'s recognized by the World Health Organization as an occupational phenomenon. It\'s not a personal failing. It\'s what happens when demands consistently exceed resources.',
+        feels: [
+          'Total exhaustion that rest doesn\'t fix',
+          'Feeling detached, cynical, or going through the motions',
+          'Reduced sense of accomplishment: nothing feels meaningful',
+          'Difficulty caring about things that used to matter',
+          'Physical symptoms: headaches, getting sick more often, body tension',
+          'Dreading things you used to manage fine',
+        ],
+        helps: [
+          'Acknowledge it: burnout requires more than a good night\'s sleep',
+          'Reduce your load wherever possible, even temporarily',
+          'Rest without guilt. Rest is not a reward for productivity.',
+          'Reconnect with something small that brings genuine pleasure',
+          'Set a boundary this week, even one small one',
+          'Speak to someone: a counselor, a mentor, or a trusted friend',
+        ],
+        links: [
+          { name: 'Burnout Prevention and Recovery', source: 'HelpGuide', url: 'https://www.helpguide.org/articles/stress/burnout-prevention-and-recovery.htm' },
+          { name: 'Burn-out an Occupational Phenomenon', source: 'World Health Organization (WHO)', url: 'https://www.who.int/news-room/questions-and-answers/item/burn-out-an-occupational-phenomenon-international-classification-of-diseases' },
+          { name: 'Burnout', source: 'Psychology Today', url: 'https://www.psychologytoday.com/us/basics/burnout' },
+          { name: 'Burnout Symptoms and Causes', source: 'Verywell Mind', url: 'https://www.verywellmind.com/stress-and-burnout-symptoms-and-causes-3144516' },
+        ],
+      },
+      {
+        id: 'grief',
+        emoji: '🕊️',
+        name: 'Grief & Loss',
+        tagline: 'There is no right way to grieve. There is only your way.',
+        tags: ['understanding', 'coping'],
+        tagLabels: ['Understanding', 'Coping'],
+        what: 'Grief is the natural emotional response to loss: of a person, a relationship, a sense of safety, or even a version of your future you expected. Grief is not a problem to be solved; it\'s a process to be moved through. It rarely follows a neat path, and it can resurface long after you think it has passed.',
+        feels: [
+          'Waves of deep sadness, sometimes arriving unexpectedly',
+          'Numbness or a sense of unreality about what happened',
+          'Anger: at the situation, at others, or at yourself',
+          'Guilt about things said or unsaid, done or undone',
+          'Physical aching, exhaustion, or heaviness in the body',
+          'Loneliness, even when surrounded by people who care',
+        ],
+        helps: [
+          'Allow yourself to feel without judging the feeling',
+          'Talk about the person or thing you\'ve lost: sharing keeps them present',
+          'Find community with others who understand your type of loss',
+          'Be patient: grief has no deadline and no correct timeline',
+          'Mark meaningful dates in a way that feels right for you',
+          'If grief is blocking daily life for extended periods, professional support can help',
+        ],
+        links: [
+          { name: 'Coping with Grief and Loss', source: 'HelpGuide', url: 'https://www.helpguide.org/articles/grief/coping-with-grief-and-loss.htm' },
+          { name: 'Grief', source: 'Mind UK', url: 'https://www.mind.org.uk/information-support/types-of-mental-health-problems/grief/' },
+          { name: 'Grief', source: 'Psychology Today', url: 'https://www.psychologytoday.com/us/basics/grief' },
+          { name: 'What is Grief?', source: 'Mayo Clinic', url: 'https://www.mayoclinic.org/patient-visitor-guide/support-groups/what-is-grief' },
+        ],
+      },
+      {
+        id: 'stress',
+        emoji: '⚡',
+        name: 'Stress',
+        tagline: 'Short-term stress is normal. Chronic stress is harmful.',
+        tags: ['understanding', 'coping'],
+        tagLabels: ['Understanding', 'Coping'],
+        what: 'Stress is the body\'s response to any demand or pressure, triggering the fight-or-flight system. Short bursts of stress can motivate and sharpen performance. But when stress is constant, from exams, family, finances, or uncertainty, it takes a serious toll on mental and physical health. In Lebanon, many students carry layers of stress that go far beyond academics.',
+        feels: [
+          'Feeling overwhelmed, like there\'s too much and not enough time',
+          'Irritability, short temper, or emotional reactivity',
+          'Muscle tension, jaw clenching, or headaches',
+          'Difficulty relaxing or switching off',
+          'Changes in sleep and appetite',
+          'A sense of dread or impending doom',
+        ],
+        helps: [
+          'Name what\'s specifically stressing you: vague stress is harder to address',
+          'Breathing exercises activate the parasympathetic nervous system and genuinely help',
+          'Physical activity is one of the most effective stress reducers known',
+          'Limit exposure to news and social media during high-stress periods',
+          'Time-blocking can reduce the overwhelm of too much on one plate',
+          'Social connection buffers stress: reach out even briefly',
+        ],
+        links: [
+          { name: 'I\'m So Stressed Out: Fact Sheet', source: 'National Institute of Mental Health (NIMH)', url: 'https://www.nimh.nih.gov/health/publications/so-stressed-out-fact-sheet' },
+          { name: 'Stress', source: 'Mind UK', url: 'https://www.mind.org.uk/information-support/types-of-mental-health-problems/stress/' },
+          { name: 'Stress Management', source: 'HelpGuide', url: 'https://www.helpguide.org/articles/stress/stress-management.htm' },
+          { name: 'Stress', source: 'World Health Organization (WHO)', url: 'https://www.who.int/news-room/questions-and-answers/item/stress' },
+        ],
+      },
+      {
+        id: 'sleep',
+        emoji: '🌙',
+        name: 'Sleep & Rest',
+        tagline: 'Sleep is not optional. It\'s the foundation of everything.',
+        tags: ['coping'],
+        tagLabels: ['Coping'],
+        what: 'Sleep is essential to mental health. During sleep the brain consolidates memories, regulates emotions, and repairs itself. Poor sleep worsens anxiety, depression, concentration, and resilience. And mental health struggles make sleep harder, a cycle that can feel impossible to break. Rest itself (even without sleep) is a form of care.',
+        feels: [
+          'Difficulty falling asleep despite being tired: racing thoughts',
+          'Waking frequently through the night or too early',
+          'Exhaustion even after what should have been enough sleep',
+          'Mood being worse after poor sleep: more anxious, more irritable',
+          'Relying on caffeine or screens to get through the day',
+        ],
+        helps: [
+          'Keep a consistent wake-up time, even on weekends: it anchors the body clock',
+          'Reduce screens 45-60 minutes before bed; blue light suppresses melatonin',
+          'A cool, dark room signals to the brain that it\'s time to sleep',
+          'If you can\'t sleep after 20 minutes, get up briefly and do something calm',
+          'Avoid caffeine after early afternoon',
+          'A short wind-down ritual (tea, reading, stretching) trains the brain to downshift',
+        ],
+        links: [
+          { name: 'Sleep and Mental Health', source: 'Sleep Foundation', url: 'https://www.sleepfoundation.org/mental-health' },
+          { name: 'Sleep Problems', source: 'Mind UK', url: 'https://www.mind.org.uk/information-support/types-of-mental-health-problems/sleep-problems/' },
+          { name: 'How Much Sleep Do You Need?', source: 'HelpGuide', url: 'https://www.helpguide.org/articles/sleep/sleep-needs-get-the-sleep-you-need.htm' },
+          { name: 'Healthy Sleep Habits', source: 'American Academy of Sleep Medicine', url: 'https://sleepeducation.org/healthy-sleep/healthy-sleep-habits/' },
+        ],
+      },
+      {
+        id: 'selfesteem',
+        emoji: '🪞',
+        name: 'Self-Esteem',
+        tagline: 'How you feel about yourself shapes how you experience everything.',
+        tags: ['understanding', 'coping'],
+        tagLabels: ['Understanding', 'Coping'],
+        what: 'Self-esteem is the overall sense of your own worth and value. It\'s shaped by experience, culture, relationships, and the stories we tell ourselves. Low self-esteem isn\'t a fixed personality trait. It\'s a learned pattern of thought that can be changed with awareness and practice. It\'s closely linked to anxiety, depression, and how we navigate relationships.',
+        feels: [
+          'Harsh self-criticism that you wouldn\'t apply to anyone else',
+          'Comparing yourself constantly to others and feeling like you fall short',
+          'Difficulty accepting compliments or positive feedback',
+          'Feeling like an imposter: like you don\'t deserve your achievements',
+          'Avoiding challenges for fear of failure or judgment',
+          'Seeking external validation to feel okay about yourself',
+        ],
+        helps: [
+          'Notice your inner critic: giving it a name can create useful distance',
+          'Challenge negative self-talk: would you say this to a friend?',
+          'Track small wins. Not big ones. Small ones.',
+          'Set and keep small commitments to yourself: it builds self-trust',
+          'Spend time with people who genuinely see you',
+          'Therapy, especially CBT, has strong evidence for building self-esteem',
+        ],
+        links: [
+          { name: 'Self-Esteem', source: 'Mind UK', url: 'https://www.mind.org.uk/information-support/types-of-mental-health-problems/self-esteem/' },
+          { name: 'Self-Esteem', source: 'Psychology Today', url: 'https://www.psychologytoday.com/us/basics/self-esteem' },
+          { name: 'Building Better Self-Esteem', source: 'Mayo Clinic', url: 'https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/self-esteem/art-20045374' },
+          { name: 'How to Improve Your Self-Esteem', source: 'Verywell Mind', url: 'https://www.verywellmind.com/what-is-self-esteem-2795868' },
+        ],
+      },
+      {
+        id: 'panic',
+        emoji: '💨',
+        name: 'Panic Attacks',
+        tagline: 'Intense, terrifying, and survivable. Always.',
+        tags: ['understanding', 'coping'],
+        tagLabels: ['Understanding', 'Coping'],
+        what: 'A panic attack is a sudden surge of intense fear or discomfort that peaks within minutes and triggers powerful physical symptoms. They can feel like you are dying or losing control, which is terrifying, but they are not physically dangerous. Understanding what\'s happening in your body during a panic attack is one of the most powerful ways to reduce its grip.',
+        feels: [
+          'Racing or pounding heart, palpitations',
+          'Shortness of breath or feeling like you can\'t get enough air',
+          'Chest tightness or pain',
+          'Dizziness, lightheadedness, or feeling faint',
+          'Tingling or numbness in the hands, face, or feet',
+          'A powerful urge to flee or feeling of unreality (depersonalization)',
+          'Overwhelming sense that something terrible is about to happen',
+        ],
+        helps: [
+          'Remind yourself: this is a panic attack. It will pass. You are safe.',
+          'Breathe out longer than you breathe in: try 4 in, 6 out',
+          'Ground yourself: feel your feet on the floor, hold something cold or textured',
+          'Don\'t fight it. Fighting increases adrenaline. Let the wave pass.',
+          'After it subsides, go gently. Drink water, sit, don\'t rush.',
+          'If they happen regularly, a therapist can help you reduce their frequency and intensity',
+        ],
+        links: [
+          { name: 'Panic Disorder', source: 'National Institute of Mental Health (NIMH)', url: 'https://www.nimh.nih.gov/health/topics/panic-disorder' },
+          { name: 'Panic Attacks', source: 'Mind UK', url: 'https://www.mind.org.uk/information-support/types-of-mental-health-problems/anxiety-and-panic-attacks/panic-attacks/' },
+          { name: 'Panic Attacks and Panic Disorder', source: 'HelpGuide', url: 'https://www.helpguide.org/articles/anxiety/panic-attacks-and-panic-disorder.htm' },
+          { name: 'Panic Attacks and Panic Disorder', source: 'Mayo Clinic', url: 'https://www.mayoclinic.org/diseases-conditions/panic-attacks/symptoms-causes/syc-20376021' },
+        ],
+      },
+      {
+        id: 'supporting',
+        emoji: '🤝',
+        name: 'Supporting Someone',
+        tagline: 'How to show up for someone who is struggling.',
+        tags: ['supporting'],
+        tagLabels: ['Supporting Others'],
+        what: 'When someone you care about is struggling with their mental health, it can feel confusing, frightening, and helpless. You might not know what to say or worry about saying the wrong thing. But showing up, even imperfectly, matters far more than having the perfect words. Here\'s how to genuinely help.',
+        feels: [
+          'Not knowing what to say for fear of making things worse',
+          'Feeling helpless watching someone suffer without being able to fix it',
+          'Worrying that asking about their mental health might plant ideas',
+          'Burnout from carrying someone else\'s pain alongside your own',
+          'Guilt when you can\'t be available or when you need your own space',
+        ],
+        helps: [
+          'Listen more than you speak. You don\'t need to fix anything.',
+          'Ask directly: "Are you okay?" and "Are you thinking about harming yourself?" Asking does not plant ideas.',
+          'Believe them. Don\'t minimise with "at least" or "others have it worse".',
+          'Check in regularly, not just once: mental health isn\'t resolved in one conversation',
+          'Know your limits. You can\'t pour from an empty cup. Your wellbeing matters too.',
+          'Help them find professional support: offer to sit with them while they make the call',
+        ],
+        links: [
+          { name: 'Helping Someone Else', source: 'Mind UK', url: 'https://www.mind.org.uk/information-support/helping-someone-else/' },
+          { name: 'Helping Others', source: 'NAMI (National Alliance on Mental Illness)', url: 'https://www.nami.org/Support-Education/Helping-Others' },
+          { name: 'How to Help Someone with Depression', source: 'HelpGuide', url: 'https://www.helpguide.org/articles/depression/helping-someone-with-depression.htm' },
+          { name: 'How to Support Someone with a Mental Illness', source: 'Beyond Blue', url: 'https://www.beyondblue.org.au/mental-health/how-to-support-someone' },
+        ],
+      },
+      {
+        id: 'gethelp',
+        emoji: '🆘',
+        name: 'When to Seek Help',
+        tagline: 'You don\'t have to be in crisis to deserve support.',
+        tags: ['gethelp'],
+        tagLabels: ['Getting Help'],
+        what: 'A common barrier to seeking help is the belief that things aren\'t "bad enough." But mental health support isn\'t only for crisis. It\'s for anyone who is struggling and wants to feel better. Reaching out early, before things escalate, is always the right call. There is no threshold you have to hit first.',
+        feels: [
+          'Symptoms that have persisted for two weeks or more',
+          'Difficulty functioning in daily life: study, relationships, self-care',
+          'Using substances, isolation, or other behaviors to cope',
+          'Thoughts of self-harm or not wanting to be here, however fleeting',
+          'Feeling like no one would understand, or that you\'re a burden',
+          'Simply feeling like you\'ve been carrying too much for too long',
+        ],
+        helps: [
+          'Start with your university counseling service: it\'s confidential and often free',
+          'Talk to your GP or family doctor as a first step toward professional referral',
+          'If you\'re in crisis, reach out to a crisis line immediately',
+          'You don\'t have to explain yourself perfectly. "I\'m not okay" is enough.',
+          'Bring a friend to your first appointment if it helps you feel safer',
+          'Give it more than one session: the first appointment is the hardest',
+        ],
+        links: [
+          { name: 'Find a Therapist', source: 'Psychology Today', url: 'https://www.psychologytoday.com/us/therapists' },
+          { name: 'Find Help', source: 'HelpGuide', url: 'https://www.helpguide.org/find-help.htm' },
+          { name: 'Mental Health Conditions', source: 'NAMI (National Alliance on Mental Illness)', url: 'https://www.nami.org/About-Mental-Illness/Mental-Health-Conditions' },
+          { name: 'Mental Disorders', source: 'World Health Organization (WHO)', url: 'https://www.who.int/news-room/fact-sheets/detail/mental-disorders' },
+        ],
+      },
+    ];
+
+    const FAQS = [
+      {
+        q: 'Is what I\'m feeling normal?',
+        a: 'Almost certainly, yes. Anxiety, low mood, stress, disconnection: these are profoundly human experiences, especially for students navigating academic pressure, uncertainty, and identity. Feeling them doesn\'t mean something is wrong with you. If they\'re persistent and affecting your daily life, that\'s when it\'s worth reaching out for support.',
+      },
+      {
+        q: 'What\'s the difference between sadness and depression?',
+        a: 'Sadness is a natural emotion that comes and goes in response to events. Depression is a persistent state, typically lasting two weeks or more, that affects how you think, feel, and function across all areas of life. With sadness, you can usually still experience moments of pleasure. With depression, that capacity is often dulled or gone. Depression also tends to come with physical symptoms: changes in sleep, appetite, and energy.',
+      },
+      {
+        q: 'When should I see a therapist?',
+        a: 'When you feel like you\'d benefit from one. You don\'t need to be in crisis. Good reasons to see a therapist include: struggling with persistent low mood or anxiety, feeling stuck in patterns you can\'t break, going through a major life change, processing trauma or loss, or simply wanting a safe space to think out loud with someone trained to help. The earlier you seek support, the better.',
+      },
+      {
+        q: 'Can I support myself without professional help?',
+        a: 'For mild struggles, absolutely. Regular sleep, movement, social connection, meaningful activity, and practices like journaling or breathing exercises genuinely help. But self-support has limits, particularly for persistent symptoms, trauma, or anything involving thoughts of self-harm. These warrant professional involvement. Self-care is not a substitute for care from others when you truly need it.',
+      },
+      {
+        q: 'How do I talk to someone about my mental health?',
+        a: 'Start with something honest and simple: "I\'ve been having a hard time and I wanted to tell someone." You don\'t need to have everything figured out. Choose a time when the other person isn\'t distracted. If it feels too hard in person, a text or letter is a valid start. And remember: most people, when trusted with something real, rise to meet it.',
+      },
+      {
+        q: 'Does mental health affect physical health?',
+        a: 'Deeply. Chronic stress raises cortisol, which affects immune function, heart health, digestion, and sleep. Anxiety lives in the body: tight chest, stomach knots, muscle tension. Depression can cause physical fatigue and pain. The mind and body are not separate systems. Caring for one is caring for both.',
+      },
+      {
+        q: 'Is therapy only for serious problems?',
+        a: 'No. Therapy is a tool, not a last resort. People use it to navigate relationships, career decisions, grief, identity, stress, personal growth, and much more. You don\'t need a diagnosis. You need a reason that matters to you, and feeling like you\'d benefit is reason enough.',
+      },
+      {
+        q: 'What if I can\'t afford therapy?',
+        a: 'This is a real barrier and a valid concern. Options worth exploring: university counseling services (often free to students), community mental health centers, online platforms with sliding-scale fees, support groups (peer-led and free), and some therapists who offer reduced rates. In Lebanon, organizations like Embrace and Restart offer low-cost or free support.',
+      },
+    ];
+
+    // ─── STATE ────────────────────────────────────────────────────────
+    let activeFilter = 'all';
+
+    // ─── RENDER CARDS ────────────────────────────────────────────────
+    function renderCards() {
+      const grid = document.getElementById('topicGrid');
+      grid.innerHTML = '<div class="no-results" id="noResults" style="display:none;">No topics match your search.</div>';
+      TOPICS.forEach(topic => {
+        const card = document.createElement('div');
+        card.className = 'topic-card fade-in';
+        card.dataset.tags = topic.tags.join(',');
+        card.dataset.name = topic.name.toLowerCase();
+        card.onclick = () => openModal(topic.id);
+        card.innerHTML = `
+          <div class="topic-emoji">${topic.emoji}</div>
+          <div class="topic-name">${topic.name}</div>
+          <div class="topic-tagline">${topic.tagline}</div>
+          <div class="topic-footer">
+            <div class="topic-tags">${topic.tagLabels.map(t => `<span class="topic-tag">${t}</span>`).join('')}</div>
+            <span class="topic-cta">Read more →</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      // Re-observe fade-in
+      document.querySelectorAll('.topic-card.fade-in').forEach(el => observer.observe(el));
+      applyFilters();
+    }
+
+    // ─── FILTER ───────────────────────────────────────────────────────
+    function setFilter(filter, btn) {
+      activeFilter = filter;
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const cards  = document.querySelectorAll('.topic-card');
+      let visible  = 0;
+
+      cards.forEach(card => {
+        const matchesFilter = activeFilter === 'all' || card.dataset.tags.includes(activeFilter);
+        const matchesSearch = !query || card.dataset.name.includes(query) ||
+          card.querySelector('.topic-tagline').textContent.toLowerCase().includes(query);
+        const show = matchesFilter && matchesSearch;
+        card.classList.toggle('hidden', !show);
+        if (show) visible++;
+      });
+
+      document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    // ─── FAQ ──────────────────────────────────────────────────────────
+    function renderFAQ() {
+      const list = document.getElementById('faqList');
+      FAQS.forEach((faq, i) => {
+        const item = document.createElement('div');
+        item.className = 'faq-item';
+        item.innerHTML = `
+          <button class="faq-btn" onclick="toggleFAQ(this)">
+            <span class="faq-question">${faq.q}</span>
+            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">${faq.a}</div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function toggleFAQ(btn) {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+
+    // ─── MODAL ───────────────────────────────────────────────────────
+    function openModal(id) {
+      const topic = TOPICS.find(t => t.id === id);
+      if (!topic) return;
+
+      document.getElementById('modalHeader').innerHTML = `
+        <div class="modal-emoji">${topic.emoji}</div>
+        <div class="modal-title-wrap">
+          <div class="modal-title">${topic.name}</div>
+          <div class="modal-tags">${topic.tagLabels.map(t => `<span class="modal-tag">${t}</span>`).join('')}</div>
+        </div>
+      `;
+
+      document.getElementById('modalBody').innerHTML = `
+        <div>
+          <p class="modal-section-label">What it is</p>
+          <p class="modal-text">${topic.what}</p>
+        </div>
+        <div class="modal-divider"></div>
+        <div>
+          <p class="modal-section-label">How it might feel</p>
+          <ul class="modal-list">${topic.feels.map(f => `<li>${f}</li>`).join('')}</ul>
+        </div>
+        <div class="modal-divider"></div>
+        <div>
+          <p class="modal-section-label">What can help</p>
+          <ul class="modal-list">${topic.helps.map(h => `<li>${h}</li>`).join('')}</ul>
+        </div>
+        <div class="modal-divider"></div>
+        <div>
+          <p class="modal-section-label">Trusted resources</p>
+          <div class="modal-links">
+            ${topic.links.map(l => `
+              <a class="resource-link" href="${l.url}" target="_blank" rel="noopener noreferrer">
+                <div class="resource-link-left">
+                  <span class="resource-link-name">${l.name}</span>
+                  <span class="resource-link-source">${l.source}</span>
+                </div>
+                <span class="resource-link-arrow">↗</span>
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modalOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function closeModalOutside(e) {
+      if (e.target === document.getElementById('modalOverlay')) closeModal();
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // ─── FADE IN ─────────────────────────────────────────────────────
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // ─── INIT ─────────────────────────────────────────────────────────
+    renderCards();
+    renderFAQ();
+  </script>
+
+</body>
+</html>

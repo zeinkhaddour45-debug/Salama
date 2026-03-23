@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Active Recall | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #f5f0e8;
+      --cream-dark: #ece5d8;
+      --sage:       #7d9e75;
+      --sage-light: #c8d9c2;
+      --sage-mid:   #adc4a6;
+      --olive:      #4a6640;
+      --olive-dark: #374f31;
+      --text:       #2a2722;
+      --text-mid:   #5a5650;
+      --text-light: #8a8680;
+      --line:       #e4dbd0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    .leaf { position: fixed; pointer-events: none; opacity: 0.15; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 200px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 180px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 120px; transform: rotate(38deg); }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245, 240, 232, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .nav-back {
+      font-size: 13px;
+      color: var(--text-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      padding: 110px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .page-header {
+      text-align: center;
+      max-width: 560px;
+    }
+    .page-eyebrow {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(30px, 4vw, 46px);
+      font-weight: 500;
+      line-height: 1.18;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+    .page-title em { font-style: italic; color: var(--olive); }
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.85;
+    }
+
+    /* Card */
+    .card {
+      width: min(860px, 100%);
+      background: rgba(255, 252, 248, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      box-shadow: 0 12px 40px rgba(60,50,40,0.07), 0 2px 0 rgba(255,255,255,0.9) inset;
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+    }
+
+    /* ---- BUILD PHASE ---- */
+    .build-phase { padding: 40px 40px 36px; }
+
+    .phase-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .phase-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(20px, 2.4vw, 26px);
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.25;
+    }
+    .phase-title em { font-style: italic; color: var(--olive); }
+    .phase-desc {
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.8;
+      margin-top: 6px;
+    }
+
+    /* Column headers */
+    .col-headers {
+      display: grid;
+      grid-template-columns: 1fr 1fr 32px;
+      gap: 12px;
+      padding: 0 0 8px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 12px;
+    }
+    .col-header {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+
+    /* Rows */
+    .rows-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 32px;
+      gap: 12px;
+      align-items: center;
+    }
+    .input-row input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,253,250,0.9);
+      color: var(--text);
+      padding: 11px 14px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-row input::placeholder { color: var(--text-light); }
+    .input-row input:focus {
+      border-color: rgba(74,102,64,0.4);
+      box-shadow: 0 0 0 3px rgba(74,102,64,0.08);
+    }
+    .remove-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--text-light);
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 0;
+      transition: border-color 0.2s, color 0.2s, transform 0.15s;
+    }
+    .remove-btn:hover { border-color: #c9a0a0; color: #a06060; transform: none; }
+
+    .add-row-btn {
+      margin-top: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--olive);
+      background: transparent;
+      border: 1.5px dashed rgba(74,102,64,0.28);
+      border-radius: 12px;
+      padding: 10px 18px;
+      cursor: pointer;
+      width: calc(100% - 44px);
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    }
+    .add-row-btn:hover {
+      border-color: rgba(74,102,64,0.5);
+      background: rgba(74,102,64,0.04);
+      transform: none;
+    }
+
+    .build-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .build-note {
+      font-size: 12px;
+      color: var(--text-light);
+      line-height: 1.7;
+    }
+
+    /* ---- QUIZ PHASE ---- */
+    .quiz-phase { display: none; }
+
+    .quiz-top {
+      padding: 32px 40px 0;
+    }
+
+    /* Progress bar */
+    .progress-bar-wrap {
+      height: 3px;
+      background: rgba(74,102,64,0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--olive);
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    .progress-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-top: 8px;
+    }
+
+    /* Quiz table */
+    .quiz-table-wrap { padding: 24px 40px 36px; }
+
+    .quiz-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .quiz-table thead th {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      text-align: left;
+      padding: 0 16px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .quiz-table thead th:first-child { padding-left: 0; }
+
+    .quiz-row {
+      border-bottom: 1px solid rgba(228,219,208,0.5);
+    }
+    .quiz-row:last-child { border-bottom: none; }
+
+    .quiz-row td {
+      padding: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      vertical-align: middle;
+    }
+    .quiz-row td:first-child {
+      padding-left: 0;
+      font-weight: 500;
+      color: var(--text);
+      width: 42%;
+    }
+    .quiz-row td.answer-cell {
+      width: 58%;
+    }
+
+    .answer-cover {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(74,102,64,0.07);
+      border: 1.5px solid rgba(74,102,64,0.12);
+      border-radius: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--olive);
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      width: 100%;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      user-select: none;
+    }
+    .answer-cover:hover {
+      background: rgba(74,102,64,0.12);
+      border-color: rgba(74,102,64,0.22);
+      transform: none;
+    }
+    .answer-cover .cover-icon { font-size: 14px; flex-shrink: 0; }
+
+    .answer-text {
+      display: none;
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.65;
+      padding: 10px 0;
+      animation: revealIn 0.3s ease forwards;
+    }
+    @keyframes revealIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .quiz-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 0 40px 36px;
+      border-top: 1px solid var(--line);
+      padding-top: 24px;
+      align-items: center;
+    }
+
+    /* Shared buttons */
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 24px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      letter-spacing: 0.3px;
+    }
+    button:hover  { transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+    .btn-primary {
+      background: var(--olive);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(74,102,64,0.26);
+    }
+    .btn-primary:hover { background: var(--olive-dark); box-shadow: 0 10px 24px rgba(74,102,64,0.34); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-mid);
+      border: 1px solid var(--line);
+    }
+    .btn-secondary:hover { border-color: rgba(74,102,64,0.28); color: var(--text); transform: translateY(-2px); }
+
+    /* Completion state */
+    .done-banner {
+      display: none;
+      text-align: center;
+      padding: 28px 40px;
+      border-top: 1px solid var(--line);
+    }
+    .done-banner p {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-style: italic;
+      color: var(--olive);
+      line-height: 1.7;
+    }
+    .done-banner span {
+      display: block;
+      font-family: 'Inter', sans-serif;
+      font-style: normal;
+      font-size: 13px;
+      color: var(--text-light);
+      margin-top: 6px;
+    }
+
+    @media (max-width: 640px) {
+      nav { padding: 18px 24px; }
+      .build-phase, .quiz-top, .quiz-table-wrap, .quiz-controls { padding-left: 24px; padding-right: 24px; }
+      .col-headers, .input-row { grid-template-columns: 1fr 1fr 28px; gap: 8px; }
+      .add-row-btn { width: 100%; }
+      .quiz-row td:first-child { width: 38%; }
+    }
+  </style>
+</head>
+<body>
+
+  <svg class="leaf leaf-1" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.38)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 285 C100 285 18 198 18 118 C18 48 58 8 100 8 C142 8 182 48 182 118 C182 198 100 285 100 285Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.35)"/>
+    <path d="M100 285 L100 8" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 75 C80 65 50 74 30 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C80 105 44 116 24 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 75 C120 65 150 74 170 96" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 115 C120 105 156 116 176 140" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 275 C100 275 28 205 28 130 C28 62 64 16 100 16 C136 16 172 62 172 130 C172 205 100 275 100 275Z" stroke="#4a6640" stroke-width="2.5" fill="rgba(74,102,64,0.32)"/>
+    <path d="M100 275 L100 16" stroke="#4a6640" stroke-width="2"/>
+    <path d="M100 85 C82 75 56 83 40 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+    <path d="M100 85 C118 75 144 83 160 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
+  </svg>
+
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8,21 L8,4" stroke="rgba(74,102,64,0.55)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8,15 C4.5,13 1.5,9.5 3.5,6.5 C5,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,15 C11.5,13 14.5,9.5 12.5,6.5 C11,4.5 8,8 8,15Z" fill="rgba(74,102,64,0.8)"/>
+        <path d="M8,8 C5.5,5.5 5.5,1.5 8,0.5 C10.5,1.5 10.5,5.5 8,8Z" fill="rgba(74,102,64,0.9)"/>
+      </svg>
+      SALAMA
+    </a>
+    <a class="nav-back" href="study.html">← Back to Study</a>
+  </nav>
+
+  <div class="page">
+
+    <div class="page-header">
+      <p class="page-eyebrow">Active Recall</p>
+      <h1 class="page-title">Test what you <em>actually know.</em></h1>
+      <p class="page-subtitle">
+        Fill in your terms and answers, then cover the right column and reveal each one when you are ready.
+        Good for definitions, dates, formulas, anything that needs to stick.
+      </p>
+    </div>
+
+    <div class="card">
+
+      <!-- BUILD PHASE -->
+      <div class="build-phase" id="buildPhase">
+        <div class="phase-header">
+          <div>
+            <h2 class="phase-title">Build your <em>quiz</em></h2>
+            <p class="phase-desc">Add your term on the left and its answer on the right. You can add up to 20 rows.</p>
+          </div>
+          <button class="btn-primary" id="startQuizBtn">Start Quiz →</button>
+        </div>
+
+        <div class="col-headers">
+          <span class="col-header">Term / Topic</span>
+          <span class="col-header">Answer / Detail</span>
+          <span></span>
+        </div>
+
+        <div class="rows-list" id="rowsList"></div>
+
+        <button class="add-row-btn" id="addRowBtn">+ Add row</button>
+      </div>
+
+      <!-- QUIZ PHASE -->
+      <div class="quiz-phase" id="quizPhase">
+
+        <div class="quiz-top">
+          <div class="phase-header" style="margin-bottom: 12px;">
+            <div>
+              <h2 class="phase-title">Cover <em>&amp;</em> Quiz</h2>
+              <p class="phase-desc">Click each answer to reveal it. Try to recall it first.</p>
+            </div>
+            <button class="btn-secondary" id="editBtn">← Edit</button>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="progressFill"></div>
+          </div>
+          <p class="progress-label" id="progressLabel">0 revealed</p>
+        </div>
+
+        <div class="quiz-table-wrap">
+          <table class="quiz-table">
+            <thead>
+              <tr>
+                <th>Term / Topic</th>
+                <th>Answer / Detail</th>
+              </tr>
+            </thead>
+            <tbody id="quizBody"></tbody>
+          </table>
+        </div>
+
+        <div class="quiz-controls">
+          <button class="btn-primary"   id="revealAllBtn">Reveal All</button>
+          <button class="btn-secondary" id="resetRevealBtn">Cover All</button>
+        </div>
+
+        <div class="done-banner" id="doneBanner">
+          <p>You have seen everything.</p>
+          <span>Go again, cover all, or edit your table.</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const rowsList     = document.getElementById("rowsList");
+    const addRowBtn    = document.getElementById("addRowBtn");
+    const startQuizBtn = document.getElementById("startQuizBtn");
+    const editBtn      = document.getElementById("editBtn");
+    const revealAllBtn = document.getElementById("revealAllBtn");
+    const resetRevealBtn = document.getElementById("resetRevealBtn");
+    const buildPhase   = document.getElementById("buildPhase");
+    const quizPhase    = document.getElementById("quizPhase");
+    const quizBody     = document.getElementById("quizBody");
+    const progressFill = document.getElementById("progressFill");
+    const progressLabel = document.getElementById("progressLabel");
+    const doneBanner   = document.getElementById("doneBanner");
+
+    const MAX_ROWS = 20;
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function addRow(term = "", answer = "") {
+      if (rowsList.children.length >= MAX_ROWS) return;
+
+      const row = document.createElement("div");
+      row.className = "input-row";
+      row.innerHTML = `
+        <input type="text" placeholder="e.g. Mitosis" value="${escapeHtml(term)}" />
+        <input type="text" placeholder="e.g. Cell division process" value="${escapeHtml(answer)}" />
+        <button class="remove-btn" title="Remove row">×</button>
+      `;
+      row.querySelector(".remove-btn").addEventListener("click", () => {
+        row.remove();
+        if (rowsList.children.length === 0) addRow();
+      });
+      rowsList.appendChild(row);
+
+      if (rowsList.children.length >= MAX_ROWS) {
+        addRowBtn.style.display = "none";
+      }
+    }
+
+    function getRows() {
+      return Array.from(rowsList.querySelectorAll(".input-row")).map(row => {
+        const inputs = row.querySelectorAll("input");
+        return { term: inputs[0].value.trim(), answer: inputs[1].value.trim() };
+      }).filter(r => r.term || r.answer);
+    }
+
+    function updateProgress() {
+      const total   = quizBody.querySelectorAll(".answer-cover, .answer-text").length;
+      const revealed = quizBody.querySelectorAll(".answer-text[style*='block']").length +
+                       quizBody.querySelectorAll(".answer-text:not([style])").length;
+
+      // count actually visible
+      let visCount = 0;
+      quizBody.querySelectorAll(".answer-text").forEach(el => {
+        if (el.style.display === "block") visCount++;
+      });
+
+      const pct = total > 0 ? (visCount / total) * 100 : 0;
+      progressFill.style.width = pct + "%";
+      progressLabel.textContent = `${visCount} of ${total} revealed`;
+
+      if (visCount === total && total > 0) {
+        doneBanner.style.display = "block";
+      } else {
+        doneBanner.style.display = "none";
+      }
+    }
+
+    function buildQuiz() {
+      const rows = getRows();
+      if (rows.length === 0) {
+        startQuizBtn.textContent = "Add at least one row";
+        setTimeout(() => startQuizBtn.textContent = "Start Quiz →", 2000);
+        return;
+      }
+
+      quizBody.innerHTML = "";
+
+      rows.forEach(({ term, answer }) => {
+        const tr = document.createElement("tr");
+        tr.className = "quiz-row";
+        tr.innerHTML = `
+          <td>${escapeHtml(term)}</td>
+          <td class="answer-cell">
+            <div class="answer-cover">
+              <span class="cover-icon">👁</span>
+              <span>Tap to reveal</span>
+            </div>
+            <div class="answer-text" style="display:none;">${escapeHtml(answer)}</div>
+          </td>
+        `;
+
+        const cover = tr.querySelector(".answer-cover");
+        const text  = tr.querySelector(".answer-text");
+
+        cover.addEventListener("click", () => {
+          cover.style.display = "none";
+          text.style.display  = "block";
+          updateProgress();
+        });
+
+        quizBody.appendChild(tr);
+      });
+
+      buildPhase.style.display = "none";
+      quizPhase.style.display  = "block";
+      doneBanner.style.display = "none";
+      updateProgress();
+    }
+
+    revealAllBtn.addEventListener("click", () => {
+      quizBody.querySelectorAll(".answer-cover").forEach(c => c.style.display = "none");
+      quizBody.querySelectorAll(".answer-text").forEach(t => t.style.display = "block");
+      updateProgress();
+    });
+
+    resetRevealBtn.addEventListener("click", () => {
+      quizBody.querySelectorAll(".answer-cover").forEach(c => c.style.display = "");
+      quizBody.querySelectorAll(".answer-text").forEach(t => t.style.display = "none");
+      doneBanner.style.display = "none";
+      updateProgress();
+    });
+
+    editBtn.addEventListener("click", () => {
+      quizPhase.style.display  = "none";
+      buildPhase.style.display = "block";
+      addRowBtn.style.display  = rowsList.children.length < MAX_ROWS ? "" : "none";
+    });
+
+    startQuizBtn.addEventListener("click", buildQuiz);
+    addRowBtn.addEventListener("click", () => addRow());
+
+    // Start with 4 blank rows
+    addRow(); addRow(); addRow(); addRow();
+  </script>
+
+</body>
+</html>

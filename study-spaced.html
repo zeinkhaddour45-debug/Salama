@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spaced Repetition | Salama</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:      #f5f0e8;
+      --cream-dark: #ece5d8;
+      --sage:       #7d9e75;
+      --sage-light: #c8d9c2;
+      --sage-mid:   #adc4a6;
+      --olive:      #4a6640;
+      --olive-dark: #374f31;
+      --text:       #2a2722;
+      --text-mid:   #5a5650;
+      --text-light: #8a8680;
+      --line:       #e4dbd0;
+      --paper:      #fdfbf7;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    .leaf { position: fixed; pointer-events: none; opacity: 0.15; z-index: 0; }
+    .leaf-1 { top: 20%; left: -20px; width: 200px; transform: rotate(-18deg); }
+    .leaf-2 { bottom: 10%; right: -10px; width: 180px; transform: rotate(158deg); }
+    .leaf-3 { top: 8%; right: 4%; width: 120px; transform: rotate(38deg); }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(245, 240, 232, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-back {
+      font-size: 13px;
+      color: var(--text-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--olive); }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      padding: 110px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .page-header {
+      text-align: center;
+      max-width: 560px;
+    }
+    .page-eyebrow {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 500;
+      line-height: 1.2;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .page-title em { font-style: italic; color: var(--olive); }
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.85;
+    }
+
+    /* ─── CARD SHELL ─── */
+    .card {
+      width: min(680px, 100%);
+      background: rgba(255, 252, 248, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: 0 12px 40px rgba(60,50,40,0.07), 0 2px 0 rgba(255,255,255,0.9) inset;
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+      padding: 40px;
+    }
+
+    /* ─── INPUT PHASE ─── */
+    #inputPhase { display: flex; flex-direction: column; gap: 20px; }
+
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      padding: 16px 18px;
+      background: var(--cream);
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { border-color: var(--sage-mid); }
+    textarea::placeholder { color: var(--text-light); }
+
+    .tips-box {
+      padding: 16px 18px;
+      background: rgba(245, 240, 232, 0.7);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .tips-title {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-mid);
+    }
+    .tips-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 16px;
+    }
+    .tip-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .tip-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--olive);
+    }
+    .tip-example {
+      font-size: 11.5px;
+      color: var(--text-light);
+      font-family: monospace;
+      line-height: 1.5;
+    }
+    .tips-warn {
+      font-size: 12px;
+      color: var(--text-light);
+      line-height: 1.6;
+      padding-top: 6px;
+      border-top: 1px solid var(--line);
+    }
+    .tips-warn strong { color: var(--text-mid); font-weight: 600; }
+
+    .generate-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--olive);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+    .generate-btn:hover { background: var(--olive-dark); transform: translateY(-1px); }
+    .generate-btn:active { transform: translateY(0); }
+    .generate-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    /* ─── REVIEW PHASE ─── */
+    #reviewPhase { display: none; flex-direction: column; gap: 24px; }
+
+    .progress-section { display: flex; flex-direction: column; gap: 8px; }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .progress-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-mid);
+    }
+    .progress-detail {
+      font-size: 11.5px;
+      color: var(--text-light);
+    }
+
+    .progress-bar-track {
+      height: 5px;
+      background: var(--line);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--sage), var(--olive));
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+
+    /* Flip card */
+    .flip-area {
+      perspective: 1000px;
+      height: 240px;
+      cursor: pointer;
+    }
+    .flip-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .flip-inner.flipped { transform: rotateY(180deg); }
+
+    .flip-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      text-align: center;
+    }
+    .flip-front {
+      background: linear-gradient(145deg, #f7f2ea, #f0e9db);
+      border: 1.5px solid var(--line);
+    }
+    .flip-back {
+      background: linear-gradient(145deg, #eef4ec, #e4efdf);
+      border: 1.5px solid rgba(125,158,117,0.3);
+      transform: rotateY(180deg);
+    }
+
+    .flip-hint {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .flip-content {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(16px, 2.5vw, 22px);
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .flip-back .flip-hint { color: var(--sage); }
+    .flip-back .flip-content { color: var(--olive-dark); }
+
+    .card-number {
+      margin-top: 16px;
+      font-size: 11.5px;
+      color: var(--text-light);
+    }
+
+    /* Streak dots */
+    .streak-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .streak-label {
+      font-size: 11.5px;
+      color: var(--text-light);
+      letter-spacing: 1px;
+    }
+    .streak-dots {
+      display: flex;
+      gap: 10px;
+    }
+    .streak-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--sage-mid);
+      background: transparent;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .streak-dot.filled {
+      background: var(--sage);
+      border-color: var(--sage);
+      transform: scale(1.15);
+    }
+    .streak-dot.max {
+      background: var(--olive);
+      border-color: var(--olive);
+      animation: dotPop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes dotPop {
+      0% { transform: scale(1.15); }
+      50% { transform: scale(1.5); }
+      100% { transform: scale(1.15); }
+    }
+
+    /* Answer buttons */
+    .answer-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: all 0.3s 0.1s;
+      pointer-events: none;
+    }
+    .answer-btns.visible {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .btn-notyet, .btn-gotit {
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-notyet {
+      background: rgba(90,86,80,0.08);
+      color: var(--text-mid);
+    }
+    .btn-notyet:hover { background: rgba(90,86,80,0.14); color: var(--text); }
+    .btn-gotit {
+      background: var(--olive);
+      color: white;
+    }
+    .btn-gotit:hover { background: var(--olive-dark); transform: translateY(-1px); }
+
+    /* Archive flash */
+    @keyframes archiveFlash {
+      0% { box-shadow: 0 0 0 0 rgba(74,102,64,0.4); }
+      70% { box-shadow: 0 0 0 16px rgba(74,102,64,0); }
+      100% { box-shadow: 0 0 0 0 rgba(74,102,64,0); }
+    }
+    .flip-area.archiving .flip-inner { animation: archiveFlash 0.5s ease-out; }
+
+    /* Archived pile */
+    .archived-section { display: flex; flex-direction: column; gap: 10px; }
+    .archived-title {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      font-weight: 600;
+    }
+    .archived-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .archived-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 11px;
+      background: rgba(125,158,117,0.12);
+      border: 1px solid rgba(125,158,117,0.25);
+      border-radius: 99px;
+      font-size: 12px;
+      color: var(--olive);
+      font-weight: 500;
+      animation: chipIn 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    @keyframes chipIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* ─── DONE PHASE ─── */
+    #donePhase {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    .done-icon {
+      width: 72px;
+      height: 72px;
+      background: rgba(125,158,117,0.12);
+      border: 1.5px solid rgba(125,158,117,0.3);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 32px;
+    }
+
+    .done-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-style: italic;
+      color: var(--text);
+    }
+    .done-sub {
+      font-size: 14px;
+      color: var(--text-mid);
+      line-height: 1.75;
+      max-width: 380px;
+    }
+
+    .done-stats {
+      display: flex;
+      gap: 32px;
+      padding: 20px 28px;
+      background: var(--cream);
+      border-radius: 14px;
+      border: 1px solid var(--line);
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--olive);
+      display: block;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+    }
+
+    .done-btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-secondary {
+      padding: 12px 22px;
+      background: transparent;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-secondary:hover { border-color: var(--sage-mid); color: var(--text); }
+    .btn-primary {
+      padding: 12px 22px;
+      background: var(--olive);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-primary:hover { background: var(--olive-dark); }
+
+    /* Error */
+    .error-box {
+      display: none;
+      padding: 14px 18px;
+      background: rgba(180,60,60,0.07);
+      border: 1px solid rgba(180,60,60,0.2);
+      border-radius: 10px;
+      font-size: 13px;
+      color: #8b3a3a;
+      line-height: 1.6;
+    }
+
+    /* Fade in */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .fade-in.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      .card { padding: 28px 22px; }
+      .flip-area { height: 200px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Leaves -->
+  <svg class="leaf leaf-1" viewBox="0 0 200 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/>
+    <path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/>
+  </svg>
+  <svg class="leaf leaf-2" viewBox="0 0 200 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/>
+    <path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/>
+  </svg>
+  <svg class="leaf leaf-3" viewBox="0 0 200 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 10 C20 60 10 160 50 240 C70 280 100 310 100 330 C100 310 130 280 150 240 C190 160 180 60 100 10Z" fill="#4a6640"/>
+    <path d="M100 10 C100 120 100 230 100 330" stroke="#7d9e75" stroke-width="2" opacity="0.5"/>
+  </svg>
+
+  <nav>
+    <a href="index.html" class="nav-logo">SALAMA</a>
+    <a href="study.html" class="nav-back">← Back to Study</a>
+  </nav>
+
+  <main class="page">
+
+    <header class="page-header fade-in">
+      <p class="page-eyebrow">Study Tools</p>
+      <h1 class="page-title">Spaced <em>Repetition</em></h1>
+      <p class="page-subtitle">Paste your notes. We'll turn them into cards.<br>Get each one right three times to archive it.</p>
+    </header>
+
+    <div class="card fade-in">
+
+      <!-- INPUT PHASE -->
+      <div id="inputPhase">
+        <div>
+          <p class="section-label">Your Notes</p>
+          <textarea id="notesInput" placeholder="Paste your notes here..."></textarea>
+        </div>
+
+        <div class="tips-box">
+          <p class="tips-title">What works best</p>
+          <div class="tips-grid">
+            <div class="tip-row">
+              <span class="tip-label">Term: Definition</span>
+              <span class="tip-example">Mitosis: cell division that...</span>
+            </div>
+            <div class="tip-row">
+              <span class="tip-label">Q: / A: pairs</span>
+              <span class="tip-example">Q: What is osmosis?<br>A: Movement of water...</span>
+            </div>
+            <div class="tip-row">
+              <span class="tip-label">Bullet points with colons</span>
+              <span class="tip-example">- Photosynthesis: converts light...</span>
+            </div>
+            <div class="tip-row">
+              <span class="tip-label">Headings + content</span>
+              <span class="tip-example">## The Water Cycle<br>Water evaporates...</span>
+            </div>
+          </div>
+          <p class="tips-warn"><strong>Heads up:</strong> Plain paragraphs without structure won't generate many cards. The more your notes look like the examples above, the better your deck will be.</p>
+        </div>
+
+        <div id="errorBox" class="error-box"></div>
+
+        <button class="generate-btn" onclick="handleGenerate()">
+          Generate My Cards
+        </button>
+      </div>
+
+      <!-- REVIEW PHASE -->
+      <div id="reviewPhase">
+
+        <div class="progress-section">
+          <div class="progress-top">
+            <span class="progress-label" id="progressLabel">0 archived</span>
+            <span class="progress-detail" id="progressDetail">0 of 0</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <div class="flip-area" id="flipArea" onclick="handleFlip()">
+          <div class="flip-inner" id="flipInner">
+            <div class="flip-face flip-front">
+              <p class="flip-hint">Tap to flip</p>
+              <p class="flip-content" id="cardFront"></p>
+            </div>
+            <div class="flip-face flip-back">
+              <p class="flip-hint">Answer</p>
+              <p class="flip-content" id="cardBack"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="streak-row">
+          <span class="streak-label">Streak: get 3 in a row to archive</span>
+          <div class="streak-dots">
+            <div class="streak-dot" id="dot0"></div>
+            <div class="streak-dot" id="dot1"></div>
+            <div class="streak-dot" id="dot2"></div>
+          </div>
+        </div>
+
+        <div class="answer-btns" id="answerBtns">
+          <button class="btn-notyet" onclick="handleAnswer(false)">✕ Not yet</button>
+          <button class="btn-gotit" onclick="handleAnswer(true)">✓ Got it</button>
+        </div>
+
+        <div class="archived-section" id="archivedSection" style="display:none;">
+          <p class="archived-title">Archived</p>
+          <div class="archived-chips" id="archivedChips"></div>
+        </div>
+
+      </div>
+
+      <!-- DONE PHASE -->
+      <div id="donePhase">
+        <div class="done-icon">✓</div>
+        <p class="done-title">Deck complete.</p>
+        <p class="done-sub">You've archived every card. Take a break. Your brain did work just now.</p>
+        <div class="done-stats">
+          <div class="stat">
+            <span class="stat-num" id="doneTotal">0</span>
+            <span class="stat-label">Cards</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num" id="doneRounds">0</span>
+            <span class="stat-label">Rounds</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num" id="doneAnswers">0</span>
+            <span class="stat-label">Answers</span>
+          </div>
+        </div>
+        <div class="done-btns">
+          <button class="btn-secondary" onclick="restartReview()">Review again</button>
+          <button class="btn-primary" onclick="backToInput()">New notes</button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // ─── STATE ───────────────────────────────────────────────────────
+    let cards = [];
+    let queue = [];
+    let currentIdx = -1;
+    let isFlipped = false;
+    let totalAnswers = 0;
+    let totalRounds = 0;
+
+    // ─── GENERATE ────────────────────────────────────────────────────
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      box.textContent = msg;
+      box.style.display = 'block';
+    }
+    function clearError() {
+      document.getElementById('errorBox').style.display = 'none';
+    }
+
+    function handleGenerate() {
+      clearError();
+      const notes = document.getElementById('notesInput').value.trim();
+      if (!notes) { showError('Paste your notes first.'); return; }
+
+      const generated = parseNotes(notes);
+
+      if (generated.length === 0) {
+        showError('No cards could be found. Try formatting your notes with "Term: Definition" lines, bullet points, or Q: / A: pairs. See the examples above.');
+        return;
+      }
+
+      initDeck(generated);
+      setPhase('review');
+    }
+
+    // ─── PARSER ──────────────────────────────────────────────────────
+    function parseNotes(text) {
+      const raw = [];
+      const lines = text.split('\n').map(l => l.trim());
+      const seen  = new Set();
+
+      function add(front, back) {
+        front = front.replace(/\*\*/g, '').replace(/^#+\s*/, '').trim();
+        back  = back.replace(/\*\*/g, '').trim();
+        const key = front.toLowerCase().slice(0, 40);
+        if (front.length < 3 || back.length < 4 || seen.has(key)) return;
+        seen.add(key);
+        raw.push({ front, back });
+      }
+
+      let i = 0;
+      while (i < lines.length) {
+        const line = lines[i];
+        if (!line) { i++; continue; }
+
+        // Strip bullet / number prefix for processing
+        const stripped = line.replace(/^[-•*]\s+/, '').replace(/^\d+\.\s+/, '');
+
+        // ── Q: / A: pairs ──────────────────────────────────────────
+        if (/^q[:.]\s+/i.test(stripped)) {
+          const front = stripped.replace(/^q[:.]\s+/i, '').trim();
+          const next  = lines[i + 1] ? lines[i + 1].trim().replace(/^[-•*]\s+/,'').replace(/^\d+\.\s+/,'') : '';
+          if (/^a[:.]\s+/i.test(next)) {
+            add(front, next.replace(/^a[:.]\s+/i, '').trim());
+            i += 2; continue;
+          }
+        }
+
+        // ── Heading → collect following content as back ─────────────
+        if (/^#{1,4}\s+/.test(line) || /^\*\*[^*]{3,}\*\*$/.test(line)) {
+          const front = stripped.replace(/^#{1,4}\s+/,'');
+          const parts = [];
+          let j = i + 1;
+          while (j < lines.length && parts.length < 3) {
+            const l = lines[j].trim();
+            if (!l) { j++; continue; }
+            if (/^#{1,4}\s+/.test(l) || /^\*\*[^*]{3,}\*\*$/.test(l)) break;
+            // Prefer sub-items that look like definitions
+            const sub = l.replace(/^[-•*]\s+/,'').replace(/^\d+\.\s+/,'');
+            const colonIdx = sub.indexOf(':');
+            if (colonIdx > 2 && colonIdx < 50) {
+              // It's a definition itself, add as separate card, don't fold into heading
+              break;
+            }
+            parts.push(sub);
+            j++;
+          }
+          if (front && parts.length > 0) {
+            add(front, parts.join(' ').slice(0, 200));
+            i++; continue;
+          }
+        }
+
+        // ── Term: Definition (colon split) ──────────────────────────
+        const colonIdx = stripped.indexOf(':');
+        if (colonIdx > 2 && colonIdx < 55) {
+          const front = stripped.slice(0, colonIdx).trim();
+          const back  = stripped.slice(colonIdx + 1).trim();
+          // Front should look like a term (not a sentence)
+          if (back.length >= 6 && !/\s{2,}/.test(front) && front.split(' ').length <= 8) {
+            add(front, back);
+            i++; continue;
+          }
+        }
+
+        // ── "X is/means/refers to Y" ────────────────────────────────
+        const defMatch = stripped.match(/^(.{4,45}?)\s+(?:is|are|means|refers to|is defined as|stands for)\s+(.{8,})$/i);
+        if (defMatch) {
+          add(defMatch[1].trim(), stripped);
+          i++; continue;
+        }
+
+        // ── Long bullet (≥10 words, no colon) → "What is [first 4 words]?" ──
+        const words = stripped.split(/\s+/);
+        if (stripped.length > 60 && words.length >= 10 && (line.startsWith('-') || line.startsWith('•') || line.startsWith('*') || /^\d+\./.test(line))) {
+          const front = words.slice(0, 4).join(' ') + '...';
+          add(front, stripped);
+          i++; continue;
+        }
+
+        i++;
+      }
+
+      return raw;
+    }
+
+    // ─── DECK ─────────────────────────────────────────────────────────
+    function initDeck(rawCards) {
+      cards = rawCards.map(c => ({
+        front: c.front,
+        back: c.back,
+        streak: 0,
+        archived: false
+      }));
+      totalAnswers = 0;
+      totalRounds = 0;
+      document.getElementById('archivedChips').innerHTML = '';
+      document.getElementById('archivedSection').style.display = 'none';
+      refillQueue();
+      nextCard();
+      updateProgress();
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function refillQueue() {
+      queue = cards
+        .map((_, i) => i)
+        .filter(i => !cards[i].archived);
+      shuffle(queue);
+      if (queue.length > 0) totalRounds++;
+    }
+
+    function nextCard() {
+      if (queue.length === 0) refillQueue();
+      if (queue.length === 0) { setPhase('done'); return; }
+      currentIdx = queue.shift();
+      showCard(cards[currentIdx]);
+      resetFlip();
+    }
+
+    function showCard(card) {
+      document.getElementById('cardFront').textContent = card.front;
+      document.getElementById('cardBack').textContent = card.back;
+      updateStreakDots(card.streak);
+      document.getElementById('answerBtns').classList.remove('visible');
+    }
+
+    // ─── FLIP ────────────────────────────────────────────────────────
+    function handleFlip() {
+      if (isFlipped) return;
+      isFlipped = true;
+      document.getElementById('flipInner').classList.add('flipped');
+      document.getElementById('answerBtns').classList.add('visible');
+    }
+
+    function resetFlip() {
+      isFlipped = false;
+      const inner = document.getElementById('flipInner');
+      inner.classList.remove('flipped');
+      inner.style.transition = 'none';
+      requestAnimationFrame(() => {
+        inner.style.transition = '';
+      });
+      document.getElementById('answerBtns').classList.remove('visible');
+    }
+
+    // ─── ANSWER ──────────────────────────────────────────────────────
+    function handleAnswer(correct) {
+      if (!isFlipped) return;
+      totalAnswers++;
+      const card = cards[currentIdx];
+
+      if (correct) {
+        card.streak++;
+        if (card.streak >= 3) {
+          card.archived = true;
+          archiveCard(card);
+        }
+      } else {
+        card.streak = 0;
+      }
+
+      updateProgress();
+
+      const active = cards.filter(c => !c.archived).length;
+      if (active === 0) {
+        setTimeout(() => setPhase('done'), 600);
+        return;
+      }
+
+      setTimeout(nextCard, 240);
+    }
+
+    function archiveCard(card) {
+      const flipArea = document.getElementById('flipArea');
+      flipArea.classList.add('archiving');
+      setTimeout(() => flipArea.classList.remove('archiving'), 500);
+
+      const section = document.getElementById('archivedSection');
+      const chips   = document.getElementById('archivedChips');
+      const chip = document.createElement('div');
+      chip.className = 'archived-chip';
+      chip.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#4a6640" stroke-width="1.2"/><path d="M3.5 6l2 2 3-3" stroke="#4a6640" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>${escapeHtml(card.front)}`;
+      chips.appendChild(chip);
+      section.style.display = 'block';
+    }
+
+    // ─── STREAK DOTS ─────────────────────────────────────────────────
+    function updateStreakDots(streak) {
+      for (let i = 0; i < 3; i++) {
+        const dot = document.getElementById('dot' + i);
+        dot.className = 'streak-dot';
+        if (streak >= 3) dot.classList.add('max');
+        else if (streak > i) dot.classList.add('filled');
+      }
+    }
+
+    // ─── PROGRESS ────────────────────────────────────────────────────
+    function updateProgress() {
+      const total    = cards.length;
+      const archived = cards.filter(c => c.archived).length;
+      const pct      = total > 0 ? (archived / total) * 100 : 0;
+
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressLabel').textContent =
+        archived === 1 ? '1 archived' : `${archived} archived`;
+      document.getElementById('progressDetail').textContent =
+        `${archived} of ${total}`;
+    }
+
+    // ─── DONE ────────────────────────────────────────────────────────
+    function showDoneStats() {
+      document.getElementById('doneTotal').textContent   = cards.length;
+      document.getElementById('doneRounds').textContent  = totalRounds;
+      document.getElementById('doneAnswers').textContent = totalAnswers;
+    }
+
+    function restartReview() {
+      cards.forEach(c => { c.streak = 0; c.archived = false; });
+      totalAnswers = 0;
+      totalRounds  = 0;
+      document.getElementById('archivedChips').innerHTML = '';
+      document.getElementById('archivedSection').style.display = 'none';
+      refillQueue();
+      nextCard();
+      updateProgress();
+      setPhase('review');
+    }
+
+    function backToInput() {
+      cards = [];
+      queue = [];
+      setPhase('input');
+    }
+
+    // ─── PHASES ──────────────────────────────────────────────────────
+    function setPhase(phase) {
+      document.getElementById('inputPhase').style.display  = phase === 'input'  ? 'flex' : 'none';
+      document.getElementById('reviewPhase').style.display = phase === 'review' ? 'flex' : 'none';
+      document.getElementById('donePhase').style.display   = phase === 'done'   ? 'flex' : 'none';
+      if (phase === 'done') showDoneStats();
+    }
+
+    // ─── UTILS ───────────────────────────────────────────────────────
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ─── FADE IN ─────────────────────────────────────────────────────
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  </script>
+
+</body>
+</html>

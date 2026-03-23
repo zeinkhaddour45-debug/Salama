@@ -370,6 +370,13 @@
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    function safeRedirect() {
+      const raw = new URLSearchParams(window.location.search).get('redirect') || '';
+      // Only allow relative paths — reject anything with a protocol or leading //
+      if (raw && /^\/[^/]/.test(raw)) return raw;
+      return 'index.html';
+    }
+
     // If already logged in, go back to home
     (async function() {
       const { data: { session } } = await db.auth.getSession();
@@ -421,8 +428,7 @@
         return;
       }
 
-      const redirect = new URLSearchParams(window.location.search).get('redirect');
-      window.location.href = redirect || 'index.html';
+      window.location.href = safeRedirect();
     }
 
     async function handleSignUp(e) {
@@ -442,8 +448,7 @@
 
       // If Supabase auto-confirmed (email confirmation disabled), respect redirect
       if (data.session) {
-        const redirect = new URLSearchParams(window.location.search).get('redirect');
-        window.location.href = redirect || 'index.html';
+        window.location.href = safeRedirect();
         return;
       }
 

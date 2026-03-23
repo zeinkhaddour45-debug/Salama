@@ -268,11 +268,86 @@
       text-underline-offset: 3px;
     }
 
+    /* REMEMBER ME / FORGOT */
+    .remember-row {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .remember-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-mid);
+      cursor: pointer;
+      user-select: none;
+    }
+    .remember-label input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--olive);
+      cursor: pointer;
+    }
+    .forgot-link {
+      background: none;
+      border: none;
+      color: var(--olive);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .forgot-link:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* PASSWORD STRENGTH */
+    .pw-strength {
+      height: 4px;
+      border-radius: 4px;
+      background: var(--cream-dark);
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .pw-strength-bar {
+      height: 100%;
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s, background 0.3s;
+    }
+    .pw-strength-hint {
+      font-size: 11px;
+      color: var(--text-light);
+      margin-top: 4px;
+      min-height: 16px;
+    }
+
+    /* LOGGED IN STATE */
+    .logged-in-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin-top: 24px;
+    }
+    .btn-danger-link {
+      background: none;
+      border: none;
+      color: #b03a2e;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
     @media (max-width: 480px) {
       nav { padding: 16px 20px; }
       .auth-card { padding: 40px 28px; }
     }
-      @media (max-width: 768px) { .leaf { display: none !important; } }
+    @media (max-width: 768px) { .leaf { display: none !important; } }
   </style>
 </head>
 <body>
@@ -335,6 +410,13 @@
             <label class="form-label" for="signin-password">Password</label>
             <input class="form-input" type="password" id="signin-password" placeholder="••••••••" required autocomplete="current-password" />
           </div>
+          <div class="form-group remember-row">
+            <label class="remember-label">
+              <input type="checkbox" id="remember-me" checked />
+              Remember me
+            </label>
+            <button type="button" class="forgot-link" id="forgot-btn" onclick="handleForgotPassword()">Forgot password?</button>
+          </div>
           <button class="btn-submit" type="submit" id="signin-btn">Sign In</button>
         </form>
 
@@ -346,12 +428,25 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="signup-password">Password</label>
-            <input class="form-input" type="password" id="signup-password" placeholder="Minimum 6 characters" required autocomplete="new-password" minlength="6" />
+            <input class="form-input" type="password" id="signup-password" placeholder="Min 8 chars + 1 number" required autocomplete="new-password" minlength="8" oninput="updatePasswordStrength(this.value)" />
+            <div class="pw-strength"><div class="pw-strength-bar" id="pw-bar"></div></div>
+            <p class="pw-strength-hint" id="pw-hint"></p>
           </div>
           <button class="btn-submit" type="submit" id="signup-btn">Create Account</button>
         </form>
 
         <p class="auth-message" id="auth-message"></p>
+      </div>
+
+      <!-- Already logged in state -->
+      <div class="success-state" id="logged-in-state">
+        <div class="success-icon">🌿</div>
+        <h2 class="success-title">Welcome back</h2>
+        <p class="success-body">You're signed in as<br><strong id="logged-in-email" style="color: var(--olive);"></strong></p>
+        <div class="logged-in-actions">
+          <a href="journaling.html" class="btn-submit" style="display:block; text-decoration:none; text-align:center;">Continue to Journal</a>
+          <button onclick="handleSignOut()" class="btn-danger-link">Sign out of this device</button>
+        </div>
       </div>
 
       <!-- Email confirmation success state -->
@@ -369,20 +464,46 @@
     const SUPABASE_URL = 'https://yrbcozgtjjzexrqoynax.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_XMbgbPt2RZD_yeCEbc94oQ_7m2PQs5g';
     const { createClient } = supabase;
-    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let _activeClient = null;
+
+    // Create a Supabase client using either localStorage (persistent) or sessionStorage (tab-only)
+    function makeClient(useSessionStorage) {
+      return createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: { persistSession: true, storage: useSessionStorage ? sessionStorage : localStorage }
+      });
+    }
 
     function safeRedirect() {
       const raw = new URLSearchParams(window.location.search).get('redirect') || '';
-      // Only allow relative paths — reject anything with a protocol or leading //
       if (raw && /^\/[^/]/.test(raw)) return raw;
       return 'index.html';
     }
 
-    // If already logged in, go back to home
-    (async function() {
-      const { data: { session } } = await db.auth.getSession();
-      if (session) window.location.href = 'index.html';
+    // On page load: check both storages for an existing session
+    (async function init() {
+      const persistDb = makeClient(false);
+      const { data: { session } } = await persistDb.auth.getSession();
+      if (session) { showLoggedIn(session, persistDb); return; }
+
+      const tempDb = makeClient(true);
+      const { data: { session: tempSession } } = await tempDb.auth.getSession();
+      if (tempSession) { showLoggedIn(tempSession, tempDb); }
     })();
+
+    function showLoggedIn(session, client) {
+      _activeClient = client;
+      document.getElementById('auth-ui').style.display = 'none';
+      document.getElementById('logged-in-state').classList.add('visible');
+      document.getElementById('logged-in-email').textContent = session.user.email;
+    }
+
+    async function handleSignOut() {
+      if (_activeClient) await _activeClient.auth.signOut();
+      _activeClient = null;
+      document.getElementById('logged-in-state').classList.remove('visible');
+      document.getElementById('auth-ui').style.display = '';
+    }
 
     // Open the correct tab based on URL parameter
     if (new URLSearchParams(window.location.search).get('tab') === 'signup') {
@@ -414,21 +535,47 @@
       btn.textContent = loading ? 'Please wait…' : (btnId === 'signin-btn' ? 'Sign In' : 'Create Account');
     }
 
+    function validatePassword(password) {
+      if (password.length < 8) return 'Password must be at least 8 characters.';
+      if (!/\d/.test(password)) return 'Password must include at least one number.';
+      return null;
+    }
+
+    function updatePasswordStrength(password) {
+      const bar = document.getElementById('pw-bar');
+      const hint = document.getElementById('pw-hint');
+      if (!bar) return;
+      if (!password) { bar.style.width = '0%'; hint.textContent = ''; return; }
+
+      let score = 0;
+      if (password.length >= 8) score++;
+      if (/\d/.test(password)) score++;
+      if (/[A-Z]/.test(password)) score++;
+      if (/[^a-zA-Z0-9]/.test(password)) score++;
+
+      const colors = ['#c0392b', '#e67e22', '#7d9e75', '#4a6640'];
+      const labels = ['Too weak', 'Weak', 'Good', 'Strong'];
+      const widths  = ['25%', '50%', '75%', '100%'];
+      const i = Math.max(0, score - 1);
+      bar.style.width = widths[i];
+      bar.style.background = colors[i];
+      hint.textContent = labels[i];
+      hint.style.color = colors[i];
+    }
+
     async function handleSignIn(e) {
       e.preventDefault();
       const email = document.getElementById('signin-email').value.trim();
       const password = document.getElementById('signin-password').value;
+      const rememberMe = document.getElementById('remember-me').checked;
       setLoading('signin-btn', true);
       hideMessage();
 
-      const { error } = await db.auth.signInWithPassword({ email, password });
+      const client = makeClient(!rememberMe); // session-only storage if not remembering
+      const { error } = await client.auth.signInWithPassword({ email, password });
       setLoading('signin-btn', false);
 
-      if (error) {
-        showMessage(error.message, 'error');
-        return;
-      }
-
+      if (error) { showMessage(error.message, 'error'); return; }
       window.location.href = safeRedirect();
     }
 
@@ -436,26 +583,43 @@
       e.preventDefault();
       const email = document.getElementById('signup-email').value.trim();
       const password = document.getElementById('signup-password').value;
+
+      const pwError = validatePassword(password);
+      if (pwError) { showMessage(pwError, 'error'); return; }
+
       setLoading('signup-btn', true);
       hideMessage();
 
-      const { data, error } = await db.auth.signUp({ email, password });
+      const client = makeClient(false);
+      const { data, error } = await client.auth.signUp({ email, password });
       setLoading('signup-btn', false);
 
-      if (error) {
-        showMessage(error.message, 'error');
-        return;
-      }
+      if (error) { showMessage(error.message, 'error'); return; }
 
-      // If Supabase auto-confirmed (email confirmation disabled), respect redirect
-      if (data.session) {
-        window.location.href = safeRedirect();
-        return;
-      }
+      if (data.session) { window.location.href = safeRedirect(); return; }
 
-      // Email confirmation required, show success state
       document.getElementById('auth-ui').style.display = 'none';
       document.getElementById('success-state').classList.add('visible');
+    }
+
+    async function handleForgotPassword() {
+      const email = document.getElementById('signin-email').value.trim();
+      if (!email) { showMessage('Enter your email address above first.', 'error'); return; }
+
+      const btn = document.getElementById('forgot-btn');
+      btn.textContent = 'Sending…';
+      btn.disabled = true;
+
+      const client = makeClient(false);
+      const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://www.salamaworld.com/login.html'
+      });
+
+      btn.textContent = 'Forgot password?';
+      btn.disabled = false;
+
+      if (error) { showMessage(error.message, 'error'); return; }
+      showMessage('Password reset email sent! Check your inbox.', 'success');
     }
   </script>
 

@@ -346,6 +346,56 @@
       reply: "Salama سلامة is a mental wellness platform for Lebanon. It offers journaling, mood check-ins, breathing exercises, storytelling, and a directory of local mental health resources — all in a calm, private space."
     },
     {
+      match: ['study', 'studying', 'exam', 'exams', 'focus', 'concentrate', 'procrastinat', 'homework', 'assignment', 'revision', 'revise', 'memorize', 'learn', 'pomodoro', 'notes', 'overwhelmed by work', 'academic', 'i need to study'],
+      reply: "Salama has a dedicated Study Hub with techniques to help you study smarter and manage academic stress 📚 What's getting in your way right now?",
+      quick: ['I can\'t focus', 'I keep procrastinating', 'I have too much to cover', 'Show me all techniques']
+    },
+    {
+      match: ["i can't focus", "cant focus", "can't concentrate", 'distracted', 'no focus'],
+      reply: "When focus feels impossible, starting small helps. Try the Pomodoro method — 25 minutes of work, then a 5-minute break. Salama walks you through it.",
+      quick: ['Try Pomodoro', 'Try 5-min rule', 'Go to Study Hub']
+    },
+    {
+      match: ["i keep procrastinating", 'procrastinat', 'putting it off', 'keep delaying', 'cant start'],
+      reply: "The hardest part is starting. The 5-Minute Rule can help — just commit to 5 minutes, and momentum usually takes over.",
+      quick: ['Try 5-min rule', 'Try one-task method', 'Go to Study Hub']
+    },
+    {
+      match: ['too much to cover', 'too much material', 'overwhelmed by studying', 'a lot to study', 'dont know where to start'],
+      reply: "When everything feels urgent, breaking it down helps. Salama's Task Breakdown technique turns a huge workload into manageable steps.",
+      quick: ['Try task breakdown', 'Try spaced repetition', 'Go to Study Hub']
+    },
+    {
+      match: ['pomodoro', 'try pomodoro'],
+      reply: "The Pomodoro method uses focused 25-minute work sessions followed by short breaks. It's one of the most effective tools for concentration.",
+      quick: ['Start Pomodoro now']
+    },
+    {
+      match: ['5-min rule', '5 min rule', 'five minute', 'try 5-min'],
+      reply: "The 5-Minute Rule: just commit to working for 5 minutes. More often than not, you'll keep going once you've started.",
+      quick: ['Try it now']
+    },
+    {
+      match: ['blurting', 'recall', 'active recall', 'memoriz', 'remember'],
+      reply: "Active recall is one of the best ways to study. Salama has a Blurting technique — write down everything you remember, then check what you missed.",
+      quick: ['Try blurting', 'Try active recall']
+    },
+    {
+      match: ['spaced repetition', 'spaced', 'long term memory', 'retain'],
+      reply: "Spaced repetition spreads out your review sessions over time, making information stick much longer. Great for exam prep.",
+      quick: ['Try spaced repetition', 'Go to Study Hub']
+    },
+    {
+      match: ['show me all techniques', 'study hub', 'go to study hub', 'all study', 'study tools'],
+      reply: "Salama's Study Hub has Pomodoro, 5-Minute Rule, Task Breakdown, One Task Focus, Blurting, Active Recall, Spaced Repetition, and a Brain Reset. Head there to explore.",
+      quick: ['Go to Study Hub']
+    },
+    {
+      match: ['brain reset', 'mental reset', 'burned out', 'burnout', 'need a break from studying'],
+      reply: "Burnout is real — pushing through without breaks makes things worse. Salama has a Brain Reset technique to help you recharge properly.",
+      quick: ['Try Brain Reset', 'Go to Study Hub']
+    },
+    {
       match: ['thank', 'thanks', 'shukran', 'merci'],
       reply: "You're welcome 🌿 Take care of yourself. I'm always here if you need anything."
     },
@@ -357,9 +407,9 @@
 
   const initialQuickReplies = [
     { label: "I'm feeling anxious", msg: "I'm feeling anxious" },
-    { label: "I need support", msg: "I need support" },
+    { label: "I need to study", msg: "I need to study" },
     { label: "Try a breathing exercise", msg: "breathing exercise" },
-    { label: "Find resources", msg: "find support resources" },
+    { label: "I need support", msg: "I need support" },
   ];
 
   const linkMap = {
@@ -385,6 +435,18 @@
     'NDU': 'ndu.html',
     'Read community stories': 'salama-stories.html',
     'Share my story': 'salama-stories-share.html',
+    'Go to Study Hub': 'study.html',
+    'Start Pomodoro now': 'study-pomodoro.html',
+    'Try Pomodoro': 'study-pomodoro.html',
+    'Try 5-min rule': 'study-5min.html',
+    'Try it now': 'study-5min.html',
+    'Try task breakdown': 'study-breakdown.html',
+    'Try one-task method': 'study-onetask.html',
+    'One Task Focus': 'study-onetask.html',
+    'Try blurting': 'study-blurting.html',
+    'Try active recall': 'study-recall.html',
+    'Try spaced repetition': 'study-spaced.html',
+    'Try Brain Reset': 'study-reset.html',
   };
 
   function getBotReply(text) {

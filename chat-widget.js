@@ -336,10 +336,36 @@
       reply: "Salama has dedicated pages for AUB, LAU, USJ, and NDU counseling services. Which university are you at?",
       quick: ['AUB', 'LAU', 'USJ', 'NDU']
     },
+    // ── Storytelling & Expression ─────────────────────────────────────────────
     {
-      match: ['story', 'stories', 'community', 'experience', 'share', 'read stories'],
-      reply: "Salama has a community space where people share their experiences with mental health and with Salama. You can read others' stories or share your own anonymously.",
-      quick: ['Read community stories', 'Share my story']
+      match: ['paint', 'colour', 'color', 'colouring', 'coloring', 'painting', 'draw', 'art therapy', 'paint my calm', 'calm space', 'paint your calm'],
+      reply: "No words needed. Salama's Paint Your Calm Space lets you choose a colour and fill in a peaceful scene — a quiet, creative act to ease your mind.",
+      quick: ['Paint your calm space', 'Go to Storytelling']
+    },
+    {
+      match: ['writing prompt', 'writing prompts', 'guided writing', 'prompts', 'what to write', "don't know what to write", 'dont know what to write', 'help me write', 'writing ideas', 'guided prompts'],
+      reply: "If you want to write but don't know where to start, Salama has Guided Prompts — gentle, thoughtful questions to help you explore and express what's on your mind.",
+      quick: ['Try guided prompts', 'Go to Storytelling']
+    },
+    {
+      match: ['private diary', 'personal diary', 'no one reads', 'just for me', 'not share', 'nothing saved', 'private writing', 'write privately', 'anonymous writing', 'write for myself'],
+      reply: "Not everything needs to be shared. Salama's Personal Diary is completely private — nothing is saved or sent. Just you and your words.",
+      quick: ['Open personal diary', 'Go to Storytelling']
+    },
+    {
+      match: ['share my story', 'share a story', 'post my story', 'share anonymously', 'share my experience', 'tell my story', 'write and share'],
+      reply: "Salama has a space where you can write and share your personal story, poem, or reflection with the community — anonymously or with your name.",
+      quick: ['Share your story', 'Go to Storytelling']
+    },
+    {
+      match: ['read stories', 'community stories', 'others stories', 'read community', 'not alone', 'what others feel', 'peoples stories'],
+      reply: "Read real, unfiltered stories from people in the Salama community. Sometimes knowing others have felt the same way is the most comforting thing of all.",
+      quick: ['Read others stories', 'Share your story', 'Go to Storytelling']
+    },
+    {
+      match: ['story', 'stories', 'storytelling', 'expression', 'express myself', 'express yourself', 'creative writing', 'community', 'share', 'write something', 'self expression'],
+      reply: "Salama's Storytelling & Expression space has four ways to express yourself: Share Your Story, Read Others' Stories, Personal Diary, and Paint Your Calm Space.",
+      quick: ['Share your story', 'Read others stories', 'Open personal diary', 'Paint your calm space']
     },
     {
       match: ['what is salama', 'about salama', 'about', 'what is this'],
@@ -517,8 +543,14 @@
     'USJ': 'usj.html',
     'Go to NDU page': 'ndu.html',
     'NDU': 'ndu.html',
-    'Read community stories': 'salama-stories.html',
-    'Share my story': 'salama-stories-share.html',
+    'Read community stories': 'storytelling-read.html',
+    'Read others stories': 'storytelling-read.html',
+    'Share my story': 'storytelling-share.html',
+    'Share your story': 'storytelling-share.html',
+    'Open personal diary': 'storytelling-private.html',
+    'Try guided prompts': 'storytelling-prompts.html',
+    'Paint your calm space': 'storytelling-paint.html',
+    'Go to Storytelling': 'storytelling.html',
     'Go to Educational Resources': 'educational.html',
     'Anxiety': 'educational.html',
     'Depression': 'educational.html',

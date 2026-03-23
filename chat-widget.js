@@ -345,6 +345,63 @@
       match: ['what is salama', 'about salama', 'about', 'what is this'],
       reply: "Salama سلامة is a mental wellness platform for Lebanon. It offers journaling, mood check-ins, breathing exercises, storytelling, and a directory of local mental health resources — all in a calm, private space."
     },
+    // ── Educational resources ─────────────────────────────────────────────────
+    {
+      match: ['what is anxiety', 'understand anxiety', 'learn about anxiety', 'read about anxiety'],
+      reply: "Salama's Educational Resources has a dedicated section on Anxiety — what it is, how it feels, what helps, and trusted sources from NIMH, Mind UK, and WHO.",
+      quick: ['Go to Educational Resources']
+    },
+    {
+      match: ['what is depression', 'understand depression', 'learn about depression', 'read about depression'],
+      reply: "Salama's Educational Resources has a detailed section on Depression — covering symptoms, causes, and what can help, sourced from NIMH, Mind UK, and Mayo Clinic.",
+      quick: ['Go to Educational Resources']
+    },
+    {
+      match: ['what is burnout', 'understand burnout', 'learn about burnout'],
+      reply: "Salama's Educational Resources has a section on Burnout — how to recognize it, what causes it, and how to recover. Check it out.",
+      quick: ['Go to Educational Resources']
+    },
+    {
+      match: ['grief', 'loss', 'bereavement', 'lost someone', 'someone died'],
+      reply: "Grief is deeply personal and can show up in unexpected ways. Salama's Educational Resources has a Grief & Loss section with honest guidance and trusted sources.",
+      quick: ['Go to Educational Resources', 'Find support']
+    },
+    {
+      match: ['panic attack', 'panic attacks', 'having a panic attack', 'what is a panic attack'],
+      reply: "Panic attacks can feel terrifying, but they are manageable. Salama's Educational Resources explains what panic attacks are, how they feel, and what helps — plus a breathing exercise you can try right now.",
+      quick: ['Go to Educational Resources', 'Try breathing']
+    },
+    {
+      match: ['sleep', 'insomnia', 'cant sleep', "can't sleep", 'trouble sleeping', 'not sleeping'],
+      reply: "Sleep and mental health are closely linked. Salama's Educational Resources has a Sleep & Rest section with practical guidance from the Sleep Foundation and Mind UK.",
+      quick: ['Go to Educational Resources']
+    },
+    {
+      match: ['self esteem', 'self-esteem', 'confidence', 'self worth', 'self-worth', 'insecure', 'not good enough'],
+      reply: "Struggling with self-esteem is more common than it seems. Salama's Educational Resources has a section dedicated to it — what it is, why it matters, and how to build it.",
+      quick: ['Go to Educational Resources']
+    },
+    {
+      match: ['support someone', 'help a friend', 'help someone', 'friend is struggling', 'someone i know', 'supporting someone'],
+      reply: "Knowing how to support someone going through a hard time can make a real difference. Salama's Educational Resources has a dedicated 'Supporting Someone' guide.",
+      quick: ['Go to Educational Resources']
+    },
+    {
+      match: ['when to seek help', 'do i need therapy', 'do i need help', 'should i see a therapist', 'am i okay'],
+      reply: "It can be hard to know when to reach out for professional support. Salama's Educational Resources has a 'When to Seek Help' section to help you figure that out.",
+      quick: ['Go to Educational Resources', 'Find professionals']
+    },
+    {
+      match: ['educational', 'education', 'learn about mental health', 'read about mental health', 'mental health information', 'mental health articles', 'resources', 'information', 'articles', 'understand mental health', 'what is mental health', 'knowledge'],
+      reply: "Salama's Educational Resources covers topics like Anxiety, Depression, Burnout, Grief, Stress, Sleep, Self-Esteem, Panic Attacks, and more — all backed by trusted sources like NIMH, WHO, and Mind UK.",
+      quick: ['Anxiety', 'Depression', 'Stress', 'Go to Educational Resources']
+    },
+    {
+      match: ['anxiety topic', 'depression topic', 'stress topic'],
+      reply: "You can find detailed information on all those topics in Salama's Educational Resources — each one explains what it is, how it feels, and what helps.",
+      quick: ['Go to Educational Resources']
+    },
+
     // ── Study: specific sub-topics first, catch-all last ──────────────────────
     {
       match: ["i can't focus", "cant focus", "can't concentrate", 'no focus', 'distracted', 'cant concentrate'],
@@ -409,7 +466,7 @@
   const initialQuickReplies = [
     { label: "I'm feeling anxious", msg: "I'm feeling anxious" },
     { label: "I need to study", msg: "I need to study" },
-    { label: "Try a breathing exercise", msg: "breathing exercise" },
+    { label: "Learn about mental health", msg: "learn about mental health" },
     { label: "I need support", msg: "I need support" },
   ];
 
@@ -436,6 +493,10 @@
     'NDU': 'ndu.html',
     'Read community stories': 'salama-stories.html',
     'Share my story': 'salama-stories-share.html',
+    'Go to Educational Resources': 'educational.html',
+    'Anxiety': 'educational.html',
+    'Depression': 'educational.html',
+    'Stress': 'educational.html',
     'Go to Study Hub': 'study.html',
     'Start Pomodoro now': 'study-pomodoro.html',
     'Try Pomodoro': 'study-pomodoro.html',

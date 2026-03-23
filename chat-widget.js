@@ -345,28 +345,24 @@
       match: ['what is salama', 'about salama', 'about', 'what is this'],
       reply: "Salama سلامة is a mental wellness platform for Lebanon. It offers journaling, mood check-ins, breathing exercises, storytelling, and a directory of local mental health resources — all in a calm, private space."
     },
+    // ── Study: specific sub-topics first, catch-all last ──────────────────────
     {
-      match: ['study', 'studying', 'exam', 'exams', 'focus', 'concentrate', 'procrastinat', 'homework', 'assignment', 'revision', 'revise', 'memorize', 'learn', 'pomodoro', 'notes', 'overwhelmed by work', 'academic', 'i need to study'],
-      reply: "Salama has a dedicated Study Hub with techniques to help you study smarter and manage academic stress 📚 What's getting in your way right now?",
-      quick: ['I can\'t focus', 'I keep procrastinating', 'I have too much to cover', 'Show me all techniques']
-    },
-    {
-      match: ["i can't focus", "cant focus", "can't concentrate", 'distracted', 'no focus'],
-      reply: "When focus feels impossible, starting small helps. Try the Pomodoro method — 25 minutes of work, then a 5-minute break. Salama walks you through it.",
+      match: ["i can't focus", "cant focus", "can't concentrate", 'no focus', 'distracted', 'cant concentrate'],
+      reply: "When focus feels impossible, starting small helps. Try the Pomodoro method — 25 minutes of work, then a short break. Salama walks you through it.",
       quick: ['Try Pomodoro', 'Try 5-min rule', 'Go to Study Hub']
     },
     {
-      match: ["i keep procrastinating", 'procrastinat', 'putting it off', 'keep delaying', 'cant start'],
+      match: ["i keep procrastinating", 'procrastinat', 'putting it off', 'keep delaying', 'cant start', "can't start"],
       reply: "The hardest part is starting. The 5-Minute Rule can help — just commit to 5 minutes, and momentum usually takes over.",
       quick: ['Try 5-min rule', 'Try one-task method', 'Go to Study Hub']
     },
     {
-      match: ['too much to cover', 'too much material', 'overwhelmed by studying', 'a lot to study', 'dont know where to start'],
+      match: ['too much to cover', 'too much material', 'overwhelmed by studying', 'a lot to study', 'dont know where to start', "don't know where to start", 'i have too much'],
       reply: "When everything feels urgent, breaking it down helps. Salama's Task Breakdown technique turns a huge workload into manageable steps.",
       quick: ['Try task breakdown', 'Try spaced repetition', 'Go to Study Hub']
     },
     {
-      match: ['pomodoro', 'try pomodoro'],
+      match: ['pomodoro', 'try pomodoro', 'start pomodoro'],
       reply: "The Pomodoro method uses focused 25-minute work sessions followed by short breaks. It's one of the most effective tools for concentration.",
       quick: ['Start Pomodoro now']
     },
@@ -376,24 +372,29 @@
       quick: ['Try it now']
     },
     {
-      match: ['blurting', 'recall', 'active recall', 'memoriz', 'remember'],
+      match: ['blurting', 'active recall', 'memoriz', 'try blurting', 'try active recall'],
       reply: "Active recall is one of the best ways to study. Salama has a Blurting technique — write down everything you remember, then check what you missed.",
       quick: ['Try blurting', 'Try active recall']
     },
     {
-      match: ['spaced repetition', 'spaced', 'long term memory', 'retain'],
+      match: ['spaced repetition', 'long term memory', 'retain', 'try spaced'],
       reply: "Spaced repetition spreads out your review sessions over time, making information stick much longer. Great for exam prep.",
       quick: ['Try spaced repetition', 'Go to Study Hub']
-    },
-    {
-      match: ['show me all techniques', 'study hub', 'go to study hub', 'all study', 'study tools'],
-      reply: "Salama's Study Hub has Pomodoro, 5-Minute Rule, Task Breakdown, One Task Focus, Blurting, Active Recall, Spaced Repetition, and a Brain Reset. Head there to explore.",
-      quick: ['Go to Study Hub']
     },
     {
       match: ['brain reset', 'mental reset', 'burned out', 'burnout', 'need a break from studying'],
       reply: "Burnout is real — pushing through without breaks makes things worse. Salama has a Brain Reset technique to help you recharge properly.",
       quick: ['Try Brain Reset', 'Go to Study Hub']
+    },
+    {
+      match: ['show me all techniques', 'study hub', 'go to study hub', 'all study', 'study tools', 'all techniques'],
+      reply: "Salama's Study Hub has Pomodoro, 5-Minute Rule, Task Breakdown, One Task Focus, Blurting, Active Recall, Spaced Repetition, and a Brain Reset. Head there to explore.",
+      quick: ['Go to Study Hub']
+    },
+    {
+      match: ['study', 'studying', 'exam', 'exams', 'homework', 'assignment', 'revision', 'revise', 'academic', 'notes', 'concentrate', 'focus', 'recall', 'learn', 'lecture', 'test', 'quiz', 'finals', 'midterm', 'i need to study'],
+      reply: "Salama has a dedicated Study Hub with techniques to help you study smarter and manage academic stress 📚 What's getting in your way right now?",
+      quick: ["I can't focus", 'I keep procrastinating', 'I have too much to cover', 'Show me all techniques']
     },
     {
       match: ['thank', 'thanks', 'shukran', 'merci'],

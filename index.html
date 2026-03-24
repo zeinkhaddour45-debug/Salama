@@ -1026,7 +1026,7 @@
       grid._rows = rows;
     }
 
-    buildGrid();
+    window.addEventListener('load', buildGrid);
     window.addEventListener('resize', buildGrid);
 
     hero.addEventListener('mousemove', function (e) {
@@ -1055,16 +1055,30 @@
   })();
 
 
-  const fadeEls = document.querySelectorAll('.fade-in');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        observer.unobserve(e.target);
-      }
+  // Fade-in: run after full page load so viewport checks are accurate
+  window.addEventListener('load', function () {
+    const fadeEls = document.querySelectorAll('.fade-in');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    fadeEls.forEach(el => observer.observe(el));
+
+    // Force-show any elements already in viewport
+    requestAnimationFrame(() => {
+      fadeEls.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          el.classList.add('visible');
+          observer.unobserve(el);
+        }
+      });
     });
-  }, { threshold: 0.12 });
-  fadeEls.forEach(el => observer.observe(el));
+  });
 </script>
 
 <script src="chat-widget.js"></script>

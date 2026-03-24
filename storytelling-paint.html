@@ -125,6 +125,23 @@
     /* Toast */
     .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: #374f31; color: #fff; padding: 14px 28px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 9000; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; white-space: nowrap; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    /* Saved paintings gallery */
+    .saved-section { padding: 0 24px 80px; max-width: 940px; margin: 0 auto; position: relative; z-index: 1; }
+    .saved-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--sage); font-weight: 600; margin-bottom: 20px; }
+    .saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .saved-card { background: #fff; border: 1.5px solid rgba(74,102,64,0.2); border-radius: 16px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+    .saved-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.09); }
+    .saved-swatches { display: flex; flex-wrap: wrap; gap: 5px; padding: 20px; background: rgba(74,102,64,0.04); min-height: 88px; align-items: center; justify-content: center; }
+    .swatch { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.08); }
+    .saved-info { padding: 14px 16px; }
+    .saved-scene-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .saved-date { font-size: 12px; color: var(--text-light); margin-bottom: 14px; }
+    .saved-btns { display: flex; gap: 8px; }
+    .btn-load { flex: 1; background: var(--olive); color: #fff; border: none; border-radius: 8px; padding: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.2s; }
+    .btn-load:hover { background: #374f31; }
+    .btn-del { background: none; border: 1.5px solid rgba(200,50,50,0.25); color: #c0392b; border-radius: 8px; padding: 8px 10px; font-size: 12px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+    .btn-del:hover { background: rgba(200,50,50,0.08); }
+    .saved-empty { font-size: 14px; color: var(--text-light); text-align: center; padding: 40px 0; grid-column: 1/-1; }
     .fade-in { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
     .fade-in.visible { opacity: 1; transform: translateY(0); }
     @media (max-width: 600px) { nav { padding: 18px 24px; } .canvas-card { padding: 20px 14px; } }
@@ -671,6 +688,12 @@
     </div>
   </main>
 
+  <!-- Saved paintings gallery -->
+  <section class="saved-section" id="saved-section" style="display:none;">
+    <p class="saved-label">Your saved paintings</p>
+    <div class="saved-grid" id="saved-grid"></div>
+  </section>
+
   <!-- Save modal (shown to non-members) -->
   <div class="modal-overlay" id="save-modal">
     <div class="modal-box">
@@ -787,11 +810,58 @@
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, storage: localStorage } });
 
+    const sceneLabels = { forest: '🌲 Forest', beach: '🌊 Beach', night: '🌙 Night Sky', garden: '🌸 Garden' };
+
     let currentUser = null;
     (async function () {
       const { data: { session } } = await db.auth.getSession();
-      if (session) currentUser = session.user;
+      if (session) { currentUser = session.user; loadSavedPaintings(); }
     })();
+
+    async function loadSavedPaintings() {
+      const { data, error } = await db.from('paintings').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+      const section = document.getElementById('saved-section');
+      const grid = document.getElementById('saved-grid');
+      if (error || !data || data.length === 0) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+      grid.innerHTML = data.map(p => {
+        const colors = p.colors ? Object.values(p.colors) : [];
+        const uniqueColors = [...new Set(colors)].slice(0, 10);
+        const swatches = uniqueColors.map(c => `<div class="swatch" style="background:${c}"></div>`).join('');
+        const date = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return `<div class="saved-card">
+          <div class="saved-swatches">${swatches || '<span style="font-size:13px;color:#aaa;">Empty</span>'}</div>
+          <div class="saved-info">
+            <p class="saved-scene-name">${sceneLabels[p.scene] || p.scene}</p>
+            <p class="saved-date">${date}</p>
+            <div class="saved-btns">
+              <button class="btn-load" onclick="applyPainting(${JSON.stringify(p).replace(/"/g,'&quot;')})">Load</button>
+              <button class="btn-del" onclick="deletePainting('${p.id}', this)">Delete</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function applyPainting(p) {
+      switchScene(p.scene);
+      setTimeout(() => {
+        Object.entries(p.colors).forEach(([id, color]) => {
+          const el = document.getElementById(id);
+          if (el) el.style.fill = color;
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast('Painting loaded 🎨');
+      }, 50);
+    }
+
+    async function deletePainting(id, btn) {
+      btn.textContent = '...';
+      btn.disabled = true;
+      const { error } = await db.from('paintings').delete().eq('id', id).eq('user_id', currentUser.id);
+      if (error) { btn.textContent = 'Delete'; btn.disabled = false; showToast('Could not delete. Try again.'); return; }
+      loadSavedPaintings();
+    }
 
     function collectColors() {
       const colors = {};
@@ -812,6 +882,7 @@
       document.getElementById('saveBtn').disabled = false;
       if (error) { showToast('Could not save. Try again.'); return; }
       showToast('Painting saved 🌿');
+      loadSavedPaintings();
     }
 
     function showToast(msg) {

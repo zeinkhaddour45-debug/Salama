@@ -1056,8 +1056,8 @@
   })();
 
 
-  // Fade-in: run after full page load so viewport checks are accurate
-  document.addEventListener('DOMContentLoaded', function () {
+  // Fade-in: run after all resources (including fonts) are loaded
+  function initFadeIns() {
     const fadeEls = document.querySelectorAll('.fade-in');
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(e => {
@@ -1067,19 +1067,21 @@
         }
       });
     }, { threshold: 0.12 });
-    fadeEls.forEach(el => observer.observe(el));
-
-    // Force-show any elements already in viewport
-    requestAnimationFrame(() => {
-      fadeEls.forEach(el => {
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) {
-          el.classList.add('visible');
-          observer.unobserve(el);
-        }
-      });
+    fadeEls.forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        el.classList.add('visible');
+      } else {
+        observer.observe(el);
+      }
     });
-  });
+  }
+
+  if (document.readyState === 'complete') {
+    initFadeIns();
+  } else {
+    window.addEventListener('load', initFadeIns);
+  }
 </script>
 
 <script src="chat-widget.js"></script>

@@ -1056,7 +1056,7 @@
   })();
 
 
-  // Fade-in: run after all resources (including fonts) are loaded
+  // Fade-in: wait for fonts so layout is stable, then animate
   function initFadeIns() {
     const fadeEls = document.querySelectorAll('.fade-in');
     const observer = new IntersectionObserver((entries) => {
@@ -1066,7 +1066,7 @@
           observer.unobserve(e.target);
         }
       });
-    }, { threshold: 0.12 });
+    }, { threshold: 0.08 });
     fadeEls.forEach(el => {
       const rect = el.getBoundingClientRect();
       if (rect.top < window.innerHeight && rect.bottom > 0) {
@@ -1077,11 +1077,7 @@
     });
   }
 
-  if (document.readyState === 'complete') {
-    initFadeIns();
-  } else {
-    window.addEventListener('load', initFadeIns);
-  }
+  document.fonts.ready.then(initFadeIns);
 </script>
 
 <script src="chat-widget.js"></script>

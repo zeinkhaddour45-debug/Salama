@@ -691,17 +691,17 @@
     <path d="M100 85 C118 75 144 83 160 104" stroke="#4a6640" stroke-width="1.5" opacity="0.85"/>
   </svg>
 
-  <div class="hero-logo fade-in">
+  <div class="hero-logo fade-in visible">
     <div class="hero-logo-mark">
       <h1 class="hero-title">SALAMA</h1>
     </div>
     <p class="hero-tagline">Because your mind deserves care too.</p>
   </div>
 
-  <p class="hero-subtitle fade-in fade-in-delay-1">
+  <p class="hero-subtitle fade-in fade-in-delay-1 visible">
     A safe digital space for Lebanese students and the wider community to learn, share, and find support on their mental health journey.
   </p>
-  <div class="hero-actions fade-in fade-in-delay-2">
+  <div class="hero-actions fade-in fade-in-delay-2 visible">
     <a href="login.html?tab=signup" class="btn-primary" onclick="handleJoinClick(event)">Join the Community</a>
     <a href="#mission" class="btn-secondary">Learn More</a>
   </div>
@@ -1026,7 +1026,7 @@
       grid._rows = rows;
     }
 
-    window.addEventListener('load', buildGrid);
+    document.addEventListener('DOMContentLoaded', buildGrid);
     window.addEventListener('resize', buildGrid);
 
     hero.addEventListener('mousemove', function (e) {
@@ -1056,7 +1056,7 @@
 
 
   // Fade-in: run after full page load so viewport checks are accurate
-  window.addEventListener('load', function () {
+  document.addEventListener('DOMContentLoaded', function () {
     const fadeEls = document.querySelectorAll('.fade-in');
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(e => {

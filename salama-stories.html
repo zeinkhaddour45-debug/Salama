@@ -332,7 +332,7 @@
       const id = card.dataset.id;
       if (!confirm('Remove this story?')) return;
       if (id.startsWith('p')) {
-        // hardcoded card — hide via localStorage
+        // hardcoded card hide via localStorage
         const hidden = JSON.parse(localStorage.getItem('salama_com_hidden') || '[]');
         hidden.push(id);
         localStorage.setItem('salama_com_hidden', JSON.stringify(hidden));

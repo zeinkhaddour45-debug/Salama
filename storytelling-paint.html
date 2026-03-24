@@ -676,7 +676,7 @@
     <div class="modal-box">
       <div class="modal-icon">🔒</div>
       <h2 class="modal-title">Save your painting</h2>
-      <p class="modal-sub">Members can save their calm space and come back to it anytime. Join Salama — it's free.</p>
+      <p class="modal-sub">Members can save their calm space and come back to it anytime. Join Salama. It's free.</p>
       <div class="modal-actions">
         <a class="btn-modal-primary" href="login.html?tab=signup&redirect=/storytelling-paint.html">Create a free account</a>
         <a class="btn-modal-primary" href="login.html?redirect=/storytelling-paint.html" style="background:none; color:var(--olive); border:1.5px solid rgba(74,102,64,0.35); margin-top:0;">Sign in</a>
@@ -810,7 +810,7 @@
       const { error } = await db.from('paintings').insert({ user_id: currentUser.id, scene: activeScene, colors });
       document.getElementById('saveBtn').textContent = '💾 Save painting';
       document.getElementById('saveBtn').disabled = false;
-      if (error) { showToast('Could not save — try again.'); return; }
+      if (error) { showToast('Could not save. Try again.'); return; }
       showToast('Painting saved 🌿');
     }
 
